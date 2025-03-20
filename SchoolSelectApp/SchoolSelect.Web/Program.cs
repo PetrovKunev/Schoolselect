@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+п»їusing Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SchoolSelect.Data.Models;
 using SchoolSelect.Repositories;
@@ -16,18 +16,19 @@ namespace SchoolSelect.Web
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-            // Регистриране на DbContext
+            
+            // Registering DbContext
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            // Регистриране на Identity с нашия ApplicationUser
+            // Registering Identity with our ApplicationUser
             builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddRoles<IdentityRole<Guid>>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-            // Регистриране на Repository Pattern
+            // Registering the Repository Pattern
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             builder.Services.AddScoped<ISchoolRepository, SchoolRepository>();
             builder.Services.AddScoped<ISchoolProfileRepository, SchoolProfileRepository>();
@@ -41,7 +42,7 @@ namespace SchoolSelect.Web
             builder.Services.AddScoped<IComparisonSetRepository, ComparisonSetRepository>();
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 
-            // Регистриране на Unit of Work
+            // Р РµРіРёСЃС‚СЂРёСЂР°РЅРµ РЅР° Unit of Work
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             builder.Services.AddControllersWithViews();
