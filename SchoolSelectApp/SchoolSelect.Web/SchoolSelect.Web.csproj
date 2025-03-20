@@ -15,4 +15,14 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.14" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SchoolSelect.Common\SchoolSelect.Common.csproj" />
+    <ProjectReference Include="..\SchoolSelect.Data.Models\SchoolSelect.Data.Models.csproj" />
+    <ProjectReference Include="..\SchoolSelect.Data\SchoolSelect.Data.csproj" />
+    <ProjectReference Include="..\SchoolSelect.Repositories\SchoolSelect.Repositories.csproj" />
+    <ProjectReference Include="..\SchoolSelect.Security\SchoolSelect.Security.csproj" />
+    <ProjectReference Include="..\SchoolSelect.Services\SchoolSelect.Services.csproj" />
+    <ProjectReference Include="..\SchoolSelect.Web.ViewModels\SchoolSelect.Web.ViewModels.csproj" />
+  </ItemGroup>
+
 </Project>
