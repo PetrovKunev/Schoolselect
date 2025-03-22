@@ -27,4 +27,9 @@
     <ProjectReference Include="..\SchoolSelect.Web.ViewModels\SchoolSelect.Web.ViewModels.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\css\themes\vapor\" />
+    <Folder Include="wwwroot\css\themes\zephyr\" />
+  </ItemGroup>
+
 </Project>
