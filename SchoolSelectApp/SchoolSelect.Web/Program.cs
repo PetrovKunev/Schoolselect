@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SchoolSelect.Data.Models;
 using SchoolSelect.Repositories;
@@ -16,7 +16,7 @@ namespace SchoolSelect.Web
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-            
+
             // Registering DbContext
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
@@ -24,7 +24,14 @@ namespace SchoolSelect.Web
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             // Registering Identity with our ApplicationUser
-            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
+            {
+                options.SignIn.RequireConfirmedAccount = false;
+                options.Password.RequireDigit = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequireLowercase = true;
+            })
                 .AddRoles<IdentityRole<Guid>>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -44,6 +51,20 @@ namespace SchoolSelect.Web
 
             // Регистриране на Unit of Work
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddAuthentication()
+            .AddGoogle(googleOptions =>
+            {
+                var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+                var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+
+                if (string.IsNullOrEmpty(googleClientId) || string.IsNullOrEmpty(googleClientSecret))
+                {
+                    throw new InvalidOperationException("Google authentication is missing.");
+                }
+
+                googleOptions.ClientId = googleClientId;
+                googleOptions.ClientSecret = googleClientSecret;
+            });
 
             builder.Services.AddControllersWithViews();
 
