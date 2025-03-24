@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SchoolSelect.Data.Models\SchoolSelect.Data.Models.csproj" />
     <ProjectReference Include="..\SchoolSelect.Repositories\SchoolSelect.Repositories.csproj" />
+    <ProjectReference Include="..\SchoolSelect.Web.ViewModels\SchoolSelect.Web.ViewModels.csproj" />
   </ItemGroup>
 
 </Project>

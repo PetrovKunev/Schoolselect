@@ -1,0 +1,86 @@
+﻿@model SchoolSelect.Web.ViewModels.SchoolsListViewModel
+@{
+    ViewData["Title"] = "Училища";
+}
+
+<div class="container">
+    <h1 class="mb-4">Училища</h1>
+    
+    <!-- Search and Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Търсене по име или адрес..." 
+                               name="searchTerm" value="@Model.SearchTerm">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-search"></i> Търси
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <select class="form-select" name="district" onchange="this.form.submit()">
+                        <option value="">Всички райони</option>
+                        @foreach (var district in Model.Districts)
+                        {
+                            <option value="@district" selected="@(district == Model.SelectedDistrict)">@district</option>
+                        }
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <select class="form-select" name="profileType" onchange="this.form.submit()">
+                        <option value="">Всички профили</option>
+                        <option value="Математически" selected="@("Математически" == Model.SelectedProfileType)">Математически</option>
+                        <option value="Чужди езици" selected="@("Чужди езици" == Model.SelectedProfileType)">Чужди езици</option>
+                        <option value="Природни науки" selected="@("Природни науки" == Model.SelectedProfileType)">>Природни науки</option>
+                        <option value="Хуманитарни науки" selected="@("Хуманитарни науки" == Model.SelectedProfileType)">Хуманитарни науки</option>
+                        <option value="Софтуерни и хардуерни науки" selected="@("Софтуерни и хардуерни науки" == Model.SelectedProfileType)">Софтуерни и хардуерни науки</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Schools List -->
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @if (Model.Schools.Any())
+        {
+            foreach (var school in Model.Schools)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">@school.Name</h5>
+                            <p class="card-text mb-1">
+                                <i class="bi bi-geo-alt"></i> @school.District, @school.City
+                            </p>
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="rating me-2">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="bi @(i <= Math.Round(school.AverageRating) ? "bi-star-fill" : "bi-star")" style="color: #ffc107;"></i>
+                                    }
+                                </div>
+                                <span>@school.AverageRating.ToString("0.0") (@school.ReviewsCount отзива)</span>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0">
+                            <a asp-controller="Schools" asp-action="Details" asp-route-id="@school.Id" class="btn btn-outline-primary w-100">Детайли</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-search fs-1 text-muted"></i>
+                <h4 class="mt-3">Не са намерени училища</h4>
+                <p class="text-muted">Моля, опитайте с различни критерии за търсене.</p>
+            </div>
+        }
+    </div>
+</div>

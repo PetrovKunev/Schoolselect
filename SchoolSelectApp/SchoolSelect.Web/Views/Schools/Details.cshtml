@@ -1,0 +1,416 @@
+﻿@model SchoolSelect.Web.ViewModels.SchoolDetailsViewModel
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Начало</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Schools" asp-action="Index">Училища</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+        </ol>
+    </nav>
+
+    <!-- School Header -->
+    <div class="mb-4">
+        <h1 class="mb-2">@Model.Name</h1>
+        <p class="text-muted mb-2">
+            <i class="bi bi-geo-alt"></i> @Model.District, @Model.City &bull; @Model.Address
+        </p>
+        <div class="d-flex align-items-center mb-3">
+            <div class="rating me-2">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <i class="bi @(i <= Math.Round(Model.AverageRating) ? "bi-star-fill" : "bi-star")" style="color: #ffc107;"></i>
+                }
+            </div>
+            <span class="me-3">@Model.AverageRating.ToString("0.0") (@Model.ReviewsCount отзива)</span>
+
+            <a href="@Model.Website" target="_blank" class="btn btn-sm btn-outline-primary me-2">
+                <i class="bi bi-globe"></i> Уебсайт
+            </a>
+            <a href="mailto:@Model.Email" class="btn btn-sm btn-outline-primary me-2">
+                <i class="bi bi-envelope"></i> Имейл
+            </a>
+            <a href="tel:@Model.Phone" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-telephone"></i> Телефон
+            </a>
+        </div>
+
+        <div class="mb-3">
+            <a asp-controller="Comparison" asp-action="Add" asp-route-schoolId="@Model.Id" class="btn btn-primary me-2">
+                <i class="bi bi-plus-circle"></i> Добави за сравнение
+            </a>
+
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                <a asp-controller="UserGrades" asp-action="Calculate" asp-route-schoolId="@Model.Id" class="btn btn-success">
+                    <i class="bi bi-calculator"></i> Изчисли шанс
+                </a>
+            }
+            else
+            {
+                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-success">
+                    <i class="bi bi-calculator"></i> Влез за да изчислиш шанс
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <ul class="nav nav-tabs mb-4" id="schoolTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="profiles-tab" data-bs-toggle="tab" data-bs-target="#profiles" type="button"
+                    role="tab" aria-controls="profiles" aria-selected="true">
+                Профили
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button"
+                    role="tab" aria-controls="info" aria-selected="false">
+                Информация
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="location-tab" data-bs-toggle="tab" data-bs-target="#location" type="button"
+                    role="tab" aria-controls="location" aria-selected="false">
+                Транспорт и локация
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="rankings-tab" data-bs-toggle="tab" data-bs-target="#rankings" type="button"
+                    role="tab" aria-controls="rankings" aria-selected="false">
+                Класирания
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button"
+                    role="tab" aria-controls="reviews" aria-selected="false">
+                Отзиви
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Contents -->
+    <div class="tab-content" id="schoolTabContent">
+        <!-- Profiles Tab -->
+        <div class="tab-pane fade show active" id="profiles" role="tabpanel" aria-labelledby="profiles-tab">
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+                @if (Model.Profiles.Any())
+                {
+                    foreach (var profile in Model.Profiles)
+                    {
+                        <div class="col">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">@profile.Name</h5>
+                                    <p class="card-text">@profile.Description</p>
+
+                                    <p class="card-text"><strong>Предмети:</strong> @profile.Subjects</p>
+                                    <p class="card-text"><strong>Брой места:</strong> @profile.AvailablePlaces</p>
+
+                                    @{
+                                        var latestRanking = Model.Rankings
+                                        .Where(r => r.ProfileId == profile.Id)
+                                        .OrderByDescending(r => r.Year)
+                                        .FirstOrDefault();
+
+                                        if (latestRanking != null)
+                                        {
+                                            <p class="card-text"><strong>Минимален бал @latestRanking.Year:</strong> @latestRanking.MinimumScore.ToString("0.00")</p>
+                                        }
+                                    }
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <a href="#" class="btn btn-outline-primary">Виж формула за бал</a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12 text-center py-5">
+                        <i class="bi bi-journal-x fs-1 text-muted"></i>
+                        <h4 class="mt-3">Няма налични профили</h4>
+                        <p class="text-muted">Информацията все още не е добавена.</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Info Tab -->
+        <div class="tab-pane fade" id="info" role="tabpanel" aria-labelledby="info-tab">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">За училището</h5>
+                    <p class="card-text">@Model.Description</p>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h6>Контакти</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-geo-alt"></i> @Model.Address, @Model.City</li>
+                                <li><i class="bi bi-telephone"></i> @Model.Phone</li>
+                                <li><i class="bi bi-envelope"></i> @Model.Email</li>
+                                <li><i class="bi bi-globe"></i> <a href="@Model.Website" target="_blank">@Model.Website</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Съоръжения</h6>
+                            <ul class="list-unstyled">
+                                @foreach (var facility in Model.Facilities.Where(f => f.GetType().Name == "SchoolFacility"))
+                                {
+                                    <li><i class="bi bi-check-circle"></i> @facility.Name - @facility.FacilityType</li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location Tab -->
+        <div class="tab-pane fade" id="location" role="tabpanel" aria-labelledby="location-tab">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Местоположение</h5>
+                            <div class="ratio ratio-16x9">
+                                @if (Model.Latitude.HasValue && Model.Longitude.HasValue)
+                                {
+                                    <iframe src="https://maps.google.com/maps?q=@Model.Latitude,@Model.Longitude&z=15&output=embed"
+                                            width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                                }
+                                else
+                                {
+                                    <iframe src="https://maps.google.com/maps?q=@Model.Address,@Model.City&z=15&output=embed"
+                                            width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Транспортни връзки</h5>
+
+                            @if (Model.TransportFacilities.Any())
+                            {
+                                <ul class="list-group list-group-flush">
+                                    @foreach (var transport in Model.TransportFacilities)
+                                    {
+                                        <li class="list-group-item d-flex justify-content-between align-items-start">
+                                            <div class="ms-2 me-auto">
+                                                <div class="fw-bold">@transport.Name</div>
+                                                @transport.Description - @transport.LineNumber
+                                            </div>
+                                            <span class="badge bg-primary rounded-pill">@transport.DistanceToStop м</span>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <div class="text-center py-4">
+                                    <i class="bi bi-sign-intersection fs-1 text-muted"></i>
+                                    <p class="mt-2">Няма въведени транспортни връзки</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rankings Tab -->
+        <div class="tab-pane fade" id="rankings" role="tabpanel" aria-labelledby="rankings-tab">
+            <h5 class="mb-4">Исторически данни за класиранията</h5>
+
+            @if (Model.Rankings.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Година</th>
+                                <th>Профил</th>
+                                <th>Минимален бал</th>
+                                <th>Кръг</th>
+                                <th>Приети ученици</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ranking in Model.Rankings)
+                            {
+                                <tr>
+                                    <td>@ranking.Year</td>
+                                    <td>
+                                        @if (ranking.ProfileId.HasValue)
+                                        {
+                                            var profile = Model.Profiles.FirstOrDefault(p => p.Id == ranking.ProfileId.Value);
+                                            @(profile?.Name ?? "Неизвестен профил")
+                                        }
+                                        else
+                                        {
+                                            <span>Общо за училището</span>
+                                        }
+                                    </td>
+                                    <td>@ranking.MinimumScore.ToString("0.00")</td>
+                                    <td>@ranking.Round</td>
+                                    <td>@ranking.StudentsAdmitted</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-bar-chart fs-1 text-muted"></i>
+                    <h4 class="mt-3">Няма налични данни за класиранията</h4>
+                    <p class="text-muted">Информацията все още не е добавена.</p>
+                </div>
+            }
+        </div>
+
+        <!-- Reviews Tab -->
+        <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5 class="mb-4">Отзиви от потребители</h5>
+
+                    @if (Model.Reviews.Any())
+                    {
+                        foreach (var review in Model.Reviews)
+                        {
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <div>
+                                            <h6 class="card-subtitle mb-2">@review.User?.FirstName @review.User?.LastName</h6>
+                                            <small class="text-muted">@review.CreatedAt.ToString("dd.MM.yyyy")</small>
+                                        </div>
+                                        <div class="rating">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="bi @(i <= review.Rating ? "bi-star-fill" : "bi-star")" style="color: #ffc107;"></i>
+                                            }
+                                        </div>
+                                    </div>
+                                    <p class="card-text">@review.Content</p>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-chat fs-1 text-muted"></i>
+                            <h4 class="mt-3">Няма отзиви</h4>
+                            <p class="text-muted">Бъди първият, който ще сподели мнение за това училище.</p>
+                        </div>
+                    }
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card sticky-top" style="top: 1rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">Напиши отзив</h5>
+
+                            @if (User.Identity?.IsAuthenticated ?? false)
+                            {
+                                <form asp-controller="Reviews" asp-action="Create" method="post">
+                                    <input type="hidden" name="SchoolId" value="@Model.Id" />
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Оценка</label>
+                                        <div class="rating-input">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <input type="radio" id="star@i" name="Rating" value="@i" class="d-none" />
+                                                <label for="star@i" class="fs-3 me-1" style="cursor:pointer; color: #e2e2e2;">★</label>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Коментар</label>
+                                        <textarea class="form-control" name="Content" rows="4" required></textarea>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary w-100">Публикувай отзив</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <div class="text-center py-3">
+                                    <p>Трябва да сте влезли в профила си, за да публикувате отзив</p>
+                                    <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-primary">Вход</a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Rating input functionality
+            const ratingLabels = document.querySelectorAll('.rating-input label');
+            const ratingInputs = document.querySelectorAll('.rating-input input');
+
+            ratingLabels.forEach(label => {
+                label.addEventListener('mouseover', function() {
+                    const currentValue = this.getAttribute('for').replace('star', '');
+
+                    ratingLabels.forEach(lbl => {
+                        const lblValue = lbl.getAttribute('for').replace('star', '');
+                        lbl.style.color = lblValue <= currentValue ? '#ffc107' : '#e2e2e2';
+                    });
+                });
+
+                label.addEventListener('click', function() {
+                    const currentValue = this.getAttribute('for').replace('star', '');
+
+                    ratingInputs.forEach(input => {
+                        const inputValue = input.getAttribute('id').replace('star', '');
+                        if (inputValue === currentValue) {
+                            input.checked = true;
+                        }
+                    });
+                });
+            });
+
+            const ratingContainer = document.querySelector('.rating-input');
+            if (ratingContainer) {
+                ratingContainer.addEventListener('mouseout', function() {
+                    const checkedInput = document.querySelector('.rating-input input:checked');
+
+                    if (checkedInput) {
+                        const checkedValue = checkedInput.getAttribute('id').replace('star', '');
+
+                        ratingLabels.forEach(lbl => {
+                            const lblValue = lbl.getAttribute('for').replace('star', '');
+                            lbl.style.color = lblValue <= checkedValue ? '#ffc107' : '#e2e2e2';
+                        });
+                    } else {
+                        ratingLabels.forEach(lbl => {
+                            lbl.style.color = '#e2e2e2';
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+}

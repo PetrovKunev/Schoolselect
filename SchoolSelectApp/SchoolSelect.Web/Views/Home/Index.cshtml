@@ -1,8 +1,165 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model SchoolSelect.Web.ViewModels.HomeViewModel
+@{
+    ViewData["Title"] = "Начална страница";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <h1 class="display-4 fw-bold">Открий най-подходящото училище след 7 клас</h1>
+                <p class="lead mt-3">
+                    Анализирай, сравни и избери най-доброто училище според твоите оценки, резултати от НВО и лични предпочитания.
+                </p>
+                <div class="mt-4">
+                    @if (Model.IsAuthenticated)
+                    {
+                        <a asp-controller="UserGrades" asp-action="Create" class="btn btn-success btn-lg">Въведи оценки</a>
+                    }
+                    else
+                    {
+                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-success btn-lg">Започни сега</a>
+                    }
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card p-4 rounded shadow-sm bg-light">
+                    <div class="text-center">
+                        <h5>SchoolSelect включва:</h5>
+                        <div class="d-flex justify-content-between mt-3">
+                            <div>
+                                <div class="fs-1 fw-bold text-primary">@Model.TotalSchoolsCount</div>
+                                <div>училища</div>
+                            </div>
+                            <div>
+                                <div class="fs-1 fw-bold text-primary">@Model.TotalProfilesCount</div>
+                                <div>профила</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="features-section py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Как работи SchoolSelect?</h2>
+
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon bg-primary text-white rounded-circle mb-3">
+                            <span class="fs-4">1</span>
+                        </div>
+                        <h5 class="card-title">Въведи своите оценки</h5>
+                        <p class="card-text">Добави своите оценки и резултати от НВО</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon bg-primary text-white rounded-circle mb-3">
+                            <span class="fs-4">2</span>
+                        </div>
+                        <h5 class="card-title">Избери критерии</h5>
+                        <p class="card-text">Задай своите приоритети и предпочитания</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon bg-primary text-white rounded-circle mb-3">
+                            <span class="fs-4">3</span>
+                        </div>
+                        <h5 class="card-title">Получи препоръки</h5>
+                        <p class="card-text">Разгледай препоръчаните училища според твоя бал</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.TopRatedSchools.Any())
+{
+    <div class="top-schools-section py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-4">Най-високо оценени училища</h2>
+
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                @foreach (var school in Model.TopRatedSchools)
+                {
+                    <div class="col">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">@school.Name</h5>
+                                <p class="card-text mb-1">
+                                    <i class="bi bi-geo-alt"></i> @school.District, @school.City
+                                </p>
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="rating me-2">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <i class="bi @(i <= Math.Round(school.AverageRating) ? "bi-star-fill" : "bi-star")" style="color: #ffc107;"></i>
+                                        }
+                                    </div>
+                                    <span>@school.AverageRating.ToString("0.0") (@school.ReviewsCount отзива)</span>
+                                </div>
+
+                                @if (school.ProfileTypes.Any())
+                                {
+                                    <p class="card-text mb-1">
+                                        <strong>Профили:</strong> @string.Join(", ", school.ProfileTypes.Take(3))
+                                        @if (school.ProfileTypes.Count > 3)
+                                        {
+                                            <span>и още @(school.ProfileTypes.Count - 3)</span>
+                                        }
+                                    </p>
+                                }
+
+                                @if (school.MinimumScore.HasValue)
+                                {
+                                    <p class="card-text">
+                                        <strong>Минимален бал:</strong> @school.MinimumScore.Value.ToString("0.00")
+                                    </p>
+                                }
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0">
+                                <a asp-controller="Schools" asp-action="Details" asp-route-id="@school.Id" class="btn btn-outline-primary w-100">Детайли</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="text-center mt-4">
+                <a asp-controller="Schools" asp-action="Index" class="btn btn-outline-primary">Виж всички училища</a>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="call-to-action-section py-5 text-center">
+    <div class="container">
+        <h2 class="mb-3">Готов ли си да избереш училище?</h2>
+        <p class="lead mb-4">Започни сега и намери най-подходящото училище според твоите резултати и предпочитания</p>
+
+        @if (Model.IsAuthenticated)
+        {
+            <a asp-controller="UserGrades" asp-action="Create" class="btn btn-lg btn-success">Въведи оценки</a>
+            <a asp-controller="Schools" asp-action="Index" class="btn btn-lg btn-outline-primary ms-2">Разгледай училища</a>
+        }
+        else
+        {
+            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-lg btn-success">Създай профил</a>
+            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-lg btn-outline-primary ms-2">Вход</a>
+        }
+    </div>
 </div>

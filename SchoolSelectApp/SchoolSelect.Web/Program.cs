@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using SchoolSelect.Data.Models;
 using SchoolSelect.Repositories;
 using SchoolSelect.Repositories.Interfaces;
+using SchoolSelect.Services.Implementations;
+using SchoolSelect.Services.Interfaces;
 using SchoolSelect.Web.Data;
 
 namespace SchoolSelect.Web
@@ -48,6 +50,7 @@ namespace SchoolSelect.Web
             builder.Services.AddScoped<IUserGradesRepository, UserGradesRepository>();
             builder.Services.AddScoped<IComparisonSetRepository, ComparisonSetRepository>();
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+            builder.Services.AddScoped<IHomeService, HomeService>();
 
             // Регистриране на Unit of Work
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

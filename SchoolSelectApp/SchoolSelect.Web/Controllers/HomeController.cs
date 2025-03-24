@@ -1,31 +1,37 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using SchoolSelect.Services.Interfaces;
 using SchoolSelect.Web.Models;
 
-namespace SchoolSelect.Web.Controllers;
-
-public class HomeController : Controller
+namespace SchoolSelect.Web.Controllers
 {
-    private readonly ILogger<HomeController> _logger;
-
-    public HomeController(ILogger<HomeController> logger)
+    public class HomeController : Controller
     {
-        _logger = logger;
-    }
+        private readonly ILogger<HomeController> _logger;
+        private readonly IHomeService _homeService;
 
-    public IActionResult Index()
-    {
-        return View();
-    }
+        public HomeController(ILogger<HomeController> logger, IHomeService homeService)
+        {
+            _logger = logger;
+            _homeService = homeService;
+        }
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
+        public async Task<IActionResult> Index()
+        {
+            var model = await _homeService.GetHomePageDataAsync();
+            model.IsAuthenticated = User.Identity?.IsAuthenticated ?? false;
+            return View(model);
+        }
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
     }
 }
