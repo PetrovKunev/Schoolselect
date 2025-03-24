@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SchoolSelect.Common;
 using SchoolSelect.Data.Models;
 using SchoolSelect.Repositories.Interfaces;
 using SchoolSelect.Web.Data;
@@ -32,6 +33,18 @@ namespace SchoolSelect.Repositories
         {
             return await AppContext.SchoolFacilities
                 .Where(f => f.FacilityType == facilityType)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Връща всички транспортни връзки около училището
+        /// </summary>
+        /// <param name="schoolId"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<TransportFacility>> GetTransportFacilitiesBySchoolIdAsync(int schoolId)
+        {
+            return await AppContext.Set<TransportFacility>()
+                .Where(f => f.SchoolId == schoolId && f.FacilityType == FacilityTypes.Transport)
                 .ToListAsync();
         }
     }

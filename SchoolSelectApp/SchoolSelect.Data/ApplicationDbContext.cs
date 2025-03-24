@@ -98,7 +98,8 @@ namespace SchoolSelect.Web.Data
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            
+            builder.Entity<TransportFacility>().ToTable("SchoolFacilities");
+
         }
     }
 }

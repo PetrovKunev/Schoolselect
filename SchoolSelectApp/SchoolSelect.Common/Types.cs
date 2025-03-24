@@ -81,5 +81,41 @@
         /// Общежитие
         /// </summary>
         public const string Dormitory = "Dormitory";
+
+        /// <summary>
+        /// Транспортна връзка
+        /// </summary>
+        public const string Transport = "Transport";
+    }
+
+    /// <summary>
+    /// Видове транспорт
+    /// </summary>
+    public static class TransportModes
+    {
+        /// <summary>
+        /// Метро
+        /// </summary>
+        public const string Metro = "Metro";
+
+        /// <summary>
+        /// Автобус
+        /// </summary>
+        public const string Bus = "Bus";
+
+        /// <summary>
+        /// Трамвай
+        /// </summary>
+        public const string Tram = "Tram";
+
+        /// <summary>
+        /// Тролейбус
+        /// </summary>
+        public const string Trolley = "Trolley";
+
+        /// <summary>
+        /// Влак
+        /// </summary>
+        public const string Train = "Train";
     }
 }

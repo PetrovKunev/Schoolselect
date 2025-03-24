@@ -50,6 +50,12 @@
             public const int TypeMaxLength = 50;
         }
 
+        public static class TransportFacility
+        {
+            public const int TransportModeMaxLength = 50;
+            public const int LineNumberMaxLength = 20;
+        }
+
         public static class Review
         {
             public const int ContentMaxLength = 2000;

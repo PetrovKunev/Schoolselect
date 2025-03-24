@@ -17,5 +17,12 @@ namespace SchoolSelect.Repositories.Interfaces
         /// <param name="facilityType">Тип на съоръжението</param>
         /// <returns>Списък със съоръжения от посочения тип</returns>
         Task<IEnumerable<SchoolFacility>> GetFacilitiesByTypeAsync(string facilityType);
+
+        /// <summary>
+        /// Връща всички транспортни връзки около училището
+        /// </summary>
+        /// <param name="schoolId"></param>
+        /// <returns></returns>
+        Task<IEnumerable<TransportFacility>> GetTransportFacilitiesBySchoolIdAsync(int schoolId);
     }
 }
