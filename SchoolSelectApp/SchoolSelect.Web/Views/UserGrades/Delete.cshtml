@@ -1,0 +1,118 @@
+﻿@model SchoolSelect.Web.ViewModels.UserGradesViewModel
+@{
+    ViewData["Title"] = "Изтриване на набор от оценки";
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Начало</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Моите оценки</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Изтриване</li>
+                </ol>
+            </nav>
+            <h1>@ViewData["Title"]</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i> Сигурни ли сте, че искате да изтриете този набор от оценки?
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">@Model.ConfigurationName</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6 class="card-subtitle mb-2">Годишни оценки</h6>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Български език</span>
+                                            <span class="badge bg-primary rounded-pill">@Model.BulgarianGrade.ToString("0.00")</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Математика</span>
+                                            <span class="badge bg-primary rounded-pill">@Model.MathGrade.ToString("0.00")</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="card-subtitle mb-2">НВО (точки)</h6>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Български език</span>
+                                            <span class="badge bg-success rounded-pill">@Model.BulgarianExamPoints.ToString("0.00")</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>Математика</span>
+                                            <span class="badge bg-success rounded-pill">@Model.MathExamPoints.ToString("0.00")</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            @if (Model.AdditionalGrades.Any())
+                            {
+                                <h6 class="card-subtitle mb-2">Допълнителни оценки</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Предмет</th>
+                                                <th>Тип</th>
+                                                <th>Стойност</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var grade in Model.AdditionalGrades)
+                                            {
+                                                <tr>
+                                                    <td>@grade.SubjectName</td>
+                                                    <td>
+                                                        @if (grade.ComponentType == 1)
+                                                        {
+                                                            <span>Годишна оценка</span>
+                                                        }
+                                                        else if (grade.ComponentType == 2)
+                                                        {
+                                                            <span>НВО</span>
+                                                        }
+                                                        else if (grade.ComponentType == 3)
+                                                        {
+                                                            <span>Приемен изпит</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span>Друго</span>
+                                                        }
+                                                    </td>
+                                                    <td>@grade.Value.ToString("0.00")</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <form asp-action="Delete">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex justify-content-end">
+                            <a asp-action="Index" class="btn btn-outline-secondary me-2">Отказ</a>
+                            <button type="submit" class="btn btn-danger">Изтрий</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

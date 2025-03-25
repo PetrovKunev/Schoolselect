@@ -1,0 +1,166 @@
+﻿@model SchoolSelect.Web.ViewModels.SchoolChanceViewModel
+@{
+    ViewData["Title"] = "Шанс за прием";
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Начало</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Моите оценки</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Calculate">Изчисли шанс</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Резултат</li>
+                </ol>
+            </nav>
+            <h1>Шанс за прием в @Model.School.Name</h1>
+            <p class="lead">Резултати от изчислението според вашите оценки</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Информация за училището</h5>
+                            <ul class="list-unstyled">
+                                <li><strong>Име:</strong> @Model.School.Name</li>
+                                <li><strong>Район:</strong> @Model.School.District</li>
+                                <li><strong>Град:</strong> @Model.School.City</li>
+                                <li>
+                                    <strong>Рейтинг:</strong>
+                                    <span class="rating">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <i class="bi @(i <= Math.Round(Model.School.AverageRating) ? "bi-star-fill" : "bi-star")" style="color: #ffc107;"></i>
+                                        }
+                                        @Model.School.AverageRating.ToString("0.0") (@Model.School.ReviewsCount отзива)
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Използвани оценки</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Годишни оценки</h6>
+                                    <ul class="list-unstyled">
+                                        <li><strong>БЕЛ:</strong> @Model.UserGrades.BulgarianGrade.ToString("0.00")</li>
+                                        <li><strong>Математика:</strong> @Model.UserGrades.MathGrade.ToString("0.00")</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>НВО (точки)</h6>
+                                    <ul class="list-unstyled">
+                                        <li><strong>БЕЛ:</strong> @Model.UserGrades.BulgarianExamPoints.ToString("0.00")</li>
+                                        <li><strong>Математика:</strong> @Model.UserGrades.MathExamPoints.ToString("0.00")</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h4 class="mb-3">Шансове по профили</h4>
+
+            @foreach (var profile in Model.ProfileChances)
+            {
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="card-title">@profile.ProfileName</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="mb-1"><strong>Изчислен бал:</strong> @profile.CalculatedScore.ToString("0.00")</p>
+                                        <p class="mb-1"><strong>Минимален бал (предх. година):</strong> @profile.MinimumScoreLastYear.ToString("0.00")</p>
+                                        <p class="mb-0">
+                                            <strong>Разлика:</strong>
+                                            @{
+                                                var difference = profile.CalculatedScore - profile.MinimumScoreLastYear;
+                                                var differenceClass = difference >= 0 ? "text-success" : "text-danger";
+                                                var differenceSign = difference >= 0 ? "+" : "";
+                                            }
+                                            <span class="@differenceClass">@(differenceSign + difference.ToString("0.00"))</span>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-1"><strong>Места в профила:</strong> @profile.AvailablePlaces</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                @{
+                                    string chanceColorClass = "bg-danger";
+                                    string chanceText = "Нисък шанс";
+
+                                    if (profile.ChancePercentage >= 90)
+                                    {
+                                        chanceColorClass = "bg-success";
+                                        chanceText = "Много висок шанс";
+                                    }
+                                    else if (profile.ChancePercentage >= 75)
+                                    {
+                                        chanceColorClass = "bg-success";
+                                        chanceText = "Висок шанс";
+                                    }
+                                    else if (profile.ChancePercentage >= 50)
+                                    {
+                                        chanceColorClass = "bg-warning";
+                                        chanceText = "Среден шанс";
+                                    }
+                                    else if (profile.ChancePercentage >= 25)
+                                    {
+                                        chanceColorClass = "bg-danger";
+                                        chanceText = "Нисък шанс";
+                                    }
+                                }
+
+                                <div class="chance-circle @chanceColorClass">
+                                    <span class="chance-percentage">@profile.ChancePercentage.ToString("0")%</span>
+                                </div>
+                                <p class="mt-2 mb-0">@chanceText</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="alert alert-info mt-4" role="alert">
+                <i class="bi bi-info-circle"></i> Шансовете са изчислени на база предишни класирания и не гарантират прием.
+                Формулите за балообразуване и минималният бал могат да се променят всяка година.
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-action="Calculate" asp-route-schoolId="@Model.School.Id" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Изчисли с други оценки
+                </a>
+                <a asp-controller="Schools" asp-action="Details" asp-route-id="@Model.School.Id" class="btn btn-primary">
+                    <i class="bi bi-building"></i> Виж училището
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .chance-circle {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        color: white;
+    }
+
+    .chance-percentage {
+        font-size: 1.8rem;
+        font-weight: bold;
+    }
+</style>

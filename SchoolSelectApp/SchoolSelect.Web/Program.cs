@@ -50,7 +50,10 @@ namespace SchoolSelect.Web
             builder.Services.AddScoped<IUserGradesRepository, UserGradesRepository>();
             builder.Services.AddScoped<IComparisonSetRepository, ComparisonSetRepository>();
             builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
+            // Register application services
             builder.Services.AddScoped<IHomeService, HomeService>();
+            builder.Services.AddScoped<IUserGradesService, UserGradesService>();
 
             // Регистриране на Unit of Work
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

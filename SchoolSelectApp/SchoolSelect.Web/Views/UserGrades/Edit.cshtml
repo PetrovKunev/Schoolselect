@@ -1,0 +1,254 @@
+﻿@model SchoolSelect.Web.ViewModels.UserGradesInputModel
+@{
+    ViewData["Title"] = "Редактиране на оценки";
+    var subjectCodes = ViewBag.SubjectCodes as Dictionary<string, string>;
+    var componentTypes = ViewBag.ComponentTypes as Dictionary<int, string>;
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Начало</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Моите оценки</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Редактиране</li>
+                </ol>
+            </nav>
+            <h1>@ViewData["Title"]</h1>
+            <p class="lead">Редактирайте вашите оценки и резултати от изпити</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="mb-4">
+                            <label asp-for="ConfigurationName" class="form-label"></label>
+                            <input asp-for="ConfigurationName" class="form-control" />
+                            <span asp-validation-for="ConfigurationName" class="text-danger"></span>
+                        </div>
+
+                        <h5 class="mb-3">Основни предмети</h5>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Български език и литература</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label asp-for="BulgarianGrade" class="form-label"></label>
+                                            <input asp-for="BulgarianGrade" class="form-control" type="number" step="0.01" min="2" max="6" />
+                                            <span asp-validation-for="BulgarianGrade" class="text-danger"></span>
+                                        </div>
+                                        <div class="mb-0">
+                                            <label asp-for="BulgarianExamPoints" class="form-label"></label>
+                                            <input asp-for="BulgarianExamPoints" class="form-control" type="number" step="0.01" min="0" max="100" />
+                                            <span asp-validation-for="BulgarianExamPoints" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Математика</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label asp-for="MathGrade" class="form-label"></label>
+                                            <input asp-for="MathGrade" class="form-control" type="number" step="0.01" min="2" max="6" />
+                                            <span asp-validation-for="MathGrade" class="text-danger"></span>
+                                        </div>
+                                        <div class="mb-0">
+                                            <label asp-for="MathExamPoints" class="form-label"></label>
+                                            <input asp-for="MathExamPoints" class="form-control" type="number" step="0.01" min="0" max="100" />
+                                            <span asp-validation-for="MathExamPoints" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">Допълнителни предмети</h5>
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="addSubjectBtn">
+                                    <i class="bi bi-plus-circle"></i> Добави предмет
+                                </button>
+                            </div>
+
+                            <div id="additionalGradesContainer">
+                                @for (int i = 0; i < Model.AdditionalGrades.Count; i++)
+                                {
+                                    var grade = Model.AdditionalGrades[i];
+                                    <div class="card mb-3 additional-grade-item">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="mb-0">Допълнителен предмет</h6>
+                                                <button type="button" class="btn btn-outline-danger btn-sm remove-subject-btn">
+                                                    <i class="bi bi-trash"></i> Премахни
+                                                </button>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-4 mb-3">
+                                                    <label class="form-label">Предмет</label>
+                                                    <select class="form-select subject-code-select" name="AdditionalGrades[@i].SubjectCode" required>
+                                                        <option value="">-- Изберете предмет --</option>
+                                                        @foreach (var subject in subjectCodes)
+                                                        {
+                                                            <option value="@subject.Key" selected="@(subject.Key == grade.SubjectCode)">@subject.Value</option>
+                                                        }
+                                                    </select>
+                                                    <input type="hidden" class="subject-name-input" name="AdditionalGrades[@i].SubjectName" value="@grade.SubjectName" />
+                                                </div>
+                                                <div class="col-md-4 mb-3">
+                                                    <label class="form-label">Тип компонент</label>
+                                                    <select class="form-select component-type-select" name="AdditionalGrades[@i].ComponentType" required>
+                                                        <option value="">-- Изберете тип --</option>
+                                                        @foreach (var type in componentTypes)
+                                                        {
+                                                            <option value="@type.Key" selected="@(type.Key == grade.ComponentType)">@type.Value</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4 mb-3">
+                                                    <label class="form-label">Стойност</label>
+                                                    <input type="number" step="0.01" min="0" max="100" class="form-control value-input" name="AdditionalGrades[@i].Value" value="@grade.Value" required />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary me-2">Отказ</a>
+                            <button type="submit" class="btn btn-success">Запази</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Темплейт за допълнителен предмет -->
+<template id="additionalGradeTemplate">
+    <div class="card mb-3 additional-grade-item">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0">Допълнителен предмет</h6>
+                <button type="button" class="btn btn-outline-danger btn-sm remove-subject-btn">
+                    <i class="bi bi-trash"></i> Премахни
+                </button>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Предмет</label>
+                    <select class="form-select subject-code-select" data-input-name="AdditionalGrades[{index}].SubjectCode" required>
+                        <option value="">-- Изберете предмет --</option>
+                        @foreach (var subject in subjectCodes)
+                        {
+                            <option value="@subject.Key">@subject.Value</option>
+                        }
+                    </select>
+                    <input type="hidden" class="subject-name-input" data-input-name="AdditionalGrades[{index}].SubjectName" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Тип компонент</label>
+                    <select class="form-select component-type-select" data-input-name="AdditionalGrades[{index}].ComponentType" required>
+                        <option value="">-- Изберете тип --</option>
+                        @foreach (var type in componentTypes)
+                        {
+                            <option value="@type.Key">@type.Value</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Стойност</label>
+                    <input type="number" step="0.01" min="0" max="100" class="form-control value-input" data-input-name="AdditionalGrades[{index}].Value" required />
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const addSubjectBtn = document.getElementById('addSubjectBtn');
+            const additionalGradesContainer = document.getElementById('additionalGradesContainer');
+            const template = document.getElementById('additionalGradeTemplate');
+            const subjectNames = @Html.Raw(Json.Serialize(subjectCodes));
+
+            let indexCounter = @Model.AdditionalGrades.Count;
+
+            // Функционалност за премахване на предмет към съществуващите
+            document.querySelectorAll('.remove-subject-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.additional-grade-item').remove();
+                });
+            });
+
+            // Функция за добавяне на нов предмет
+            addSubjectBtn.addEventListener('click', function () {
+                const newItem = template.content.cloneNode(true);
+
+                // Задаване на коректните имена на полетата с текущия индекс
+                newItem.querySelectorAll('[data-input-name]').forEach(input => {
+                    const inputName = input.getAttribute('data-input-name').replace('{index}', indexCounter);
+                    input.setAttribute('name', inputName);
+                    input.setAttribute('id', inputName);
+                });
+
+                // Добавяне на функционалност за промяна на предмета
+                const subjectSelect = newItem.querySelector('.subject-code-select');
+                const subjectNameInput = newItem.querySelector('.subject-name-input');
+
+                subjectSelect.addEventListener('change', function() {
+                    const selectedSubjectCode = this.value;
+                    if (selectedSubjectCode) {
+                        subjectNameInput.value = subjectNames[selectedSubjectCode];
+                    } else {
+                        subjectNameInput.value = '';
+                    }
+                });
+
+                // Функционалност за премахване на предмет
+                const removeBtn = newItem.querySelector('.remove-subject-btn');
+                removeBtn.addEventListener('click', function() {
+                    this.closest('.additional-grade-item').remove();
+                });
+
+                additionalGradesContainer.appendChild(newItem);
+                indexCounter++;
+            });
+
+            // Обновяване на имената на предметите за съществуващите полета
+            document.querySelectorAll('.subject-code-select').forEach(select => {
+                select.addEventListener('change', function() {
+                    const selectedSubjectCode = this.value;
+                    const subjectNameInput = this.parentElement.querySelector('.subject-name-input');
+
+                    if (selectedSubjectCode) {
+                        subjectNameInput.value = subjectNames[selectedSubjectCode];
+                    } else {
+                        subjectNameInput.value = '';
+                    }
+                });
+            });
+        });
+    </script>
+}
