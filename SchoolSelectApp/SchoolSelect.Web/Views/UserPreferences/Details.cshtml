@@ -1,0 +1,188 @@
+﻿@model SchoolSelect.Web.ViewModels.UserPreferenceViewModel
+@{
+    ViewData["Title"] = Model.PreferenceName;
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Начало</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Моите предпочитания</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Детайли</li>
+                </ol>
+            </nav>
+            <h1>@Model.PreferenceName</h1>
+            <p class="lead">Детайлна информация за предпочитанието</p>
+        </div>
+        <div class="col-auto d-flex">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary me-2">
+                <i class="bi bi-pencil"></i> Редактирай
+            </a>
+            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+                <i class="bi bi-trash"></i> Изтрий
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Основна информация</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Име:</dt>
+                        <dd class="col-sm-9">@Model.PreferenceName</dd>
+
+                        <dt class="col-sm-3">Район:</dt>
+                        <dd class="col-sm-9">@Model.UserDistrict</dd>
+
+                        @if (Model.UserLatitude.HasValue && Model.UserLongitude.HasValue)
+                        {
+                            <dt class="col-sm-3">Местоположение:</dt>
+                            <dd class="col-sm-9">
+                                <div class="mb-2">@Model.UserLatitude.Value.ToString("0.000000"), @Model.UserLongitude.Value.ToString("0.000000")</div>
+                                <div class="ratio ratio-16x9" style="max-height: 300px;">
+                                    <iframe src="https://maps.google.com/maps?q=@Model.UserLatitude,@Model.UserLongitude&z=15&output=embed"
+                                            allowfullscreen="" loading="lazy"></iframe>
+                                </div>
+                            </dd>
+                        }
+
+                        <dt class="col-sm-3">Дата на създаване:</dt>
+                        <dd class="col-sm-9">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Предпочитани профили</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.PreferredProfiles.Any())
+                    {
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            @foreach (var profile in Model.PreferredProfiles)
+                            {
+                                <div class="badge bg-primary p-2 fs-6">
+                                    <i class="bi bi-mortarboard"></i> @profile
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">Няма избрани предпочитани профили.</p>
+                    }
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">Тегла на критериите</h5>
+                </div>
+                <div class="card-body">
+                    @{
+                        var criteriaNames = new Dictionary<string, string>
+                    {
+                    { "Proximity", "Близост" },
+                    { "Rating", "Рейтинг" },
+                    { "ScoreMatch", "Съответствие с бал" },
+                    { "ProfileMatch", "Профил" },
+                    { "Facilities", "Допълнителни възможности" }
+                    };
+
+                        var criteriaIcons = new Dictionary<string, string>
+                    {
+                    { "Proximity", "bi-geo-alt" },
+                    { "Rating", "bi-star" },
+                    { "ScoreMatch", "bi-check-circle" },
+                    { "ProfileMatch", "bi-mortarboard" },
+                    { "Facilities", "bi-buildings" }
+                    };
+                    }
+
+                    <div class="row">
+                        @foreach (var criteria in Model.CriteriaWeights)
+                        {
+                            <div class="col-md-6 mb-3">
+                                <div class="criteria-card p-3 border rounded">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi @(criteriaIcons.ContainsKey(criteria.Key) ? criteriaIcons[criteria.Key] : "bi-check") fs-4 me-2"></i>
+                                        <h6 class="mb-0">@(criteriaNames.ContainsKey(criteria.Key) ? criteriaNames[criteria.Key] : criteria.Key)</h6>
+                                    </div>
+                                    <div class="progress" style="height: 10px;">
+                                        <div class="progress-bar" role="progressbar" style="width: @(criteria.Value * 20)%;"
+                                             aria-valuenow="@criteria.Value" aria-valuemin="0" aria-valuemax="5"></div>
+                                    </div>
+                                    <div class="text-end mt-1">
+                                        <small class="text-muted">@criteria.Value / 5</small>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card bg-light mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-search"></i> Препоръки</h5>
+                </div>
+                <div class="card-body">
+                    <p>Използвайте това предпочитание за намиране на училища, които отговарят най-добре на вашите критерии.</p>
+                    <a asp-controller="Schools" asp-action="Recommendations" asp-route-preferenceId="@Model.Id" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Намери препоръчани училища
+                    </a>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Какво означават критериите?</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <strong><i class="bi bi-geo-alt"></i> Близост</strong>
+                            <p class="mb-0 text-muted">Колко близо е училището до вашия адрес</p>
+                        </li>
+                        <li class="list-group-item">
+                            <strong><i class="bi bi-star"></i> Рейтинг</strong>
+                            <p class="mb-0 text-muted">Общ рейтинг на училището според потребителски отзиви</p>
+                        </li>
+                        <li class="list-group-item">
+                            <strong><i class="bi bi-check-circle"></i> Съответствие с бал</strong>
+                            <p class="mb-0 text-muted">Колко близо е вашият очакван бал до минималния бал за прием</p>
+                        </li>
+                        <li class="list-group-item">
+                            <strong><i class="bi bi-mortarboard"></i> Профил</strong>
+                            <p class="mb-0 text-muted">Дали училището предлага предпочитаните от вас профили</p>
+                        </li>
+                        <li class="list-group-item">
+                            <strong><i class="bi bi-buildings"></i> Допълнителни възможности</strong>
+                            <p class="mb-0 text-muted">Спортни съоръжения, лаборатории и други специални възможности</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .criteria-card {
+        transition: all 0.2s ease;
+    }
+
+        .criteria-card:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+        }
+</style>

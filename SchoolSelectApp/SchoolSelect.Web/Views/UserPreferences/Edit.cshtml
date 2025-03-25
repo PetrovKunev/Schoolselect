@@ -1,0 +1,214 @@
+﻿@model SchoolSelect.Web.ViewModels.UserPreferenceInputModel
+@{
+    ViewData["Title"] = "Редактиране на предпочитание";
+    var districts = ViewBag.Districts as List<string>;
+    var profileTypes = ViewBag.ProfileTypes as Dictionary<string, string>;
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Начало</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Моите предпочитания</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Редактиране</li>
+                </ol>
+            </nav>
+            <h1>@ViewData["Title"]</h1>
+            <p class="lead">Актуализирайте вашите предпочитания, за да получите по-подходящи препоръки</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="PreferenceName" class="form-label"></label>
+                            <input asp-for="PreferenceName" class="form-control" placeholder="Въведете име на предпочитанието" />
+                            <span asp-validation-for="PreferenceName" class="text-danger"></span>
+                            <div class="form-text">Например: "Моите предпочитания 2025", "Математически профил" и т.н.</div>
+                        </div>
+
+                        <h4 class="mt-4 mb-3">Местоположение</h4>
+
+                        <div class="mb-3">
+                            <label asp-for="UserDistrict" class="form-label"></label>
+                            <select asp-for="UserDistrict" class="form-select">
+                                <option value="">Изберете район</option>
+                                @foreach (var district in districts)
+                                {
+                                    <option value="@district">@district</option>
+                                }
+                            </select>
+                            <span asp-validation-for="UserDistrict" class="text-danger"></span>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="UserLatitude" class="form-label"></label>
+                                <input asp-for="UserLatitude" class="form-control" placeholder="Например: 42.6977" />
+                                <span asp-validation-for="UserLatitude" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="UserLongitude" class="form-label"></label>
+                                <input asp-for="UserLongitude" class="form-control" placeholder="Например: 23.3219" />
+                                <span asp-validation-for="UserLongitude" class="text-danger"></span>
+                            </div>
+                            <div class="col-12 mt-2">
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle"></i> Можете да оставите координатите празни, ако не желаете да търсите по точно местоположение.
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="mt-4 mb-3">Предпочитани профили</h4>
+                        <div class="mb-3">
+                            <div class="form-text mb-2">Изберете профилите, които ви интересуват:</div>
+                            <div class="row">
+                                @foreach (var profileType in profileTypes)
+                                {
+                                    var isChecked = Model.PreferredProfiles.Contains(profileType.Key);
+                                    <div class="col-md-6 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="PreferredProfiles" value="@profileType.Key" id="profile_@profileType.Key" @(isChecked ? "checked" : "")>
+                                            <label class="form-check-label" for="profile_@profileType.Key">
+                                                @profileType.Value
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <h4 class="mt-4 mb-3">Важност на критериите</h4>
+                        <div class="mb-3">
+                            <div class="form-text mb-2">Задайте колко важен е всеки критерий за вас (от 0 до 5):</div>
+
+                            <div class="mb-3">
+                                <label asp-for="ProximityWeight" class="form-label"></label>
+                                <div class="range-input-group">
+                                    <input type="range" class="form-range" min="0" max="5" step="1" asp-for="ProximityWeight" id="proximityRange">
+                                    <div class="range-value"><span id="proximityValue">@Model.ProximityWeight</span>/5</div>
+                                </div>
+                                <div class="form-text">Колко важно е училището да е близо до вашия адрес?</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="RatingWeight" class="form-label"></label>
+                                <div class="range-input-group">
+                                    <input type="range" class="form-range" min="0" max="5" step="1" asp-for="RatingWeight" id="ratingRange">
+                                    <div class="range-value"><span id="ratingValue">@Model.RatingWeight</span>/5</div>
+                                </div>
+                                <div class="form-text">Колко важни са оценките и отзивите от други потребители?</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="ScoreMatchWeight" class="form-label"></label>
+                                <div class="range-input-group">
+                                    <input type="range" class="form-range" min="0" max="5" step="1" asp-for="ScoreMatchWeight" id="scoreMatchRange">
+                                    <div class="range-value"><span id="scoreMatchValue">@Model.ScoreMatchWeight</span>/5</div>
+                                </div>
+                                <div class="form-text">Колко важно е съответствието между вашия очакван бал и минималния бал за прием?</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="ProfileMatchWeight" class="form-label"></label>
+                                <div class="range-input-group">
+                                    <input type="range" class="form-range" min="0" max="5" step="1" asp-for="ProfileMatchWeight" id="profileMatchRange">
+                                    <div class="range-value"><span id="profileMatchValue">@Model.ProfileMatchWeight</span>/5</div>
+                                </div>
+                                <div class="form-text">Колко важно е наличието на избраните от вас профили?</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="FacilitiesWeight" class="form-label"></label>
+                                <div class="range-input-group">
+                                    <input type="range" class="form-range" min="0" max="5" step="1" asp-for="FacilitiesWeight" id="facilitiesRange">
+                                    <div class="range-value"><span id="facilitiesValue">@Model.FacilitiesWeight</span>/5</div>
+                                </div>
+                                <div class="form-text">Колко важни са допълнителните възможности (спортни съоръжения, лаборатории и т.н.)?</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Отказ</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Запази промените
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card bg-light mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Редактиране на предпочитания</h5>
+                </div>
+                <div class="card-body">
+                    <p>Промяната на вашите предпочитания ще повлияе на:</p>
+                    <ul>
+                        <li>Персонализираните препоръки за училища</li>
+                        <li>Подреждането на резултатите при търсене</li>
+                        <li>Резултатите в страницата за препоръки</li>
+                    </ul>
+                    <p>Промените ще влязат в сила незабавно след запазване.</p>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Съвет</h5>
+                </div>
+                <div class="card-body">
+                    <p>Не можете да решите кои критерии са най-важни за вас?</p>
+                    <p>Помислете за следните въпроси:</p>
+                    <ul>
+                        <li>Готови ли сте да пътувате до по-далечно училище за предпочитан профил?</li>
+                        <li>Колко важно е училището да има добри отзиви от други ученици и родители?</li>
+                        <li>Има ли конкретни извънкласни дейности, които търсите в училище?</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Актуализиране на стойностите на плъзгачите
+        document.querySelectorAll('.form-range').forEach(range => {
+            range.addEventListener('input', function() {
+                const valueId = this.id.replace('Range', 'Value');
+                document.getElementById(valueId).textContent = this.value;
+            });
+        });
+    </script>
+
+    <style>
+        .range-input-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .form-range {
+            flex-grow: 1;
+        }
+
+        .range-value {
+            min-width: 40px;
+            text-align: right;
+            margin-left: 10px;
+        }
+    </style>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

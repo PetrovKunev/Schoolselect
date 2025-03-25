@@ -1,0 +1,90 @@
+﻿@model SchoolSelect.Web.ViewModels.UserPreferenceViewModel
+@{
+    ViewData["Title"] = "Изтриване на предпочитание";
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Начало</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Моите предпочитания</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Изтриване</li>
+                </ol>
+            </nav>
+            <h1>@ViewData["Title"]</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle-fill"></i> Внимание</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-4">Сигурни ли сте, че искате да изтриете предпочитанието "<strong>@Model.PreferenceName</strong>"?</p>
+
+                    <div class="alert alert-warning">
+                        <i class="bi bi-info-circle"></i> Това действие е необратимо и не може да бъде отменено.
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Детайли на предпочитанието</h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-4">Район:</dt>
+                                <dd class="col-sm-8">@Model.UserDistrict</dd>
+
+                                @if (Model.UserLatitude.HasValue && Model.UserLongitude.HasValue)
+                                {
+                                    <dt class="col-sm-4">Географска ширина:</dt>
+                                    <dd class="col-sm-8">@Model.UserLatitude.Value.ToString("0.000000")</dd>
+
+                                    <dt class="col-sm-4">Географска дължина:</dt>
+                                    <dd class="col-sm-8">@Model.UserLongitude.Value.ToString("0.000000")</dd>
+                                }
+
+                                <dt class="col-sm-4">Предпочитани профили:</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.PreferredProfiles.Any())
+                                    {
+                                        <div class="d-flex flex-wrap gap-1">
+                                            @foreach (var profile in Model.PreferredProfiles)
+                                            {
+                                                <span class="badge bg-primary">@profile</span>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Няма избрани профили</span>
+                                    }
+                                </dd>
+
+                                <dt class="col-sm-4">Дата на създаване:</dt>
+                                <dd class="col-sm-8">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Назад
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Изтрий
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

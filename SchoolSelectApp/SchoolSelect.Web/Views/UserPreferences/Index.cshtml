@@ -1,0 +1,130 @@
+﻿@model List<SchoolSelect.Web.ViewModels.UserPreferenceViewModel>
+@{
+    ViewData["Title"] = "Моите предпочитания";
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>@ViewData["Title"]</h1>
+            <p class="lead">Управлявайте вашите предпочитания за училища</p>
+        </div>
+        <div class="col-auto">
+            <a asp-action="Create" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Добави ново предпочитание
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle"></i> Все още нямате въведени предпочитания. Добавете първия си набор от предпочитания, за да получите персонализирани препоръки.
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body text-center">
+                <h5 class="card-title">Защо да зададете предпочитания?</h5>
+                <p class="card-text">Предпочитанията ви помагат да получите по-персонализирани препоръки за училища, които отговарят на вашите нужди и интереси.</p>
+                <a asp-action="Create" class="btn btn-primary">Създай първо предпочитание</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">@item.PreferenceName</h5>
+                            <span class="badge bg-secondary">@item.CreatedAt.ToString("dd.MM.yyyy")</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <p class="card-text"><strong>Район:</strong> @item.UserDistrict</p>
+
+                                @if (item.UserLatitude.HasValue && item.UserLongitude.HasValue)
+                                {
+                                    <p class="card-text"><strong>Местоположение:</strong> @item.UserLatitude.Value.ToString("0.000000"), @item.UserLongitude.Value.ToString("0.000000")</p>
+                                }
+                            </div>
+
+                            <div class="mb-3">
+                                <h6 class="card-subtitle mb-2">Предпочитани профили</h6>
+                                @if (item.PreferredProfiles.Any())
+                                {
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach (var profile in item.PreferredProfiles)
+                                        {
+                                            <span class="badge bg-primary">@profile</span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="text-muted">Няма избрани профили</p>
+                                }
+                            </div>
+
+                            <div>
+                                <h6 class="card-subtitle mb-2">Тегла на критериите</h6>
+                                <div class="row">
+                                    @{
+                                        var criteriaNames = new Dictionary<string, string>
+                            {
+                            { "Proximity", "Близост" },
+                            { "Rating", "Рейтинг" },
+                            { "ScoreMatch", "Съответствие с бал" },
+                            { "ProfileMatch", "Профил" },
+                            { "Facilities", "Допълнителни възможности" }
+                            };
+                                    }
+
+                                    @foreach (var criteria in item.CriteriaWeights)
+                                    {
+                                        <div class="col-md-6 mb-2">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>@(criteriaNames.ContainsKey(criteria.Key) ? criteriaNames[criteria.Key] : criteria.Key)</span>
+                                                <div class="rating">
+                                                    @for (int i = 1; i <= 5; i++)
+                                                    {
+                                                        <i class="bi @(i <= criteria.Value ? "bi-star-fill" : "bi-star")" style="color: #ffc107;"></i>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm me-2">
+                                        <i class="bi bi-pencil"></i> Редактирай
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-trash"></i> Изтрий
+                                    </a>
+                                </div>
+                                <a asp-controller="Schools" asp-action="Recommendations" asp-route-preferenceId="@item.Id" class="btn btn-success btn-sm">
+                                    <i class="bi bi-search"></i> Препоръки
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

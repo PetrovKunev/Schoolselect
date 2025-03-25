@@ -54,6 +54,7 @@ namespace SchoolSelect.Web
             // Register application services
             builder.Services.AddScoped<IHomeService, HomeService>();
             builder.Services.AddScoped<IUserGradesService, UserGradesService>();
+            builder.Services.AddScoped<IUserPreferenceService, UserPreferenceService>();
 
             // Регистриране на Unit of Work
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
