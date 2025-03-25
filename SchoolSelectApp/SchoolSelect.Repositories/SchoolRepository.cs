@@ -30,18 +30,22 @@ namespace SchoolSelect.Repositories
                 .SingleOrDefaultAsync(s => s.Id == id) ?? throw new InvalidOperationException("School not found");
         }
 
-        public async Task<IEnumerable<School>> SearchSchoolsAsync(string term)
+        public async Task<IEnumerable<School>> SearchSchoolsAsync(string term, int? take = null)
         {
             if (string.IsNullOrWhiteSpace(term))
                 return await GetAllAsync();
 
             term = term.Trim().ToLower();
 
-            return await AppContext.Schools
+            var query = AppContext.Schools
                 .Where(s => s.Name.ToLower().Contains(term) ||
                             s.City.ToLower().Contains(term) ||
-                            s.District.ToLower().Contains(term))
-                .ToListAsync() ?? Enumerable.Empty<School>();
+                            s.District.ToLower().Contains(term));
+
+            if (take.HasValue)
+                query = query.Take(take.Value);
+
+            return await query.ToListAsync() ?? Enumerable.Empty<School>();
         }
 
         public async Task<IEnumerable<School>> GetSchoolsByDistrictAsync(string district)

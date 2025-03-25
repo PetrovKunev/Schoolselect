@@ -38,7 +38,7 @@ namespace SchoolSelect.Services.Implementations
             }).ToList();
         }
 
-        public async Task<UserGradesViewModel> GetUserGradeByIdAsync(int gradesId)
+        public async Task<UserGradesViewModel?> GetUserGradeByIdAsync(int gradesId)
         {
             var grades = await _unitOfWork.UserGrades.GetGradesWithAdditionalGradesAsync(gradesId);
 
@@ -117,7 +117,7 @@ namespace SchoolSelect.Services.Implementations
             userGrades.MathExamPoints = model.MathExamPoints;
 
             // Изтриване на всички стари допълнителни оценки
-            _unitOfWork.UserGrades.RemoveRange(userGrades.AdditionalGrades);
+            userGrades.AdditionalGrades.Clear();
 
             // Добавяне на нови допълнителни оценки
             if (model.AdditionalGrades != null && model.AdditionalGrades.Any())

@@ -72,6 +72,12 @@ namespace SchoolSelect.Web
                 googleOptions.ClientSecret = googleClientSecret;
             });
 
+            // Конфигуриране на JSON форматиране (camelCase за свойствата)
+            builder.Services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+            });
+
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();

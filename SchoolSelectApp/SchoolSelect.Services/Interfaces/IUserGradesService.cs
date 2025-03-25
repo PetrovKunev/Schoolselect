@@ -13,7 +13,7 @@ namespace SchoolSelect.Services.Interfaces
         /// <summary>
         /// Получава конкретен набор от оценки
         /// </summary>
-        Task<UserGradesViewModel> GetUserGradeByIdAsync(int gradesId);
+        Task<UserGradesViewModel?> GetUserGradeByIdAsync(int gradesId);
 
         /// <summary>
         /// Създава нов набор от оценки
