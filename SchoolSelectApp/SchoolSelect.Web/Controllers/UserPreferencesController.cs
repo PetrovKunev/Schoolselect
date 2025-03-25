@@ -20,7 +20,7 @@ namespace SchoolSelect.Web.Controllers
         // GET: UserPreferences
         public async Task<IActionResult> Index()
         {
-            var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value);
+            var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty);
             var preferences = await _userPreferenceService.GetUserPreferencesAsync(userId);
             return View(preferences);
         }
@@ -56,7 +56,7 @@ namespace SchoolSelect.Web.Controllers
             {
                 try
                 {
-                    var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value);
+                    var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty);
                     await _userPreferenceService.CreateUserPreferenceAsync(model, userId);
                     return RedirectToAction(nameof(Index));
                 }

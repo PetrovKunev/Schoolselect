@@ -1,30 +1,14 @@
+﻿/* Base styles */
 html {
-  font-size: 14px;
+    position: relative;
+    min-height: 100%;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
-body {
-  margin-bottom: 60px;
-}
-
-/* Basic styling */
-html {
-    position: relative;
-    min-height: 100%;
+    html {
+        font-size: 16px;
+    }
 }
 
 body {
@@ -32,56 +16,16 @@ body {
     line-height: 1.6;
     color: #333;
     margin-bottom: 60px;
+    padding-bottom: 60px;
 }
 
-/* Hero section */
-.hero-section {
-    background-color: #eaf1fb;
-    padding: 4rem 0;
-    margin-bottom: 2rem;
-    border-radius: 0 0 20px 20px;
-}
-
-    .hero-section h1 {
-        color: #2c3e50;
-    }
-
-/* Feature icons */
-.feature-icon {
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto;
-    background-color: #3671B9;
-}
-
-/* Cards */
-.card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: none;
-    height: 100%;
-}
-
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
-    }
-
-/* Stats card */
-.stats-card {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Call to action section */
-.call-to-action-section {
-    background-color: #eaf1fb;
-    padding: 3rem 0;
-    margin-top: 2rem;
-    border-radius: 20px;
+/* Focus styles */
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 /* Navigation */
@@ -102,195 +46,6 @@ body {
     .navbar-light .navbar-nav .nav-link:hover {
         color: rgba(255, 255, 255, 0.8) !important;
     }
-
-/* Buttons */
-.btn-primary {
-    background-color: #3671B9;
-    border-color: #3671B9;
-}
-
-    .btn-primary:hover {
-        background-color: #2c5d99;
-        border-color: #2c5d99;
-    }
-
-.btn-success {
-    background-color: #4CAF50;
-    border-color: #4CAF50;
-}
-
-    .btn-success:hover {
-        background-color: #3e9142;
-        border-color: #3e9142;
-    }
-
-/* Footer */
-.footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 60px;
-    line-height: 60px;
-    background-color: #3671B9;
-    color: white;
-}
-
-/* School cards */
-.top-schools-section .card {
-    border-radius: 8px;
-}
-
-.top-schools-section .card-title {
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-}
-
-/* Basic styling */
-html {
-    position: relative;
-    min-height: 100%;
-}
-
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6;
-    color: #333;
-    margin-bottom: 60px;
-}
-
-/* Hero section */
-.hero-section {
-    background-color: #eaf1fb;
-    padding: 4rem 0;
-    margin-bottom: 2rem;
-    border-radius: 0 0 20px 20px;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInUp 0.6s ease forwards;
-}
-
-    .hero-section h1 {
-        color: #2c3e50;
-    }
-
-@keyframes fadeInUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Feature icons */
-.feature-icon {
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto;
-    background-color: #3671B9;
-}
-
-/* Cards */
-.card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: none;
-    height: 100%;
-}
-
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
-    }
-
-/* Stats card */
-.stats-card {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Call to action section */
-.call-to-action-section {
-    background-color: #eaf1fb;
-    padding: 3rem 0;
-    margin-top: 2rem;
-    border-radius: 20px;
-}
-
-/* Navigation */
-.navbar {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    background-color: #3671B9 !important;
-}
-
-.navbar-brand {
-    font-weight: 700;
-    color: white !important;
-}
-
-.navbar-light .navbar-nav .nav-link {
-    color: white !important;
-}
-
-    .navbar-light .navbar-nav .nav-link:hover {
-        color: rgba(255, 255, 255, 0.8) !important;
-    }
-
-/* Buttons */
-.btn-primary {
-    background-color: #3671B9;
-    border-color: #3671B9;
-}
-
-    .btn-primary:hover {
-        background-color: #2c5d99;
-        border-color: #2c5d99;
-    }
-
-.btn-success {
-    background-color: #4CAF50;
-    border-color: #4CAF50;
-}
-
-    .btn-success:hover {
-        background-color: #3e9142;
-        border-color: #3e9142;
-    }
-
-/* Footer */
-.footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 60px;
-    line-height: 60px;
-    background-color: #3671B9;
-    color: white;
-}
-
-/* School cards */
-.top-schools-section .card {
-    border-radius: 8px;
-}
-
-.top-schools-section .card-title {
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-}
-
-/* Basic styling */
-html {
-    position: relative;
-    min-height: 100%;
-}
-
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6;
-    color: #333;
-    margin-bottom: 60px;
-}
 
 /* Hero section */
 .hero-section {
@@ -364,25 +119,6 @@ body {
     border-radius: 20px;
 }
 
-/* Navigation */
-.navbar {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    background-color: #3671B9 !important;
-}
-
-.navbar-brand {
-    font-weight: 700;
-    color: white !important;
-}
-
-.navbar-light .navbar-nav .nav-link {
-    color: white !important;
-}
-
-    .navbar-light .navbar-nav .nav-link:hover {
-        color: rgba(255, 255, 255, 0.8) !important;
-    }
-
 /* Buttons */
 .btn-primary {
     background-color: #3671B9;
@@ -406,13 +142,14 @@ body {
 
 /* Footer */
 .footer {
-    position: absolute;
+    position: fixed; /* Използваме fixed вместо absolute за по-стабилен footer */
     bottom: 0;
     width: 100%;
     height: 60px;
     line-height: 60px;
     background-color: #3671B9;
     color: white;
+    z-index: 1000;
 }
 
 /* School cards */

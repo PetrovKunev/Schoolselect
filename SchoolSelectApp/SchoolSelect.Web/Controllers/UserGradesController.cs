@@ -21,7 +21,7 @@ namespace SchoolSelect.Web.Controllers
         // GET: UserGrades
         public async Task<IActionResult> Index()
         {
-            var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value);
+            var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty);
             var userGrades = await _userGradesService.GetUserGradesAsync(userId);
             return View(userGrades);
         }
@@ -61,7 +61,7 @@ namespace SchoolSelect.Web.Controllers
             {
                 try
                 {
-                    var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value);
+                    var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty);
                     await _userGradesService.CreateUserGradesAsync(model, userId);
                     return RedirectToAction(nameof(Index));
                 }
@@ -173,7 +173,7 @@ namespace SchoolSelect.Web.Controllers
         // GET: UserGrades/Calculate
         public async Task<IActionResult> Calculate(int? schoolId)
         {
-            var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value);
+            var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty);
             var userGrades = await _userGradesService.GetUserGradesAsync(userId);
 
             if (!userGrades.Any())

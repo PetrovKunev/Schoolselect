@@ -40,9 +40,12 @@
                             <label asp-for="UserDistrict" class="form-label"></label>
                             <select asp-for="UserDistrict" class="form-select">
                                 <option value="">Изберете район</option>
-                                @foreach (var district in districts)
+                                @if (districts != null)
                                 {
-                                    <option value="@district">@district</option>
+                                    @foreach (var district in districts)
+                                    {
+                                        <option value="@district">@district</option>
+                                    }
                                 }
                             </select>
                             <span asp-validation-for="UserDistrict" class="text-danger"></span>
@@ -70,16 +73,24 @@
                         <div class="mb-3">
                             <div class="form-text mb-2">Изберете профилите, които ви интересуват:</div>
                             <div class="row">
-                                @foreach (var profileType in profileTypes)
+                                @if (profileTypes != null)
                                 {
-                                    <div class="col-md-6 mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="PreferredProfiles" value="@profileType.Key" id="profile_@profileType.Key">
-                                            <label class="form-check-label" for="profile_@profileType.Key">
-                                                @profileType.Value
-                                            </label>
+                                    @for (var i = 0; i < profileTypes.Count; i++)
+                                    {
+                                        var profile = profileTypes.ElementAt(i);
+                                        <div class="col-md-6 mb-2">
+                                            <div class="form-check">
+                                                <input type="checkbox"
+                                                       class="form-check-input"
+                                                       name="PreferredProfiles"
+                                                       value="@profile.Key"
+                                                       id="profile_@profile.Key" />
+                                                <label class="form-check-label" for="profile_@profile.Key">
+                                                    @profile.Value
+                                                </label>
+                                            </div>
                                         </div>
-                                    </div>
+                                    }
                                 }
                             </div>
                         </div>
@@ -145,38 +156,6 @@
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card bg-light mb-4 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Важна информация</h5>
-                </div>
-                <div class="card-body">
-                    <p>Вашите предпочитания ще бъдат използвани за:</p>
-                    <ul>
-                        <li>Персонализирани препоръки за училища</li>
-                        <li>Изчисляване на шансовете ви за прием</li>
-                        <li>Филтриране на резултати според вашите интереси</li>
-                    </ul>
-                    <p>Можете да създадете няколко набора от предпочитания за различни ситуации.</p>
-                </div>
-            </div>
-
-            <div class="card shadow-sm">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Съвет за местоположението</h5>
-                </div>
-                <div class="card-body">
-                    <p>За да получите най-точни препоръки въз основа на близостта, използвайте координатите на вашия адрес.</p>
-                    <p class="mb-0">Можете да получите координатите като:</p>
-                    <ol>
-                        <li>Отворите Google Maps</li>
-                        <li>Намерите вашия адрес</li>
-                        <li>Кликнете с десен бутон и изберете "Какво има тук?"</li>
-                        <li>Копирате координатите от долния панел</li>
-                    </ol>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -190,7 +169,7 @@
             });
         });
     </script>
-
+   
     <style>
         .range-input-group {
             display: flex;
