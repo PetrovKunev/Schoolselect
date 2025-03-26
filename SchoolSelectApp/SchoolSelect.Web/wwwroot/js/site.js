@@ -40,4 +40,27 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     }
+
+    // Периодично обновяване на броя на непрочетените известия
+    function refreshNotificationCount() {
+        if (document.querySelector('.notification-badge')) {
+            fetch('/api/Notifications/count')
+                .then(response => response.json())
+                .then(count => {
+                    const badge = document.querySelector('.notification-badge');
+                    if (count > 0) {
+                        badge.textContent = count;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                })
+                .catch(error => console.error('Error fetching notification count:', error));
+        }
+    }
+
+    // Обновява броя на известията на всеки 60 секунди
+    if (document.querySelector('.notification-badge')) {
+        setInterval(refreshNotificationCount, 60000);
+    }
 });

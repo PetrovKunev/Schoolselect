@@ -1,0 +1,55 @@
+﻿@{
+    ViewData["Title"] = "Ново сравнение";
+}
+
+<div class="container">
+    <h2 class="mb-4">@ViewData["Title"]</h2>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Създаване на ново сравнение</h5>
+
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Име на сравнението</label>
+                            <input type="text" class="form-control" id="name" name="name" required
+                                   placeholder="Напр. 'Езикови училища', 'STEM профили' и т.н.">
+                            <div class="form-text">Задайте описателно име, което да ви помогне да разпознаете това сравнение по-късно.</div>
+                            @if (ViewData.ModelState.TryGetValue("Name", out var errors) && errors.Errors.Any())
+                            {
+                                <div class="invalid-feedback d-block">
+                                    @errors.Errors.First().ErrorMessage
+                                </div>
+                            }
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Създай</button>
+                        <a asp-action="Index" class="btn btn-secondary">Отказ</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Инструкции</h5>
+                    <p>След създаване на сравнението, ще можете да добавите училища и профили към него. Това може да направите от:</p>
+                    <ul>
+                        <li>Страницата с детайли за училище</li>
+                        <li>Страницата с детайли за профил</li>
+                        <li>Страницата с резултати от търсене</li>
+                    </ul>
+                    <p>Можете да сравнявате както цели училища, така и конкретни профили.</p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Съвет: За най-информативно сравнение, добавете училища с подобни профили или от един и същи район.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

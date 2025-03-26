@@ -18,44 +18,48 @@ namespace SchoolSelect.Services.Implementations
         {
             var model = new HomeViewModel();
 
-            // Get top rated schools
-            var topRatedSchools = await _unitOfWork.Schools.GetTopRatedSchoolsAsync(6);
-
-            // Convert to view models
-            foreach (var school in topRatedSchools)
-            {
-                var profiles = await _unitOfWork.SchoolProfiles.GetProfilesBySchoolIdAsync(school.Id);
-                var latestRankings = await _unitOfWork.HistoricalRankings.GetRankingsBySchoolIdAsync(school.Id);
-
-                var profileTypes = profiles
-                    .Select(p => p.Name)
-                    .Distinct()
-                    .ToList();
-
-                var minimumScore = latestRankings.Any()
-                    ? latestRankings.OrderByDescending(r => r.Year).FirstOrDefault()?.MinimumScore
-                    : null;
-
-                var schoolViewModel = new SchoolViewModel
-                {
-                    Id = school.Id,
-                    Name = school.Name,
-                    District = school.District,
-                    City = school.City,
-                    AverageRating = school.AverageRating,
-                    ReviewsCount = school.RatingsCount,
-                    ProfileTypes = profileTypes,
-                    MinimumScore = minimumScore
-                };
-
-                model.TopRatedSchools.Add(schoolViewModel);
-            }
-
             // Get total counts
             model.TotalSchoolsCount = await _unitOfWork.Schools.CountAsync();
             model.TotalProfilesCount = await _unitOfWork.SchoolProfiles.CountAsync();
 
+            // Get top rated schools (само ако има записи)
+            if (model.TotalSchoolsCount > 0)
+            {
+                var topRatedSchools = await _unitOfWork.Schools.GetTopRatedSchoolsAsync(6);
+
+                // Convert to view models
+                foreach (var school in topRatedSchools)
+                {
+                    var profiles = await _unitOfWork.SchoolProfiles.GetProfilesBySchoolIdAsync(school.Id);
+                    var latestRankings = await _unitOfWork.HistoricalRankings.GetRankingsBySchoolIdAsync(school.Id);
+
+                    var profileTypes = profiles
+                        .Select(p => p.Name)
+                        .Distinct()
+                        .ToList();
+
+                    var minimumScore = latestRankings.Any()
+                        ? latestRankings.OrderByDescending(r => r.Year).FirstOrDefault()?.MinimumScore
+                        : null;
+
+                    var schoolViewModel = new SchoolViewModel
+                    {
+                        Id = school.Id,
+                        Name = school.Name,
+                        District = school.District,
+                        City = school.City,
+                        AverageRating = school.AverageRating,
+                        ReviewsCount = school.RatingsCount,
+                        ProfileTypes = profileTypes,
+                        MinimumScore = minimumScore
+                    };
+
+                    model.TopRatedSchools.Add(schoolViewModel);
+                }
+            }
+
             return model;
         }
+        
     }
 }

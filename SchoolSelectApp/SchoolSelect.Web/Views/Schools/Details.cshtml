@@ -34,25 +34,25 @@
             <a href="mailto:@Model.Email" class="btn btn-sm btn-outline-primary me-2">
                 <i class="bi bi-envelope"></i> Имейл
             </a>
-            <a href="tel:@Model.Phone" class="btn btn-sm btn-outline-primary">
+            <a href="tel:@Model.Phone" class="btn btn-sm btn-outline-primary me-2">
                 <i class="bi bi-telephone"></i> Телефон
             </a>
+            @* Заместваме бутона за добавяне към сравнение с нашия компонент *@
+            @await Component.InvokeAsync("AddToComparison", new { schoolId = Model.Id })
         </div>
 
         <div class="mb-3">
-            <a asp-controller="Comparison" asp-action="Add" asp-route-schoolId="@Model.Id" class="btn btn-primary me-2">
-                <i class="bi bi-plus-circle"></i> Добави за сравнение
-            </a>
+            
 
             @if (User.Identity?.IsAuthenticated ?? false)
             {
-                <a asp-controller="UserGrades" asp-action="Calculate" asp-route-schoolId="@Model.Id" class="btn btn-success">
+                <a asp-controller="UserGrades" asp-action="Calculate" asp-route-schoolId="@Model.Id" class="btn btn-success ms-2">
                     <i class="bi bi-calculator"></i> Изчисли шанс
                 </a>
             }
             else
             {
-                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-success">
+                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-success ms-2">
                     <i class="bi bi-calculator"></i> Влез за да изчислиш шанс
                 </a>
             }
@@ -123,8 +123,11 @@
                                         }
                                     }
                                 </div>
-                                <div class="card-footer bg-transparent">
-                                    <a href="#" class="btn btn-outline-primary">Виж формула за бал</a>
+                                <div class="card-footer bg-transparent d-flex justify-content-between">
+                                    <a href="#" class="btn btn-sm btn-outline-primary">Виж формула за бал</a>
+
+                                    @* Добавяме бутон за сравнение и на ниво профил *@
+                                    @await Component.InvokeAsync("AddToComparison", new { schoolId = Model.Id, profileId = profile.Id })
                                 </div>
                             </div>
                         </div>
@@ -411,6 +414,14 @@
                     }
                 });
             }
+
+            // Инициализиране на функционалността за сравнение
+            if (typeof initAddToComparisonForms === 'function') {
+                initAddToComparisonForms();
+            }
         });
     </script>
+
+@* Добавяме JavaScript файла за функционалността на сравнение *@
+    <script src="~/js/comparison.js"></script>
 }

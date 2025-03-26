@@ -1,0 +1,28 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using SchoolSelect.Services.Interfaces
+@inject INotificationService NotificationService
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    int unreadCount = 0;
+    if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        var userIdString = UserManager.GetUserId(User);
+        if (!string.IsNullOrEmpty(userIdString))
+        {
+            var userId = Guid.Parse(userIdString);
+            unreadCount = await NotificationService.GetUnreadNotificationCountAsync(userId);
+        }
+    }
+}
+
+<a href="@Url.Action("Index", "Notifications")" class="nav-link text-white position-relative">
+    <i class="bi bi-bell"></i>
+    @if (unreadCount > 0)
+    {
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge">
+            @unreadCount
+            <span class="visually-hidden">непрочетени известия</span>
+        </span>
+    }
+</a>

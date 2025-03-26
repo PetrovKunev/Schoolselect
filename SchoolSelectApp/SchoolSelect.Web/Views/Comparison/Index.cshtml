@@ -1,0 +1,61 @@
+﻿@model IEnumerable<SchoolSelect.Data.Models.ComparisonSet>
+
+@{
+    ViewData["Title"] = "Моите сравнения";
+}
+
+<div class="container">
+    <h2 class="mb-4">@ViewData["Title"]</h2>
+
+    <div class="row mb-4">
+        <div class="col">
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Ново сравнение
+            </a>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">Нямате създадени сравнения!</h4>
+            <p>Чрез функцията за сравнение можете да съпоставите различни училища и профили по ключови критерии.</p>
+            <hr>
+            <p class="mb-0">Създайте ваше първо сравнение като натиснете бутона "Ново сравнение".</p>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">@item.Name</h5>
+                            <p class="card-text">
+                                <small class="text-muted">Създадено на: @item.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                                <br />
+                                <small class="text-muted">Елементи: @item.Items.Count</small>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex justify-content-between">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye"></i> Преглед
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@item.Id" method="post"
+                                      onsubmit="return confirm('Сигурни ли сте, че искате да изтриете това сравнение?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash"></i> Изтрий
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

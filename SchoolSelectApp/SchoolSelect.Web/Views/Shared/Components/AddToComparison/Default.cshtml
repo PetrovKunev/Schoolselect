@@ -1,0 +1,56 @@
+﻿@model SchoolSelect.ViewModels.AddToComparisonViewModel
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <div class="dropdown">
+        <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="addToComparisonDropdown"
+                data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-bar-chart-steps"></i> Добави към сравнение
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="addToComparisonDropdown">
+            @if (Model.UserComparisonSets.Any())
+            {
+                @foreach (var set in Model.UserComparisonSets)
+                {
+                    <li>
+                        <form asp-controller="Comparison" asp-action="AddItem" method="post" class="dropdown-item-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="comparisonSetId" value="@set.Id" />
+                            <input type="hidden" name="schoolId" value="@Model.SchoolId" />
+                            @if (Model.ProfileId.HasValue)
+                            {
+                                <input type="hidden" name="profileId" value="@Model.ProfileId" />
+                            }
+                            <button type="submit" class="dropdown-item">
+                                @set.Name
+                            </button>
+                        </form>
+                    </li>
+                }
+                <li><hr class="dropdown-divider"></li>
+            }
+            <li>
+                <a class="dropdown-item" asp-controller="Comparison" asp-action="Create">
+                    <i class="bi bi-plus-circle me-1"></i> Ново сравнение
+                </a>
+            </li>
+        </ul>
+    </div>
+}
+<style>
+    .dropdown-item-form {
+        margin: 0;
+        padding: 0;
+    }
+
+        .dropdown-item-form .dropdown-item {
+            text-align: left;
+            background: none;
+            border: none;
+            width: 100%;
+            padding: .25rem 1rem;
+        }
+
+            .dropdown-item-form .dropdown-item:hover {
+                background-color: #f8f9fa;
+            }
+</style>

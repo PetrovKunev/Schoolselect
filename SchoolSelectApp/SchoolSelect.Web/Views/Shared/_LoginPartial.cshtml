@@ -41,7 +41,7 @@
                 </li>
             </ul>
         </li>
-        <li class="nav-item">
+       @*  <li class="nav-item">
             <a class="nav-link text-white position-relative" asp-controller="Notifications" asp-action="Index">
                 <i class="bi bi-bell fs-5"></i>
                 <span class="position-absolute top-25 start-75 translate-middle badge rounded-pill bg-danger">
@@ -49,7 +49,8 @@
                     <span class="visually-hidden">непрочетени известия</span>
                 </span>
             </a>
-        </li>
+        </li> *@
+        <partial name="_NotificationsNav" />
     }
     else
     {

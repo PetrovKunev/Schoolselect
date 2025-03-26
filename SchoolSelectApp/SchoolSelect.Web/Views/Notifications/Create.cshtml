@@ -1,0 +1,208 @@
+﻿@model SchoolSelect.Web.ViewModels.CreateNotificationModel
+
+@{
+    ViewData["Title"] = "Създаване на известие";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Изпращане на известие</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label">Заглавие</label>
+                            <input asp-for="Title" class="form-control" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Content" class="form-label">Съдържание</label>
+                            <textarea asp-for="Content" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Content" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="NotificationType" class="form-label">Тип известие</label>
+                            <select asp-for="NotificationType" class="form-select">
+                                <option value="1">Промяна в училище</option>
+                                <option value="2">Ново класиране</option>
+                                <option value="3">Системно съобщение</option>
+                            </select>
+                            <span asp-validation-for="NotificationType" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3" id="referenceIdContainer">
+                            <label asp-for="ReferenceId" class="form-label">ID на референтен обект (незадължително)</label>
+                            <input asp-for="ReferenceId" class="form-control" placeholder="ID на училище или профил" />
+                            <div class="form-text">
+                                За тип "Промяна в училище" въведете ID на училище. За тип "Ново класиране" въведете ID на профил.
+                            </div>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <h6 class="mb-3">Получатели на известието</h6>
+
+                        <div class="mb-3 form-check">
+                            <input asp-for="SendToAll" class="form-check-input" id="sendToAll" />
+                            <label asp-for="SendToAll" class="form-check-label">Изпрати до всички потребители</label>
+                        </div>
+
+                        <div id="specificUsersContainer" class="mb-3">
+                            <label class="form-label">Конкретни потребители</label>
+                            <select id="userSelect" class="form-control" multiple style="width: 100%;">
+                            </select>
+                            <div class="form-text">
+                                Започнете да пишете, за да търсите потребители по име или имейл.
+                            </div>
+                        </div>
+
+                        <div id="preferencesContainer" class="mb-3">
+                            <h6 class="mb-3">Филтриране по предпочитания</h6>
+
+                            <div class="mb-3">
+                                <label asp-for="PreferredDistrict" class="form-label">Район</label>
+                                <select asp-for="PreferredDistrict" class="form-select">
+                                    <option value="">-- Всички райони --</option>
+                                    <!-- Тук трябва да бъдат добавени всички райони динамично -->
+                                    <option value="Център">Център</option>
+                                    <option value="Лозенец">Лозенец</option>
+                                    <option value="Младост">Младост</option>
+                                    <!-- и т.н. -->
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Предпочитани профили</label>
+                                <select id="profilesSelect" multiple class="form-control">
+                                    <!-- Тук трябва да бъдат добавени всички профили динамично -->
+                                    <option value="Математика">Математика</option>
+                                    <option value="Хуманитарни науки">Хуманитарни науки</option>
+                                    <option value="Природни науки">Природни науки</option>
+                                    <!-- и т.н. -->
+                                </select>
+                                <div class="form-text">
+                                    Можете да изберете няколко профила.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Изпрати известие
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">Отказ</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+            // Инициализация на Select2 за потребители
+            $('#userSelect').select2({
+                placeholder: 'Изберете потребители',
+                ajax: {
+                    url: '@Url.Action("FindUsers")',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            term: params.term
+                        };
+                    },
+                    processResults: function(data) {
+                        return data;
+                    },
+                    cache: true
+                },
+                minimumInputLength: 2
+            });
+
+            // Добавяне на скритите полета при промяна на избраните потребители
+            $('#userSelect').on('change', function() {
+                // Премахване на предишните полета
+                $('.user-id-hidden').remove();
+
+                // Добавяне на нови скрити полета за всеки избран потребител
+                var selectedUsers = $(this).val();
+                if (selectedUsers) {
+                    $.each(selectedUsers, function(index, userId) {
+                        $('<input>').attr({
+                            type: 'hidden',
+                            name: 'UserIds',
+                            value: userId,
+                            class: 'user-id-hidden'
+                        }).appendTo('form');
+                    });
+                }
+            });
+
+            // Инициализация на Select2 за профили
+            $('#profilesSelect').select2({
+                placeholder: 'Изберете профили'
+            });
+
+            // Добавяне на скритите полета при промяна на избраните профили
+            $('#profilesSelect').on('change', function() {
+                // Премахване на предишните полета
+                $('.profile-hidden').remove();
+
+                // Добавяне на нови скрити полета за всеки избран профил
+                var selectedProfiles = $(this).val();
+                if (selectedProfiles) {
+                    $.each(selectedProfiles, function(index, profile) {
+                        $('<input>').attr({
+                            type: 'hidden',
+                            name: 'PreferredProfiles',
+                            value: profile,
+                            class: 'profile-hidden'
+                        }).appendTo('form');
+                    });
+                }
+            });
+
+            // Управление на видимостта на контейнерите според избора "Изпрати до всички"
+            $('#sendToAll').on('change', function() {
+                if ($(this).is(':checked')) {
+                    $('#specificUsersContainer, #preferencesContainer').hide();
+                } else {
+                    $('#specificUsersContainer, #preferencesContainer').show();
+                }
+            });
+
+            // Управление на видимостта на полето за референтен обект според типа известие
+            $('#NotificationType').on('change', function() {
+                var selectedType = $(this).val();
+                if (selectedType == 3) { // Системно съобщение
+                    $('#referenceIdContainer').hide();
+                } else {
+                    $('#referenceIdContainer').show();
+                }
+            });
+
+            // Инициализация
+            if ($('#sendToAll').is(':checked')) {
+                $('#specificUsersContainer, #preferencesContainer').hide();
+            }
+
+            if ($('#NotificationType').val() == 3) {
+                $('#referenceIdContainer').hide();
+            }
+        });
+    </script>
+}
