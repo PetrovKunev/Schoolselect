@@ -1,0 +1,58 @@
+﻿@* Views/Reviews/Create.cshtml *@
+@model SchoolSelect.Web.ViewModels.CreateReviewViewModel
+
+@{
+    ViewData["Title"] = "Добавяне на отзив";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h2>@ViewData["Title"]</h2>
+            <h4>За училище: @Model.SchoolName</h4>
+            <hr />
+
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="SchoolId" />
+
+                <div class="mb-3">
+                    <label asp-for="Rating" class="form-label"></label>
+                    <div class="rating-container">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" asp-for="Rating" id="rating-@i" value="@i" />
+                                <label class="form-check-label" for="rating-@i">@i</label>
+                            </div>
+                        }
+                    </div>
+                    <span asp-validation-for="Rating" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Content" class="form-label"></label>
+                    <textarea asp-for="Content" class="form-control" rows="6" placeholder="Споделете вашето мнение за училището..."></textarea>
+                    <span asp-validation-for="Content" class="text-danger"></span>
+                    <div class="form-text">
+                        Моля, бъдете конкретни и обективни в отзива си. Всички отзиви подлежат на одобрение преди публикуване.
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-primary">Изпрати отзив</button>
+                    <a asp-action="School" asp-route-schoolId="@Model.SchoolId" class="btn btn-outline-secondary">Отказ</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        // Можете да добавите JavaScript за визуален избор на рейтинг със звезди
+    </script>
+}

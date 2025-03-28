@@ -1,0 +1,45 @@
+﻿@* Views/Reviews/Delete.cshtml *@
+@model SchoolSelect.Web.ViewModels.DeleteReviewViewModel
+
+@{
+    ViewData["Title"] = "Изтриване на отзив";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h2>@ViewData["Title"]</h2>
+            <div class="alert alert-danger">
+                <h5>Сигурни ли сте, че искате да изтриете този отзив?</h5>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Отзив за @Model.SchoolName</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        <strong>Рейтинг:</strong>
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <span class="@(i <= Model.Rating ? "text-warning" : "text-muted")">&#9733;</span>
+                        }
+                    </p>
+                    <p><strong>Съдържание:</strong></p>
+                    <div class="bg-light p-3 rounded mb-3">
+                        @Model.Content
+                    </div>
+                    <p><strong>Дата:</strong> @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                </div>
+                <div class="card-footer">
+                    <form asp-action="DeleteConfirmed" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger">Потвърди изтриването</button>
+                        <a asp-action="MyReviews" class="btn btn-outline-secondary">Отказ</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -139,7 +139,7 @@ namespace SchoolSelect.Services.Implementations
         public async Task<Dictionary<string, string>> GetAllProfileTypesAsync()
         {
             // Връщаме предефинираните профили от ProfileTypes
-            return new Dictionary<string, string>
+            return await Task.FromResult(new Dictionary<string, string>
             {
                 { ProfileTypes.Mathematics, ProfileTypes.Mathematics },
                 { ProfileTypes.NaturalSciences, ProfileTypes.NaturalSciences },
@@ -149,7 +149,7 @@ namespace SchoolSelect.Services.Implementations
                 { ProfileTypes.Entrepreneurship, ProfileTypes.Entrepreneurship },
                 { ProfileTypes.Arts, ProfileTypes.Arts },
                 { ProfileTypes.Sports, ProfileTypes.Sports }
-            };
+            });
         }
 
         private Dictionary<string, double> DeserializeCriteriaWeights(string criteriaWeightsJson)

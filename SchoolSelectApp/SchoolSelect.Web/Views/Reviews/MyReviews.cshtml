@@ -1,0 +1,72 @@
+﻿@* Views/Reviews/MyReviews.cshtml *@
+@model IEnumerable<SchoolSelect.Data.Models.Review>
+
+@{
+    ViewData["Title"] = "Моите отзиви";
+}
+
+<div class="container mt-4">
+    <h2>@ViewData["Title"]</h2>
+    <hr />
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Все още не сте публикували отзиви за училища.
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var review in Model)
+            {
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between">
+                            <h5 class="mb-0">@review.School?.Name</h5>
+                            <div>
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <span class="@(i <= review.Rating ? "text-warning" : "text-muted")">&#9733;</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">@review.Content</p>
+                            <p class="text-muted small">
+                                Дата: @review.CreatedAt.ToString("dd.MM.yyyy")
+                                <br />
+                                Статус: @(review.IsApproved ? "Одобрен" : "Чака одобрение")
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex justify-content-between">
+                                <a asp-controller="Schools" asp-action="Details" asp-route-id="@review.SchoolId" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Към училището
+                                </a>
+                                <div>
+                                    @if (!review.IsApproved)
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@review.Id" class="btn btn-sm btn-outline-secondary mx-1">
+                                            <i class="bi bi-pencil"></i> Редактирай
+                                        </a>
+                                    }
+                                    <a asp-action="Delete" asp-route-id="@review.Id" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> Изтрий
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

@@ -58,6 +58,7 @@ namespace SchoolSelect.Web
             builder.Services.AddScoped<IUserPreferenceService, UserPreferenceService>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddScoped<IComparisonService, ComparisonService>();
+            builder.Services.AddScoped<IReviewService, ReviewService>();
 
             // Регистриране на Unit of Work
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
