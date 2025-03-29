@@ -1,0 +1,85 @@
+﻿@model SchoolSelect.Data.Models.Review
+
+@{
+    ViewData["Title"] = "Преглед на отзив";
+}
+
+<div class="container-fluid mt-4">
+    <h2>@ViewData["Title"]</h2>
+    <hr />
+
+    <div class="card">
+        <div class="card-header">
+            <h5>Отзив от @(Model.User?.FirstName + " " + Model.User?.LastName) за @Model.School?.Name</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <h6 class="text-muted">Училище:</h6>
+                </div>
+                <div class="col-md-9">
+                    <p>@Model.School?.Name</p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <h6 class="text-muted">Потребител:</h6>
+                </div>
+                <div class="col-md-9">
+                    <p>@(Model.User?.FirstName + " " + Model.User?.LastName)</p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <h6 class="text-muted">Дата на създаване:</h6>
+                </div>
+                <div class="col-md-9">
+                    <p>@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <h6 class="text-muted">Рейтинг:</h6>
+                </div>
+                <div class="col-md-9">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <span class="@(i <= Model.Rating ? "text-warning" : "text-muted")">&#9733;</span>
+                    }
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <h6 class="text-muted">Съдържание:</h6>
+                </div>
+                <div class="col-md-9">
+                    <div class="p-3 bg-light rounded">
+                        @Model.Content
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-outline-secondary">Назад към списъка</a>
+                <div>
+                    <form asp-action="Approve" asp-route-id="@Model.Id" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg"></i> Одобри
+                        </button>
+                    </form>
+                    <form asp-action="Reject" asp-route-id="@Model.Id" method="post" class="d-inline ms-2">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Сигурни ли сте, че искате да отхвърлите този отзив?');">
+                            <i class="bi bi-x-lg"></i> Отхвърли
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

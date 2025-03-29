@@ -1,0 +1,56 @@
+﻿/* Admin specific styles */
+.admin-sidebar {
+    background-color: #343a40;
+    min-height: calc(100vh - 60px);
+    color: #fff;
+}
+
+.admin-main {
+    padding: 20px;
+}
+
+.card-counter {
+    box-shadow: 0 4px 8px rgba(0,0,0,.12);
+    border-radius: 5px;
+    padding: 20px 10px;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+    .card-counter i {
+        font-size: 3rem;
+        opacity: 0.5;
+    }
+
+    .card-counter .count-numbers {
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        font-size: 32px;
+        display: block;
+    }
+
+    .card-counter .count-name {
+        position: absolute;
+        right: 20px;
+        top: 65px;
+        opacity: 0.8;
+        display: block;
+        font-size: 18px;
+    }
+
+.bg-primary {
+    background-color: #0275d8 !important;
+}
+
+.bg-success {
+    background-color: #5cb85c !important;
+}
+
+.bg-warning {
+    background-color: #f0ad4e !important;
+}
+
+.bg-danger {
+    background-color: #d9534f !important;
+}

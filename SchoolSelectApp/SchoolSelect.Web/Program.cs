@@ -6,6 +6,7 @@ using SchoolSelect.Repositories.Interfaces;
 using SchoolSelect.Services.Implementations;
 using SchoolSelect.Services.Interfaces;
 using SchoolSelect.Web.Data;
+using SchoolSelect.Web.Infrastructure;
 using SchoolSelect.Web.TestData;
 
 namespace SchoolSelect.Web
@@ -85,6 +86,8 @@ namespace SchoolSelect.Web
 
             builder.Services.AddControllersWithViews();
 
+            builder.Services.AddHostedService<IdentityDataInitializerHostedService>();
+
             WebApplication app = builder.Build();
 
             // Зареждане на тестови данни
@@ -127,9 +130,15 @@ namespace SchoolSelect.Web
             app.UseAuthorization();
 
             app.MapControllerRoute(
+                name: "areas",
+                pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
+            app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
             app.MapRazorPages();
+
+            
 
             app.Run();
         }

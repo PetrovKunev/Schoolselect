@@ -1,0 +1,53 @@
+﻿@{
+    ViewData["Title"] = "Администраторски панел";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1>Добре дошли в администраторския панел</h1>
+            <hr />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card-counter bg-warning">
+                <i class="bi bi-chat-left-text"></i>
+                <span class="count-numbers">@ViewBag.PendingReviewsCount</span>
+                <span class="count-name">Чакащи отзиви</span>
+            </div>
+        </div>
+
+        <!-- Добавете още карти с обща информация тук -->
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Бързи действия</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a asp-area="Admin" asp-controller="ReviewModeration" asp-action="Index" class="list-group-item list-group-item-action">
+                            <i class="bi bi-chat-left-text me-2"></i> Модерация на отзиви
+                        </a>
+                        <!-- Добавете още линкове за бързи действия тук -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Последна активност</h5>
+                </div>
+                <div class="card-body">
+                    <p>Няма скорошна активност за показване.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
