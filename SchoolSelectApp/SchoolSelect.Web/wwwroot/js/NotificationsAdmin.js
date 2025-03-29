@@ -1,81 +1,93 @@
-﻿$(function () {
-    // Load unread notification count on page load
-    loadUnreadNotificationCount();
+﻿document.addEventListener('DOMContentLoaded', function () {
+    // Проверка дали сме в админ панела
+    if ($('body').find('.notification-dropdown-menu').length > 0) {
+        // Зареждане на брой нотификации при зареждане на страницата
+        loadNotificationCount();
 
-    // Set up notification click handlers
-    $(document).on('click', '.notification-item', function (e) {
-        e.preventDefault();
-        const notificationId = $(this).data('notification-id');
-        markNotificationAsRead(notificationId);
-    });
+        // Периодично опресняване на броя нотификации (на всеки 30 секунди)
+        setInterval(loadNotificationCount, 30000);
 
-    // Mark all as read handler
-    $(document).on('click', '#markAllAsRead', function (e) {
-        e.preventDefault();
-        markAllNotificationsAsRead();
-    });
+        // Инициализиране на dropdown-а с нотификации
+        $("#notification-dropdown-toggle").on("click", function () {
+            loadNotifications();
+        });
 
-    // Refresh notifications periodically (every 60 seconds)
-    setInterval(function () {
-        loadUnreadNotificationCount();
-    }, 60000);
+        // Обработка на бутона "Маркирай всички като прочетени"
+        $(document).on("click", "#markAllAsRead", function (e) {
+            e.preventDefault();
+            markAllAsRead();
+        });
 
-    // Function to load unread notification count
-    function loadUnreadNotificationCount() {
+        // Обработка на кликване върху отделна нотификация
+        $(document).on("click", ".notification-item", function (e) {
+            e.preventDefault();
+            var notificationId = $(this).data("notification-id");
+            markAsRead(notificationId);
+        });
+    }
+
+    function loadNotificationCount() {
         $.ajax({
-            url: '/Admin/Notifications/GetUnreadCount',
-            type: 'GET',
+            url: "/Admin/Notifications/GetUnreadCount",
+            type: "GET",
             success: function (data) {
-                // Update notification badge
-                const badge = $('#notification-badge');
-                if (data.count > 0) {
-                    badge.text(data.count).show();
+                if (data && data.count > 0) {
+                    $("#notification-badge").text(data.count).show();
                 } else {
-                    badge.hide();
+                    $("#notification-badge").hide();
                 }
-            }
-        });
-    }
-
-    // Function to mark a notification as read
-    function markNotificationAsRead(id) {
-        $.ajax({
-            url: '/Admin/Notifications/MarkAsRead',
-            type: 'POST',
-            data: { id: id },
-            success: function () {
-                // Refresh notification list
-                loadNotificationList();
-                // Update unread count
-                loadUnreadNotificationCount();
-            }
-        });
-    }
-
-    // Function to mark all notifications as read
-    function markAllNotificationsAsRead() {
-        $.ajax({
-            url: '/Admin/Notifications/MarkAllAsRead',
-            type: 'POST',
-            success: function () {
-                // Refresh notification list
-                loadNotificationList();
-                // Update unread count
-                loadUnreadNotificationCount();
-            }
-        });
-    }
-
-    // Function to load notification list
-    function loadNotificationList() {
-        $.ajax({
-            url: '/Admin/Notifications/GetNotifications',
-            type: 'GET',
-            success: function (response) {
-                $('.notification-dropdown-menu').html(response);
             },
             error: function (xhr, status, error) {
-                console.error('Грешка при зареждане на известия:', error);
+                console.error("Грешка при зареждане на броя нотификации: " + error);
+            }
+        });
+    }
+
+    function loadNotifications() {
+        $.ajax({
+            url: "/Admin/Notifications/GetNotifications",
+            type: "GET",
+            success: function (data) {
+                $(".notification-dropdown-menu").html(data);
+            },
+            error: function (xhr, status, error) {
+                console.error("Грешка при зареждане на нотификации: " + error);
+                $(".notification-dropdown-menu").html('<div class="p-3 text-center">Грешка при зареждане на нотификации</div>');
+            }
+        });
+    }
+
+    function markAsRead(notificationId) {
+        $.ajax({
+            url: "/Admin/Notifications/MarkAsRead",
+            type: "POST",
+            data: { id: notificationId },
+            headers: {
+                RequestVerificationToken: $('input:hidden[name="__RequestVerificationToken"]').val()
+            },
+            success: function () {
+                loadNotifications();
+                loadNotificationCount();
+            },
+            error: function (xhr, status, error) {
+                console.error("Грешка при маркиране като прочетено: " + error);
+            }
+        });
+    }
+
+    function markAllAsRead() {
+        $.ajax({
+            url: "/Admin/Notifications/MarkAllAsRead",
+            type: "POST",
+            headers: {
+                RequestVerificationToken: $('input:hidden[name="__RequestVerificationToken"]').val()
+            },
+            success: function () {
+                loadNotifications();
+                loadNotificationCount();
+            },
+            error: function (xhr, status, error) {
+                console.error("Грешка при маркиране на всички като прочетени: " + error);
             }
         });
     }
