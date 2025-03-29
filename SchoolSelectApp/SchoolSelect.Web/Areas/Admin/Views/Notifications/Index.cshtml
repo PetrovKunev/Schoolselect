@@ -2,7 +2,7 @@
     ViewData["Title"] = "Нотификации";
 }
 
-<h1>Нотификации</h1>
+<h1>@ViewData["Title"]</h1>
 
 <div class="notification-list-container">
     <!-- Тук ще се зареждат всички нотификации -->
@@ -11,16 +11,22 @@
     </div>
 </div>
 
+<div class="mt-3">
+    <button id="markAllAsReadBtn" class="btn btn-primary">
+        <i class="bi bi-check-all"></i> Маркирай всички като прочетени
+    </button>
+</div>
+
 @section Scripts {
     <script>
         $(document).ready(function() {
             // Зареждане на списъка с нотификации
-            $("#notificationListView").load('@Url.Action("GetNotifications", "Notification", new { area = "Admin" })');
+            $("#notificationListView").load('@Url.Action("GetNotifications", "Notifications", new { area = "Admin" })');
 
             // Маркиране на всички като прочетени
             $("#markAllAsReadBtn").on("click", function() {
-                $.post('@Url.Action("MarkAllAsRead", "Notification", new { area = "Admin" })', function() {
-                    $("#notificationListView").load('@Url.Action("GetNotifications", "Notification", new { area = "Admin" })');
+                $.post('@Url.Action("MarkAllAsRead", "Notifications", new { area = "Admin" })', function() {
+                    $("#notificationListView").load('@Url.Action("GetNotifications", "Notifications", new { area = "Admin" })');
                 });
             });
         });

@@ -1,15 +1,13 @@
-﻿// SchoolSelectApp/SchoolSelect.Web/Areas/Admin/Controllers/NotificationController.cs
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolSelect.Repositories.Interfaces;
 using SchoolSelect.Services.Interfaces;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace SchoolSelect.Web.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = "Admin,Moderator")]
     public class NotificationsController : Controller
     {
         private readonly INotificationService _notificationService;
@@ -26,6 +24,7 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
         {
             return View();
         }
+
         [HttpGet]
         public async Task<IActionResult> GetUnreadCount()
         {

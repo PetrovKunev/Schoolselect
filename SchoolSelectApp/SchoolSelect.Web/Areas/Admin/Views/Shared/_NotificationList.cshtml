@@ -1,29 +1,33 @@
-﻿<!-- SchoolSelectApp/SchoolSelect.Web/Areas/Admin/Views/Shared/_NotificationList.cshtml -->
-@model IEnumerable<SchoolSelect.Data.Models.Notification>
+﻿@model IEnumerable<SchoolSelect.Data.Models.Notification>
 
-<div class="dropdown-menu notification-dropdown-menu">
-    <div class="notification-header">
-        <h6 class="dropdown-header">Известия (@Model.Count(n => !n.IsRead) непрочетени)</h6>
-        <a href="#" id="markAllAsRead" class="dropdown-item-text text-primary">Маркирай всички като прочетени</a>
+<div class="p-3">
+    <div class="d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">Известия (@Model.Count(n => !n.IsRead) непрочетени)</h6>
+        <a href="#" id="markAllAsRead" class="btn btn-sm btn-link">Маркирай всички</a>
     </div>
     <div class="dropdown-divider"></div>
 
-    <div class="notification-list">
-        @if (Model.Any())
-        {
+    @if (Model.Any())
+    {
+        <div class="notification-items" style="max-height: 300px; overflow-y: auto;">
             @foreach (var notification in Model)
             {
-                <a href="#" class="dropdown-item notification-item @(notification.IsRead ? "" : "unread")"
+                <a href="#" class="dropdown-item notification-item @(notification.IsRead ? "" : "bg-light")"
                    data-notification-id="@notification.Id">
-                    <div class="notification-title">@notification.Title</div>
-                    <div class="notification-content">@notification.Content</div>
-                    <small class="notification-time">@notification.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1">@notification.Title</h6>
+                        <small class="text-muted">@notification.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                    </div>
+                    <p class="mb-1 small">@notification.Content</p>
                 </a>
             }
-        }
-        else
-        {
-            <div class="dropdown-item-text text-muted">Нямате известия</div>
-        }
-    </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center text-muted py-3">
+            <i class="bi bi-bell-slash"></i>
+            <p>Няма известия</p>
+        </div>
+    }
 </div>
