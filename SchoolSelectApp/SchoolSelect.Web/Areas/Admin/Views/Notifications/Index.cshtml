@@ -1,0 +1,28 @@
+﻿@{
+    ViewData["Title"] = "Нотификации";
+}
+
+<h1>Нотификации</h1>
+
+<div class="notification-list-container">
+    <!-- Тук ще се зареждат всички нотификации -->
+    <div id="notificationListView">
+        Зареждане на нотификации...
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Зареждане на списъка с нотификации
+            $("#notificationListView").load('@Url.Action("GetNotifications", "Notification", new { area = "Admin" })');
+
+            // Маркиране на всички като прочетени
+            $("#markAllAsReadBtn").on("click", function() {
+                $.post('@Url.Action("MarkAllAsRead", "Notification", new { area = "Admin" })', function() {
+                    $("#notificationListView").load('@Url.Action("GetNotifications", "Notification", new { area = "Admin" })');
+                });
+            });
+        });
+    </script>
+}

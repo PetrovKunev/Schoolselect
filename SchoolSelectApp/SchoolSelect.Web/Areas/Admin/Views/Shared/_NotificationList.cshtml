@@ -1,0 +1,29 @@
+﻿<!-- SchoolSelectApp/SchoolSelect.Web/Areas/Admin/Views/Shared/_NotificationList.cshtml -->
+@model IEnumerable<SchoolSelect.Data.Models.Notification>
+
+<div class="dropdown-menu notification-dropdown-menu">
+    <div class="notification-header">
+        <h6 class="dropdown-header">Известия (@Model.Count(n => !n.IsRead) непрочетени)</h6>
+        <a href="#" id="markAllAsRead" class="dropdown-item-text text-primary">Маркирай всички като прочетени</a>
+    </div>
+    <div class="dropdown-divider"></div>
+
+    <div class="notification-list">
+        @if (Model.Any())
+        {
+            @foreach (var notification in Model)
+            {
+                <a href="#" class="dropdown-item notification-item @(notification.IsRead ? "" : "unread")"
+                   data-notification-id="@notification.Id">
+                    <div class="notification-title">@notification.Title</div>
+                    <div class="notification-content">@notification.Content</div>
+                    <small class="notification-time">@notification.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                </a>
+            }
+        }
+        else
+        {
+            <div class="dropdown-item-text text-muted">Нямате известия</div>
+        }
+    </div>
+</div>
