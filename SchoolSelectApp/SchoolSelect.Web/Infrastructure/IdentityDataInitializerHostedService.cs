@@ -63,7 +63,18 @@ namespace SchoolSelect.Web.Infrastructure
 
         private async Task SeedAdminUserAsync(UserManager<ApplicationUser> userManager)
         {
-            var adminEmail = "admin@schoolselect.com";
+            // Get admin credentials from configuration
+            var adminEmail = _configuration["AdminUser:Email"];
+            var adminPassword = _configuration["AdminUser:Password"];
+
+            // Validate configuration
+            if (string.IsNullOrEmpty(adminEmail) || string.IsNullOrEmpty(adminPassword))
+            {
+                _logger.LogWarning("Admin user credentials not found in configuration. Using default values for development only.");
+                adminEmail = "admin@schoolselect.com";
+                adminPassword = "Admin!@123";
+            }
+
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
             if (adminUser == null)
@@ -77,7 +88,6 @@ namespace SchoolSelect.Web.Infrastructure
                     EmailConfirmed = true
                 };
 
-                var adminPassword = "Admin!@123";
                 var result = await userManager.CreateAsync(adminUser, adminPassword);
 
                 if (result.Succeeded)
@@ -110,14 +120,22 @@ namespace SchoolSelect.Web.Infrastructure
                     }
                 }
 
-                // Ресет на паролата при всяко стартиране
-                var token = await userManager.GeneratePasswordResetTokenAsync(adminUser);
-                var resetResult = await userManager.ResetPasswordAsync(adminUser, token, "Admin!@123");
-
-                if (!resetResult.Succeeded)
+                // Reset password only if explicitly configured to do so
+                var resetPassword = _configuration.GetValue<bool>("AdminUser:ResetPasswordOnStartup");
+                if (resetPassword)
                 {
-                    _logger.LogWarning("Password reset failed. Errors: {Errors}",
-                        string.Join(", ", resetResult.Errors.Select(e => e.Description)));
+                    var token = await userManager.GeneratePasswordResetTokenAsync(adminUser);
+                    var resetResult = await userManager.ResetPasswordAsync(adminUser, token, adminPassword);
+
+                    if (!resetResult.Succeeded)
+                    {
+                        _logger.LogWarning("Password reset failed. Errors: {Errors}",
+                            string.Join(", ", resetResult.Errors.Select(e => e.Description)));
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Admin password reset successfully");
+                    }
                 }
             }
         }
