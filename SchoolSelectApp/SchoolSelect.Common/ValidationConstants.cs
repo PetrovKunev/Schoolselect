@@ -32,6 +32,8 @@
             public const int CodeMaxLength = 20;
             public const int SubjectsMaxLength = 500;
             public const int MaxPlaces = 1000;
+            public const int SpecialtyMaxLength = 100;
+            public const int QualificationMaxLength = 100;
 
             // Типове профили
             public const string MathematicsProfile = "Математически";

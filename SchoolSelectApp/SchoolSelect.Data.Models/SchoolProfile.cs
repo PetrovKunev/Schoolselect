@@ -4,7 +4,7 @@ using SchoolSelect.Common;
 
 namespace SchoolSelect.Data.Models
 {
-    // Профили или специалности в училище
+    // Паралелки в училище (профилирани или професионални)
     public class SchoolProfile
     {
         [Key]
@@ -29,6 +29,17 @@ namespace SchoolSelect.Data.Models
         [Range(0, ValidationConstants.SchoolProfile.MaxPlaces,
               ErrorMessage = ValidationMessages.PlacesRange)]
         public int AvailablePlaces { get; set; }
+
+        // Тип на паралелката
+        public ProfileType? Type { get; set; }
+
+        // Поле за професионалните паралелки
+        [StringLength(ValidationConstants.SchoolProfile.SpecialtyMaxLength)]
+        public string? Specialty { get; set; }
+
+        // Професионална квалификация
+        [StringLength(ValidationConstants.SchoolProfile.QualificationMaxLength)]
+        public string? ProfessionalQualification { get; set; }
 
         // Релации
         [ForeignKey(nameof(SchoolId))]
