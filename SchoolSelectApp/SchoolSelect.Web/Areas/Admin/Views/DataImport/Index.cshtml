@@ -1,0 +1,62 @@
+﻿@{
+    ViewData["Title"] = "Импортиране на данни";
+}
+
+<div class="container-fluid mt-4">
+    <h2>@ViewData["Title"]</h2>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Импортиране на данни</h5>
+                </div>
+                <div class="card-body">
+                    <p>Изберете тип данни за импортиране:</p>
+                    <div class="list-group">
+                        <a asp-action="ImportSchools" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">Импортиране на училища</h5>
+                                <i class="bi bi-building fs-4"></i>
+                            </div>
+                            <p class="mb-1">Импортиране на данни за училища от CSV или Excel файл.</p>
+                        </a>
+                        <!-- Тук може да добавите и други видове импорт в бъдеще -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Инструкции</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Формат на файловете:</h6>
+                    <ul>
+                        <li><strong>CSV файл</strong>: Файлът трябва да има заглавен ред и да е разделен със запетаи.</li>
+                        <li><strong>Excel файл</strong>: Файлът трябва да има заглавен ред в първия лист.</li>
+                    </ul>
+
+                    <h6>Задължителни колони за училища:</h6>
+                    <ul>
+                        <li><strong>Наименование</strong>: Име на училището</li>
+                        <li><strong>Основен адрес</strong>: Адрес на училището</li>
+                    </ul>
+
+                    <h6>Допълнителни колони:</h6>
+                    <ul>
+                        <li><strong>Населено място</strong>: Населено място (по подразбиране "София")</li>
+                        <li><strong>Основен телефон</strong>: Телефон за контакт</li>
+                        <li><strong>Имейл</strong>: Имейл адрес</li>
+                        <li><strong>Интернет страница</strong>: Уеб сайт</li>
+                        <li><strong>Директор</strong>: Име на директора</li>
+                        <li><strong>Код по НЕИСПУО</strong>: Уникален код на училището</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,130 @@
+﻿@{
+    ViewData["Title"] = "Импортиране на училища";
+}
+
+<div class="container-fluid mt-4">
+    <h2>@ViewData["Title"]</h2>
+    <hr />
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ImportErrors"] != null)
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5>Грешки при импортиране</h5>
+            </div>
+            <div class="card-body">
+                <div class="error-list" style="max-height: 300px; overflow-y: auto;">
+                    <ul>
+                        @foreach (var error in (List<string>)TempData["ImportErrors"])
+                        {
+                            <li>@error</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Импортиране от CSV файл</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="ImportSchoolsFromCsv" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label for="csvFile" class="form-label">Изберете CSV файл</label>
+                            <input class="form-control" type="file" id="csvFile" name="file" accept=".csv">
+                            <div class="form-text">CSV файлът трябва да е с разделител запетая и с кодировка UTF-8.</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-file-earmark-arrow-up"></i> Импортиране от CSV
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Импортиране от Excel файл</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="ImportSchoolsFromExcel" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label for="excelFile" class="form-label">Изберете Excel файл</label>
+                            <input class="form-control" type="file" id="excelFile" name="file" accept=".xlsx, .xls">
+                            <div class="form-text">Подържат се формати .xlsx и .xls.</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-file-earmark-excel"></i> Импортиране от Excel
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Формат на данните</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Задължителни колони:</h6>
+                    <ul>
+                        <li><strong>Наименование</strong> - име на училището</li>
+                        <li><strong>Основен адрес</strong> - адрес на училището</li>
+                    </ul>
+
+                    <h6>Препоръчителни колони:</h6>
+                    <ul>
+                        <li><strong>Населено място</strong> - населено място (по подразбиране "София")</li>
+                        <li><strong>Основен телефон</strong> - телефон за контакт</li>
+                        <li><strong>Имейл</strong> - имейл адрес</li>
+                        <li><strong>Интернет страница</strong> - уеб сайт на училището</li>
+                        <li><strong>Директор</strong> - име на директора</li>
+                        <li><strong>Код по НЕИСПУО</strong> - уникален код на училището</li>
+                    </ul>
+
+                    <h6>Забележки:</h6>
+                    <ul>
+                        <li>Районът на училището се извлича автоматично от адреса, ако е наличен в формат "район Име_на_района"</li>
+                        <li>Дублиращи се записи по име и адрес ще бъдат импортирани като отделни училища</li>
+                    </ul>
+
+                    <div class="mt-3">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Назад
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

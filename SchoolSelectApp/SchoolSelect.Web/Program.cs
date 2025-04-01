@@ -60,6 +60,7 @@ namespace SchoolSelect.Web
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddScoped<IComparisonService, ComparisonService>();
             builder.Services.AddScoped<IReviewService, ReviewService>();
+            builder.Services.AddScoped<ISchoolImportService, SchoolImportService>();
 
             // Регистриране на Unit of Work
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
