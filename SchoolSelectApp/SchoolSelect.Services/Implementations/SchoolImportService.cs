@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.ComponentModel;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -14,6 +15,7 @@ namespace SchoolSelect.Services.Implementations
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<SchoolImportService> _logger;
+
 
         public SchoolImportService(IUnitOfWork unitOfWork, ILogger<SchoolImportService> logger)
         {
@@ -33,10 +35,18 @@ namespace SchoolSelect.Services.Implementations
             {
                 using (var reader = new StreamReader(file.OpenReadStream(), Encoding.UTF8))
                 {
-                    // Skip header line
-                    await reader.ReadLineAsync();
+                    // Прочитаме хедъра
+                    string headerLine = await reader.ReadLineAsync() ?? string.Empty;
+                    string[] headers = ParseCsvLine(headerLine);
 
-                    string line;
+                    // Създаваме речник с индексите на колоните
+                    var headerIndices = new Dictionary<string, int>();
+                    for (int i = 0; i < headers.Length; i++)
+                    {
+                        headerIndices[headers[i].Trim()] = i;
+                    }
+
+                    string? line;
                     int lineCount = 0;
                     int batchSize = 0;
 
@@ -45,8 +55,8 @@ namespace SchoolSelect.Services.Implementations
                         lineCount++;
                         try
                         {
-                            // Use more robust CSV parsing
-                            string[] values = ParseCsvLine(line);
+                            // Използваме по-надеждно CSV парсване
+                            string[] values = ParseCsvLine(line!);
 
                             if (values.Length < 5)
                             {
@@ -55,14 +65,13 @@ namespace SchoolSelect.Services.Implementations
                                 continue;
                             }
 
-                            // Extract the correct values from CSV based on the format we've seen
-                            // Format is Област,Община,Населено място,Код по НЕИСПУО,Наименование,Основен адрес,Основен телефон,Имейл,Интернет страница,Директор
-                            var schoolName = values.Length > 4 ? values[4].Trim() : string.Empty;
-                            var address = values.Length > 5 ? values[5].Trim() : string.Empty;
-                            var phone = values.Length > 6 ? values[6].Trim() : string.Empty;
-                            var email = values.Length > 7 ? values[7].Trim() : string.Empty;
-                            var website = values.Length > 8 ? values[8].Trim() : string.Empty;
-                            var city = values.Length > 2 ? values[2].Trim() : "София";
+                            // Извличаме правилните стойности от CSV
+                            var schoolName = GetValueByHeader(headerIndices, values, "Наименование");
+                            var address = GetValueByHeader(headerIndices, values, "Основен адрес");
+                            var phone = GetValueByHeader(headerIndices, values, "Основен телефон");
+                            var email = GetValueByHeader(headerIndices, values, "Имейл");
+                            var website = GetValueByHeader(headerIndices, values, "Интернет страница");
+                            var city = GetValueByHeader(headerIndices, values, "Населено място") ?? "София";
 
                             if (string.IsNullOrEmpty(schoolName) || string.IsNullOrEmpty(address))
                             {
@@ -71,7 +80,14 @@ namespace SchoolSelect.Services.Implementations
                                 continue;
                             }
 
-                            var district = ExtractDistrict(address);
+                            // Извличане на района - първо търсим директно в колоната "Район"
+                            string district = GetValueByHeader(headerIndices, values, "Район");
+
+                            // Ако колоната "Район" липсва или е празна, опитваме се да извлечем района от адреса
+                            if (string.IsNullOrWhiteSpace(district))
+                            {
+                                district = ExtractDistrict(address);
+                            }
 
                             var school = new School
                             {
@@ -79,7 +95,7 @@ namespace SchoolSelect.Services.Implementations
                                 Address = address,
                                 District = district,
                                 City = !string.IsNullOrEmpty(city) ? city : "София",
-                                // Make sure phone doesn't exceed max length
+                                // Уверяваме се, че телефонът не надвишава максималната дължина
                                 Phone = phone?.Length > ValidationConstants.Common.PhoneMaxLength
                                     ? phone.Substring(0, ValidationConstants.Common.PhoneMaxLength)
                                     : phone ?? string.Empty,
@@ -105,7 +121,7 @@ namespace SchoolSelect.Services.Implementations
                             result.SuccessCount++;
                             batchSize++;
 
-                            // Commit in batches of 50 to avoid large transactions
+                            // Записваме на партиди от 50 за избягване на големи транзакции
                             if (batchSize >= 50)
                             {
                                 await _unitOfWork.CompleteAsync();
@@ -120,7 +136,7 @@ namespace SchoolSelect.Services.Implementations
                         }
                     }
 
-                    // Save any remaining records
+                    // Запазваме останалите записи
                     if (batchSize > 0)
                     {
                         await _unitOfWork.CompleteAsync();
@@ -140,8 +156,18 @@ namespace SchoolSelect.Services.Implementations
             return result;
         }
 
+        private string GetValueByHeader(Dictionary<string, int> headerIndices, string[] values, string headerName)
+        {
+            if (headerIndices.TryGetValue(headerName, out int index) && index < values.Length)
+            {
+                return values[index].Trim();
+            }
+            return string.Empty;
+        }
+
         public async Task<ImportResult> ImportSchoolsFromExcelAsync(IFormFile file)
         {
+
             var result = new ImportResult
             {
                 IsSuccess = false,
@@ -155,12 +181,7 @@ namespace SchoolSelect.Services.Implementations
                     await file.CopyToAsync(stream);
                     stream.Position = 0;
 
-                    // Setting the License for EPPlus 8+
-                    // This is the new way to set the license
-#pragma warning disable CS0618
-                    ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-#pragma warning restore CS0618
-
+                   
                     using (var package = new ExcelPackage(stream))
                     {
                         var worksheet = package.Workbook.Worksheets[0]; // First worksheet
@@ -177,7 +198,7 @@ namespace SchoolSelect.Services.Implementations
                         var headers = new Dictionary<string, int>();
                         for (int col = 1; col <= colCount; col++)
                         {
-                            string header = worksheet.Cells[1, col].Value?.ToString();
+                            string header = worksheet.Cells[1, col].Value?.ToString() ?? string.Empty;
                             if (!string.IsNullOrEmpty(header))
                             {
                                 headers[header.Trim()] = col;
@@ -206,7 +227,15 @@ namespace SchoolSelect.Services.Implementations
                                     continue; // Skip rows with missing required data
                                 }
 
-                                var district = ExtractDistrict(address);
+                                // Извличане на района - първо търсим директно в колоната "Район"
+                                string district = GetCellValue(worksheet, row, headers, "Район");
+
+                                // Ако колоната "Район" липсва или е празна, опитваме се да извлечем района от адреса
+                                if (string.IsNullOrWhiteSpace(district))
+                                {
+                                    district = ExtractDistrict(address);
+                                }
+
                                 var city = GetCellValue(worksheet, row, headers, "Населено място") ?? "София";
                                 var phone = GetCellValue(worksheet, row, headers, "Основен телефон") ?? string.Empty;
                                 var email = GetCellValue(worksheet, row, headers, "Имейл") ?? string.Empty;
@@ -308,6 +337,12 @@ namespace SchoolSelect.Services.Implementations
 
         private string[] ParseCsvLine(string line)
         {
+            if (string.IsNullOrEmpty(line))
+            {
+                return Array.Empty<string>();
+            }
+
+
             List<string> result = new List<string>();
             StringBuilder currentField = new StringBuilder();
             bool inQuotes = false;

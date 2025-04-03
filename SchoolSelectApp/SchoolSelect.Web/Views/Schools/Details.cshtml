@@ -28,9 +28,18 @@
             </div>
             <span class="me-3">@Model.AverageRating.ToString("0.0") (@Model.ReviewsCount отзива)</span>
 
-            <a href="@Model.Website" target="_blank" class="btn btn-sm btn-outline-primary me-2">
-                <i class="bi bi-globe"></i> Уебсайт
-            </a>
+            @if (!string.IsNullOrEmpty(Model.Website))
+            {
+                <a href="@(Model.Website.StartsWith("http") ? Model.Website : "https://" + Model.Website)" target="_blank" class="btn btn-sm btn-outline-primary me-2">
+                    <i class="bi bi-globe"></i> Уебсайт
+                </a>
+            }
+            else
+            {
+                <button class="btn btn-sm btn-outline-secondary me-2" disabled>
+                    <i class="bi bi-globe"></i> Няма уебсайт
+                </button>
+            }
             <a href="mailto:@Model.Email" class="btn btn-sm btn-outline-primary me-2">
                 <i class="bi bi-envelope"></i> Имейл
             </a>
@@ -158,7 +167,23 @@
                                 <li><i class="bi bi-geo-alt"></i> @Model.Address, @Model.City</li>
                                 <li><i class="bi bi-telephone"></i> @Model.Phone</li>
                                 <li><i class="bi bi-envelope"></i> @Model.Email</li>
-                                <li><i class="bi bi-globe"></i> <a href="@Model.Website" target="_blank">@Model.Website</a></li>
+                                @* <li><i class="bi bi-globe"></i> <a href="@Model.Website" target="_blank">@Model.Website</a></li> *@
+                                @if (!string.IsNullOrEmpty(Model.Website))
+                                {
+                                    <li>
+                                        <a href="@(Model.Website.StartsWith("http") ? Model.Website : "https://" + Model.Website)" target="_blank" class="btn btn-sm btn-outline-primary me-2">
+                                            <i class="bi bi-globe"></i> Уебсайт
+                                        </a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li>
+                                        <button class="btn btn-sm btn-outline-secondary me-2" disabled>
+                                            <i class="bi bi-globe"></i> Няма уебсайт
+                                        </button>
+                                    </li>
+                                }
                             </ul>
                         </div>
                         <div class="col-md-6">
