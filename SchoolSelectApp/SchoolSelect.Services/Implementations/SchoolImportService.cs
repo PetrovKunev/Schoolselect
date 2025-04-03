@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Text;
+﻿using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -8,6 +7,7 @@ using SchoolSelect.Common;
 using SchoolSelect.Data.Models;
 using SchoolSelect.Repositories.Interfaces;
 using SchoolSelect.Services.Interfaces;
+using SchoolSelect.Services.Models;
 
 namespace SchoolSelect.Services.Implementations
 {
@@ -377,6 +377,210 @@ namespace SchoolSelect.Services.Implementations
             // Add the last field
             result.Add(currentField.ToString());
 
+            return result.ToArray();
+        }
+
+        public async Task<ImportResult> ImportProfilesFromCsvAsync(IFormFile file)
+        {
+            var result = new ImportResult();
+            var errors = new List<string>();
+            int successCount = 0;
+            int failureCount = 0;
+
+            try
+            {
+                using (var reader = new StreamReader(file.OpenReadStream()))
+                {
+                    // Read the CSV file header
+                    var header = await reader.ReadLineAsync();
+                    if (header == null)
+                    {
+                        result.ErrorMessage = "Файлът е празен или има невалиден формат.";
+                        return result;
+                    }
+
+                    // Parse the header to determine column indices
+                    var columns = header.Split(',');
+                    int schoolIdOrNameIdx = Array.FindIndex(columns, c => c.Contains("Училище", StringComparison.OrdinalIgnoreCase) || c.Contains("SchoolId", StringComparison.OrdinalIgnoreCase));
+                    int nameIdx = Array.FindIndex(columns, c => c.Contains("Наименование", StringComparison.OrdinalIgnoreCase) || c.Contains("Name", StringComparison.OrdinalIgnoreCase));
+                    int codeIdx = Array.FindIndex(columns, c => c.Contains("Код", StringComparison.OrdinalIgnoreCase) || c.Contains("Code", StringComparison.OrdinalIgnoreCase));
+                    int descriptionIdx = Array.FindIndex(columns, c => c.Contains("Описание", StringComparison.OrdinalIgnoreCase) || c.Contains("Description", StringComparison.OrdinalIgnoreCase));
+                    int subjectsIdx = Array.FindIndex(columns, c => c.Contains("Предмети", StringComparison.OrdinalIgnoreCase) || c.Contains("Subjects", StringComparison.OrdinalIgnoreCase));
+                    int placesIdx = Array.FindIndex(columns, c => c.Contains("Брой места", StringComparison.OrdinalIgnoreCase) || c.Contains("AvailablePlaces", StringComparison.OrdinalIgnoreCase));
+                    int typeIdx = Array.FindIndex(columns, c => c.Contains("Тип", StringComparison.OrdinalIgnoreCase) || c.Contains("Type", StringComparison.OrdinalIgnoreCase));
+                    int specialtyIdx = Array.FindIndex(columns, c => c.Contains("Специалност", StringComparison.OrdinalIgnoreCase) || c.Contains("Specialty", StringComparison.OrdinalIgnoreCase));
+                    int qualificationIdx = Array.FindIndex(columns, c => c.Contains("Квалификация", StringComparison.OrdinalIgnoreCase) || c.Contains("Qualification", StringComparison.OrdinalIgnoreCase));
+
+                    // Check required columns
+                    if (schoolIdOrNameIdx == -1 || nameIdx == -1)
+                    {
+                        result.ErrorMessage = "Файлът трябва да съдържа задължителните колони: 'Училище' и 'Наименование'.";
+                        return result;
+                    }
+
+                    // Read each line and create profiles
+                    string? line;
+                    int lineNumber = 1;
+                    while ((line = await reader.ReadLineAsync()) != null)
+                    {
+                        lineNumber++;
+                        if (string.IsNullOrWhiteSpace(line))
+                        {
+                            continue;
+                        }
+
+                        try
+                        {
+                            var values = SplitCsvLine(line);
+                            if (values.Length <= Math.Max(schoolIdOrNameIdx, nameIdx))
+                            {
+                                errors.Add($"Ред {lineNumber}: Липсват задължителни полета.");
+                                failureCount++;
+                                continue;
+                            }
+
+                            // Find the school by ID or name
+                            string schoolIdentifier = values[schoolIdOrNameIdx].Trim();
+                            School? school = null;
+
+                            if (int.TryParse(schoolIdentifier, out int schoolId))
+                            {
+                                school = await _unitOfWork.Schools.GetByIdAsync(schoolId);
+                            }
+                            else
+                            {
+                                var schools = await _unitOfWork.Schools.FindAsync(s => s.Name == schoolIdentifier);
+                                school = schools.FirstOrDefault();
+                            }
+
+                            if (school == null)
+                            {
+                                errors.Add($"Ред {lineNumber}: Училището '{schoolIdentifier}' не е намерено.");
+                                failureCount++;
+                                continue;
+                            }
+
+                            // Create the profile
+                            var profile = new SchoolProfile
+                            {
+                                SchoolId = school.Id,
+                                Name = values[nameIdx].Trim(),
+                                Code = codeIdx >= 0 && codeIdx < values.Length ? values[codeIdx].Trim() : string.Empty,
+                                Description = descriptionIdx >= 0 && descriptionIdx < values.Length ? values[descriptionIdx].Trim() : string.Empty,
+                                Subjects = subjectsIdx >= 0 && subjectsIdx < values.Length ? values[subjectsIdx].Trim() : string.Empty,
+                                AvailablePlaces = placesIdx >= 0 && placesIdx < values.Length && int.TryParse(values[placesIdx].Trim(), out int places) ? places : 0
+                            };
+
+                            // Set the type and specialty if provided
+                            if (typeIdx >= 0 && typeIdx < values.Length && !string.IsNullOrWhiteSpace(values[typeIdx]))
+                            {
+                                string typeName = values[typeIdx].Trim();
+
+                                // Determine if it's professional or profiled
+                                if (typeName.ToLower().Contains("професионал"))
+                                {
+                                    profile.Type = ProfileType.Professional;
+
+                                    // For professional profiles, also set the specialty if not already specified
+                                    if ((specialtyIdx < 0 || specialtyIdx >= values.Length ||
+                                        string.IsNullOrWhiteSpace(values[specialtyIdx])) &&
+                                        profile.Specialty == null)
+                                    {
+                                        profile.Specialty = typeName; // Use the type name as specialty if none provided
+                                    }
+                                }
+                                else
+                                {
+                                    profile.Type = ProfileType.Profiled;
+
+                                    // For profiled classes, store the academic focus in Specialty if not provided separately
+                                    if ((specialtyIdx < 0 || specialtyIdx >= values.Length ||
+                                        string.IsNullOrWhiteSpace(values[specialtyIdx])) &&
+                                        profile.Specialty == null)
+                                    {
+                                        profile.Specialty = typeName; // e.g., "Математически", "Чужди езици"
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Default to Unknown if no type specified
+                                profile.Type = ProfileType.Unknown;
+                            }
+
+                            // Set specialty if provided in the file (this will override any default set above)
+                            if (specialtyIdx >= 0 && specialtyIdx < values.Length &&
+                                !string.IsNullOrWhiteSpace(values[specialtyIdx]))
+                            {
+                                profile.Specialty = values[specialtyIdx].Trim();
+                            }
+
+                            // Set qualification if provided
+                            if (qualificationIdx >= 0 && qualificationIdx < values.Length &&
+                                !string.IsNullOrWhiteSpace(values[qualificationIdx]))
+                            {
+                                profile.ProfessionalQualification = values[qualificationIdx].Trim();
+                            }
+
+                            // Check if profile with the same name already exists for this school
+                            var existingProfiles = await _unitOfWork.SchoolProfiles.FindAsync(p =>
+                                p.SchoolId == school.Id && p.Name == profile.Name);
+
+                            if (existingProfiles.Any())
+                            {
+                                errors.Add($"Ред {lineNumber}: Профил с име '{profile.Name}' вече съществува за училище '{school.Name}'.");
+                                failureCount++;
+                                continue;
+                            }
+
+                            // Save the profile
+                            await _unitOfWork.SchoolProfiles.AddAsync(profile);
+                            await _unitOfWork.CompleteAsync();
+                            successCount++;
+                        }
+                        catch (Exception ex)
+                        {
+                            errors.Add($"Ред {lineNumber}: {ex.Message}");
+                            failureCount++;
+                        }
+                    }
+                }
+
+                result.IsSuccess = true;
+                result.SuccessCount = successCount;
+                result.FailureCount = failureCount;
+                result.Errors = errors;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                result.ErrorMessage = $"Грешка при четене на файла: {ex.Message}";
+                result.Errors = errors;
+                return result;
+            }
+        }
+
+       
+        private string[] SplitCsvLine(string line)
+        {
+            var result = new List<string>();
+            bool inQuotes = false;
+            int startIndex = 0;
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                if (line[i] == '"')
+                {
+                    inQuotes = !inQuotes;
+                }
+                else if (line[i] == ',' && !inQuotes)
+                {
+                    result.Add(line.Substring(startIndex, i - startIndex).Trim('"', ' '));
+                    startIndex = i + 1;
+                }
+            }
+
+            result.Add(line.Substring(startIndex).Trim('"', ' '));
             return result.ToArray();
         }
     }

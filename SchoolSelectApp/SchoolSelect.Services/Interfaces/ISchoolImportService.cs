@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using SchoolSelect.Services.Models;
 
 namespace SchoolSelect.Services.Interfaces
 {
@@ -22,17 +21,13 @@ namespace SchoolSelect.Services.Interfaces
         /// <param name="file">Excel файл</param>
         /// <returns>Резултат от импортирането</returns>
         Task<ImportResult> ImportSchoolsFromExcelAsync(IFormFile file);
+
+        /// <summary>
+        /// Импортира профили от CSV файл
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        Task<ImportResult> ImportProfilesFromCsvAsync(IFormFile file);
     }
 }
 
-/// <summary>
-/// Резултат от импортирането
-/// </summary>
-public class ImportResult
-{
-    public bool IsSuccess { get; set; }
-    public int SuccessCount { get; set; } = 0;
-    public int FailureCount { get; set; } = 0;
-    public string ErrorMessage { get; set; } = string.Empty;
-    public List<string> Errors { get; set; } = new List<string>();
-}

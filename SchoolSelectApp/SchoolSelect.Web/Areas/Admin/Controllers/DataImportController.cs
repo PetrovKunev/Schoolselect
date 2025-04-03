@@ -27,6 +27,12 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
             return View();
         }
 
+        // GET: /Admin/DataImport/ImportProfiles
+        public IActionResult ImportProfiles()
+        {
+            return View();
+        }
+
         // POST: /Admin/DataImport/ImportSchoolsFromCsv
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -111,6 +117,49 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
             }
 
             return RedirectToAction(nameof(ImportSchools));
+        }
+
+        // POST: /Admin/DataImport/ImportProfilesFromCsv
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ImportProfilesFromCsv(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                TempData["ErrorMessage"] = "Моля, изберете файл за импортиране.";
+                return RedirectToAction(nameof(ImportProfiles));
+            }
+
+            string fileExtension = System.IO.Path.GetExtension(file.FileName).ToLower();
+            if (fileExtension != ".csv")
+            {
+                TempData["ErrorMessage"] = "Моля, изберете CSV файл.";
+                return RedirectToAction(nameof(ImportProfiles));
+            }
+
+            var result = await _schoolImportService.ImportProfilesFromCsvAsync(file);
+
+            if (result.IsSuccess)
+            {
+                TempData["SuccessMessage"] = $"Успешно импортирани {result.SuccessCount} профила. " +
+                    (result.FailureCount > 0 ? $"Грешки: {result.FailureCount}" : "");
+
+                if (result.Errors.Any())
+                {
+                    TempData["ImportErrors"] = result.Errors;
+                }
+            }
+            else
+            {
+                TempData["ErrorMessage"] = $"Грешка при импортиране: {result.ErrorMessage}";
+
+                if (result.Errors.Any())
+                {
+                    TempData["ImportErrors"] = result.Errors;
+                }
+            }
+
+            return RedirectToAction(nameof(ImportProfiles));
         }
     }
 }

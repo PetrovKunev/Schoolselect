@@ -1,0 +1,106 @@
+﻿@{
+    ViewData["Title"] = "Импортиране на профили";
+}
+
+<div class="container-fluid mt-4">
+    <h2>@ViewData["Title"]</h2>
+    <hr />
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ImportErrors"] != null)
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5>Грешки при импортиране</h5>
+            </div>
+            <div class="card-body">
+                <div class="error-list" style="max-height: 300px; overflow-y: auto;">
+                    <ul>
+                        @foreach (var error in (List<string>)TempData["ImportErrors"])
+                        {
+                            <li>@error</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Импортиране на профили от CSV файл</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="ImportProfilesFromCsv" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label for="csvFile" class="form-label">Изберете CSV файл</label>
+                            <input class="form-control" type="file" id="csvFile" name="file" accept=".csv">
+                            <div class="form-text">CSV файлът трябва да е с разделител запетая и с кодировка UTF-8.</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-file-earmark-arrow-up"></i> Импортиране от CSV
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Формат на данните</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Задължителни колони:</h6>
+                    <ul>
+                        <li><strong>Училище (ID или име)</strong> - идентификатор на училището</li>
+                        <li><strong>Наименование</strong> - име на профила/паралелката</li>
+                    </ul>
+
+                    <h6>Препоръчителни колони:</h6>
+                    <ul>
+                        <li><strong>Код</strong> - код на профила</li>
+                        <li><strong>Описание</strong> - подробно описание на профила</li>
+                        <li><strong>Предмети</strong> - изучавани предмети (разделени със запетая)</li>
+                        <li><strong>Брой места</strong> - брой места в паралелката</li>
+                        <li><strong>Тип</strong> - тип на профила (Математически, Езиков, и т.н.)</li>
+                        <li><strong>Специалност</strong> - за професионалните паралелки</li>
+                        <li><strong>Квалификация</strong> - професионална квалификация за професионалните паралелки</li>
+                    </ul>
+
+                    <h6>Забележки:</h6>
+                    <ul>
+                        <li>Училището трябва да съществува в базата данни</li>
+                        <li>Типът на профила трябва да е един от предварително дефинираните типове в системата</li>
+                    </ul>
+
+                    <div class="mt-3">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Назад
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
