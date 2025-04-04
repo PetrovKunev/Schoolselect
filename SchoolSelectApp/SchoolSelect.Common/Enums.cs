@@ -5,8 +5,7 @@
     /// </summary>
     public enum ProfileType
     {
-        Unknown = 0,     // Неопределен тип
-        Profiled = 1,    // Профилирана паралелка
-        Professional = 2 // Професионална паралелка
+        Профилирана = 1,
+        Професионална = 2
     }
 }

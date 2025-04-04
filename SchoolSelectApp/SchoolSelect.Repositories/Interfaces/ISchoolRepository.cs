@@ -11,5 +11,6 @@ namespace SchoolSelect.Repositories.Interfaces
         Task<IEnumerable<School>> GetSchoolsByDistrictAsync(string district);
         Task<IEnumerable<School>> GetTopRatedSchoolsAsync(int count);
         Task<double> CalculateAverageRatingAsync(int schoolId);
+        Task<IEnumerable<School>> GetSchoolsByProfileTypeAsync(string profileType);
     }
 }

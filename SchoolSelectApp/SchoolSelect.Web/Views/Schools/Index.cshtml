@@ -29,15 +29,12 @@
                         }
                     </select>
                 </div>
-                
+
                 <div class="col-md-3">
                     <select class="form-select" name="profileType" onchange="this.form.submit()">
                         <option value="">Всички паралелки</option>
-                        <option value="Математически" selected="@("Математически" == Model.SelectedProfileType)">Математически</option>
-                        <option value="Чужди езици" selected="@("Чужди езици" == Model.SelectedProfileType)">Чужди езици</option>
-                        <option value="Природни науки" selected="@("Природни науки" == Model.SelectedProfileType)">Природни науки</option>
-                        <option value="Хуманитарни науки" selected="@("Хуманитарни науки" == Model.SelectedProfileType)">Хуманитарни науки</option>
-                        <option value="Софтуерни и хардуерни науки" selected="@("Софтуерни и хардуерни науки" == Model.SelectedProfileType)">Софтуерни и хардуерни науки</option>
+                        <option value="Профилирана" selected="@("Профилирана" == Model.SelectedProfileType)">Профилирана</option>
+                        <option value="Професионална" selected="@("Професионална" == Model.SelectedProfileType)">Професионална</option>
                     </select>
                 </div>
             </form>

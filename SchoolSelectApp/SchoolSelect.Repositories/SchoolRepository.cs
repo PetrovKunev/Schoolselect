@@ -1,5 +1,6 @@
 ﻿// SchoolRepository.cs
 using Microsoft.EntityFrameworkCore;
+using SchoolSelect.Common;
 using SchoolSelect.Data.Models;
 using SchoolSelect.Repositories.Interfaces;
 using SchoolSelect.Web.Data;
@@ -73,6 +74,21 @@ namespace SchoolSelect.Repositories
                 return 0;
 
             return reviews.Average(r => r.Rating);
+        }
+
+        public async Task<IEnumerable<School>> GetSchoolsByProfileTypeAsync(string profileType)
+        {
+            // Преобразуваме string към enum
+            if (Enum.TryParse<ProfileType>(profileType, out var profileTypeEnum))
+            {
+                // Използваме директно enum стойността, без ToString()
+                return await AppContext.Schools
+                    .Include(s => s.Profiles)
+                    .Where(s => s.Profiles.Any(p => p.Type == profileTypeEnum))
+                    .ToListAsync() ?? Enumerable.Empty<School>();
+            }
+
+            return Enumerable.Empty<School>();
         }
     }
 }

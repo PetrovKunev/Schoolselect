@@ -479,7 +479,7 @@ namespace SchoolSelect.Services.Implementations
                                 // Determine if it's professional or profiled
                                 if (typeName.ToLower().Contains("професионал"))
                                 {
-                                    profile.Type = ProfileType.Professional;
+                                    profile.Type = ProfileType.Професионална;
 
                                     // For professional profiles, also set the specialty if not already specified
                                     if ((specialtyIdx < 0 || specialtyIdx >= values.Length ||
@@ -491,7 +491,7 @@ namespace SchoolSelect.Services.Implementations
                                 }
                                 else
                                 {
-                                    profile.Type = ProfileType.Profiled;
+                                    profile.Type = ProfileType.Профилирана;
 
                                     // For profiled classes, store the academic focus in Specialty if not provided separately
                                     if ((specialtyIdx < 0 || specialtyIdx >= values.Length ||
@@ -502,12 +502,7 @@ namespace SchoolSelect.Services.Implementations
                                     }
                                 }
                             }
-                            else
-                            {
-                                // Default to Unknown if no type specified
-                                profile.Type = ProfileType.Unknown;
-                            }
-
+                            
                             // Set specialty if provided in the file (this will override any default set above)
                             if (specialtyIdx >= 0 && specialtyIdx < values.Length &&
                                 !string.IsNullOrWhiteSpace(values[specialtyIdx]))

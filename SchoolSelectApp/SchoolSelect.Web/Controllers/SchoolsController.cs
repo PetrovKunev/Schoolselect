@@ -27,6 +27,13 @@ namespace SchoolSelect.Web.Controllers
                 schools = schools.Where(s => s.District.Equals(district, StringComparison.OrdinalIgnoreCase));
             }
 
+            // Filter by profile type if provided
+            if (!string.IsNullOrEmpty(profileType))
+            {
+                // This will need to join with profiles data
+                schools = await _unitOfWork.Schools.GetSchoolsByProfileTypeAsync(profileType);
+            }
+
             // Convert to view models
             var schoolViewModels = schools.Select(s => new SchoolViewModel
             {
