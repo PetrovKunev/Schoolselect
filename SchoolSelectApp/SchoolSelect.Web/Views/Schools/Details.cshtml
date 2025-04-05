@@ -393,56 +393,115 @@
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Rating input functionality
-            const ratingLabels = document.querySelectorAll('.rating-input label');
-            const ratingInputs = document.querySelectorAll('.rating-input input');
+                      document.addEventListener('DOMContentLoaded', function() {
+            // Този код е проектиран да работи с различни HTML структури
 
-            ratingLabels.forEach(label => {
-                label.addEventListener('mouseover', function() {
-                    const currentValue = this.getAttribute('for').replace('star', '');
+            // Първо намираме контейнера, който съдържа звездите
+            const starsContainer = document.querySelector('.rating-stars-container') ||
+                                   document.querySelector('.rating-input') ||
+                                   document.querySelector('.напиши-отзив');
 
-                    ratingLabels.forEach(lbl => {
-                        const lblValue = lbl.getAttribute('for').replace('star', '');
-                        lbl.style.color = lblValue <= currentValue ? '#ffc107' : '#e2e2e2';
-                    });
-                });
+            if (!starsContainer) {
+                console.log('Не е намерен контейнер за рейтинг звездите');
+                return;
+            }
 
-                label.addEventListener('click', function() {
-                    const currentValue = this.getAttribute('for').replace('star', '');
+            // Намираме всички звезди в контейнера
+            // Пробваме различни селектори, които могат да съответстват на звездите
+            let stars = starsContainer.querySelectorAll('label') ||
+                       starsContainer.querySelectorAll('.star-rating') ||
+                       starsContainer.querySelectorAll('.star') ||
+                       starsContainer.querySelectorAll('span');
 
-                    ratingInputs.forEach(input => {
-                        const inputValue = input.getAttribute('id').replace('star', '');
-                        if (inputValue === currentValue) {
-                            input.checked = true;
-                        }
-                    });
-                });
-            });
+            // Ако не сме намерили елементи, прекратяваме изпълнението
+            if (!stars || stars.length === 0) {
+                console.log('Не са намерени звезди за рейтинг');
+                return;
+            }
 
-            const ratingContainer = document.querySelector('.rating-input');
-            if (ratingContainer) {
-                ratingContainer.addEventListener('mouseout', function() {
-                    const checkedInput = document.querySelector('.rating-input input:checked');
+            // Превръщаме NodeList в масив, за да можем да използваме filter
+            stars = Array.from(stars);
 
-                    if (checkedInput) {
-                        const checkedValue = checkedInput.getAttribute('id').replace('star', '');
+            // Филтрираме звездите - вземаме само тези, които съдържат символа на звезда ★
+            const starElements = stars.filter(el => el.textContent.includes('★'));
 
-                        ratingLabels.forEach(lbl => {
-                            const lblValue = lbl.getAttribute('for').replace('star', '');
-                            lbl.style.color = lblValue <= checkedValue ? '#ffc107' : '#e2e2e2';
-                        });
+            // Ако сме филтрирали и няма звезди, връщаме се към оригиналните
+            const finalStars = starElements.length > 0 ? starElements : stars;
+
+            console.log('Намерени звезди за рейтинг:', finalStars.length);
+
+            // Намираме input полето за рейтинга, ако има такова
+            let ratingInput = document.querySelector('input[name="rating"]') ||
+                              document.querySelector('input[name="Rating"]');
+
+            // Ако няма input поле, създаваме скрито такова
+            if (!ratingInput) {
+                ratingInput = document.createElement('input');
+                ratingInput.type = 'hidden';
+                ratingInput.name = 'rating';
+                ratingInput.value = '0';
+                starsContainer.appendChild(ratingInput);
+            }
+
+            // Текущо избрания рейтинг (по подразбиране 0)
+            let currentRating = 0;
+
+            // Функция за актуализиране на визуалното представяне на звездите
+            function updateStarsDisplay(rating) {
+                finalStars.forEach((star, index) => {
+                    if (index < rating) {
+                        // Активна звезда
+                        star.style.color = '#ffc107'; // Жълт цвят
+                        star.classList.add('active');
                     } else {
-                        ratingLabels.forEach(lbl => {
-                            lbl.style.color = '#e2e2e2';
-                        });
+                        // Неактивна звезда
+                        star.style.color = '#e2e2e2'; // Сив цвят
+                        star.classList.remove('active');
                     }
                 });
             }
 
-            // Инициализиране на функционалността за сравнение
-            if (typeof initAddToComparisonForms === 'function') {
-                initAddToComparisonForms();
+            // Добавяме event listeners към всяка звезда
+            finalStars.forEach((star, index) => {
+                // При hover върху звезда
+                star.addEventListener('mouseenter', function() {
+                    updateStarsDisplay(index + 1);
+                });
+
+                // При click върху звезда
+                star.addEventListener('click', function() {
+                    currentRating = index + 1;
+                    ratingInput.value = currentRating;
+                    updateStarsDisplay(currentRating);
+
+                    // Проверяваме за radio бутони и ги актуализираме
+                    const radioButton = document.getElementById('star' + currentRating);
+                    if (radioButton && radioButton.type === 'radio') {
+                        radioButton.checked = true;
+                    }
+
+                    console.log('Избран рейтинг:', currentRating);
+                });
+            });
+
+            // При mouseout от контейнера, връщаме се към избрания рейтинг
+            starsContainer.addEventListener('mouseleave', function() {
+                updateStarsDisplay(currentRating);
+            });
+
+            // Инициализиране - проверяваме дали има предварително избран рейтинг
+            if (ratingInput && ratingInput.value && ratingInput.value !== '0') {
+                currentRating = parseInt(ratingInput.value);
+                updateStarsDisplay(currentRating);
+            } else {
+                // Проверяваме за избран radio бутон
+                const checkedRadio = document.querySelector('input[name="rating"]:checked') ||
+                                    document.querySelector('input[name="Rating"]:checked');
+
+                if (checkedRadio) {
+                    currentRating = parseInt(checkedRadio.value);
+                    updateStarsDisplay(currentRating);
+                }
             }
         });
     </script>
