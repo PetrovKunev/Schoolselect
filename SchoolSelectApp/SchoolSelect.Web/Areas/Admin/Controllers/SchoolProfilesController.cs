@@ -1,6 +1,7 @@
 ﻿// SchoolProfilesController.cs в Admin областта
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SchoolSelect.Common;
 using SchoolSelect.Data.Models;
 using SchoolSelect.Repositories.Interfaces;
 using SchoolSelect.Web.Areas.Admin.ViewModels;
@@ -68,6 +69,18 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(SchoolProfileCreateViewModel model)
         {
+            if (model.Type == ProfileType.Професионална)
+            {
+                if (string.IsNullOrEmpty(model.Specialty))
+                {
+                    ModelState.AddModelError("Specialty", "Полето Специалност е задължително за професионалните паралелки.");
+                }
+                if (string.IsNullOrEmpty(model.ProfessionalQualification))
+                {
+                    ModelState.AddModelError("ProfessionalQualification", "Полето Професионална квалификация е задължително за професионалните паралелки.");
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 var profile = new SchoolProfile

@@ -1,0 +1,153 @@
+﻿@model SchoolSelect.Web.Areas.Admin.ViewModels.SchoolProfileEditViewModel
+@{
+    ViewData["Title"] = "Редактиране на профил";
+}
+
+<div class="container-fluid mt-4">
+    <h2>@ViewData["Title"] - @Model.SchoolName</h2>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-12 mb-3">
+            <a asp-action="Manage" asp-route-id="@Model.SchoolId" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Назад към профилите
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Данни за профила</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="SchoolId" />
+
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">Име на паралелката</label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Code" class="form-label">Код на паралелката</label>
+                            <input asp-for="Code" class="form-control" />
+                            <span asp-validation-for="Code" class="text-danger"></span>
+                            <div class="form-text">Кратък код за идентификация.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Описание</label>
+                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Subjects" class="form-label">Предмети</label>
+                            <input asp-for="Subjects" class="form-control" />
+                            <span asp-validation-for="Subjects" class="text-danger"></span>
+                            <div class="form-text">Списък с предмети, разделени със запетая.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="AvailablePlaces" class="form-label">Брой места</label>
+                            <input asp-for="AvailablePlaces" class="form-control" type="number" min="0" max="100" />
+                            <span asp-validation-for="AvailablePlaces" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Type" class="form-label">Тип на паралелката</label>
+                            <select asp-for="Type" id="Type" class="form-select">
+                                <option value="">-- Изберете тип --</option>
+                                <option value="1">Профилирана</option>
+                                <option value="2">Професионална</option>
+                            </select>
+                            <span asp-validation-for="Type" class="text-danger"></span>
+                            <div class="form-text">Изберете типа на паралелката - профилирана или професионална.</div>
+                        </div>
+
+                        <div class="mb-3 specialty-container">
+                            <label asp-for="Specialty" class="form-label">Специалност</label>
+                            <input asp-for="Specialty" id="Specialty" class="form-control" />
+                            <span asp-validation-for="Specialty" class="text-danger"></span>
+                            <div class="form-text">Попълва се за професионалните паралелки.</div>
+                        </div>
+
+                        <div class="mb-3 qualification-container">
+                            <label asp-for="ProfessionalQualification" class="form-label">Професионална квалификация</label>
+                            <input asp-for="ProfessionalQualification" id="ProfessionalQualification" class="form-control" />
+                            <span asp-validation-for="ProfessionalQualification" class="text-danger"></span>
+                            <div class="form-text">Попълва се за професионалните паралелки.</div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Запази промените
+                            </button>
+                            <a asp-action="Manage" asp-route-id="@Model.SchoolId" class="btn btn-outline-secondary">Отказ</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Помощна информация</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        Редактирайте данните за този профил (паралелка). Обърнете внимание на следното:
+                    </p>
+                    <ul>
+                        <li>Името трябва да бъде ясно и информативно</li>
+                        <li>Описанието помага на родителите да разберат спецификата на профила</li>
+                        <li>Броят места е важен за изчисляването на шанса за прием</li>
+                        <li>За професионалните паралелки, попълнете специалността и квалификацията</li>
+                    </ul>
+                    <p>
+                        Не забравяйте да добавите и исторически данни за класиранията за този профил.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const typeSelect = document.getElementById('Type');
+        const specialtyField = document.getElementById('Specialty');
+        const qualificationField = document.getElementById('ProfessionalQualification');
+        const specialtyContainer = document.querySelector('.specialty-container');
+        const qualificationContainer = document.querySelector('.qualification-container');
+
+        function updateRequiredFields() {
+            const isProfessional = typeSelect.value === '2'; // Професионална = 2
+
+            if (isProfessional) {
+                specialtyContainer.style.display = 'block';
+                qualificationContainer.style.display = 'block';
+            } else {
+                specialtyContainer.style.display = 'none';
+                qualificationContainer.style.display = 'none';
+                specialtyField.value = '';
+                qualificationField.value = '';
+            }
+        }
+
+        typeSelect.addEventListener('change', updateRequiredFields);
+
+        // Инициализиране при зареждане
+        updateRequiredFields();
+    });
+</script>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

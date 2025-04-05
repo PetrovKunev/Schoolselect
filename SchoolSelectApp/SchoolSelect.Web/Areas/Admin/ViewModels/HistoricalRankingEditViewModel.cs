@@ -15,13 +15,13 @@ namespace SchoolSelect.Web.Areas.Admin.ViewModels
         public int Year { get; set; }
 
         [Required(ErrorMessage = "Минималният бал е задължителен")]
-        [Range(0, 100, ErrorMessage = "Минималният бал трябва да бъде между 0 и 100")]
+        [Range(0, 500, ErrorMessage = "Минималният бал трябва да бъде между 0 и 500")]
         public double MinimumScore { get; set; }
 
-        [Range(1, 10, ErrorMessage = "Кръгът трябва да бъде между 1 и 10")]
+        [Range(1, 4, ErrorMessage = "Кръгът трябва да бъде между 1 и 4")]
         public int Round { get; set; }
 
-        [Range(0, 1000, ErrorMessage = "Броят приети ученици трябва да бъде между 0 и 1000")]
+        [Range(0, 30, ErrorMessage = "Броят приети ученици трябва да бъде между 0 и 30")]
         public int StudentsAdmitted { get; set; }
     }
 }

@@ -1,0 +1,103 @@
+﻿@model SchoolSelect.Web.Areas.Admin.ViewModels.HistoricalRankingEditViewModel
+@{
+    ViewData["Title"] = "Редактиране на класиране";
+}
+
+<div class="container-fluid mt-4">
+    <h2>@ViewData["Title"] - @Model.SchoolName</h2>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-12 mb-3">
+            <a asp-action="Index" asp-route-schoolId="@Model.SchoolId" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Назад към класиранията
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Данни за класирането</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="SchoolId" />
+
+                        <div class="mb-3">
+                            <label asp-for="ProfileId" class="form-label">Профил</label>
+                            <select asp-for="ProfileId" asp-items="ViewBag.Profiles" class="form-select">
+                                <option value="">-- Общо за училището --</option>
+                            </select>
+                            <span asp-validation-for="ProfileId" class="text-danger"></span>
+                            <div class="form-text">Ако оставите празно, класирането ще бъде за цялото училище.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Year" class="form-label">Година</label>
+                            <input asp-for="Year" class="form-control" type="number" min="2000" max="2100" />
+                            <span asp-validation-for="Year" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MinimumScore" class="form-label">Минимален бал</label>
+                            <input asp-for="MinimumScore" class="form-control" type="number" step="0.01" min="0" max="500" />
+                            <span asp-validation-for="MinimumScore" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Round" class="form-label">Кръг</label>
+                            <input asp-for="Round" class="form-control" type="number" min="1" max="10" />
+                            <span asp-validation-for="Round" class="text-danger"></span>
+                            <div class="form-text">Номер на кръга на класиране (по подразбиране 1).</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="StudentsAdmitted" class="form-label">Брой приети ученици</label>
+                            <input asp-for="StudentsAdmitted" class="form-control" type="number" min="0" max="1000" />
+                            <span asp-validation-for="StudentsAdmitted" class="text-danger"></span>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Запази промените
+                            </button>
+                            <a asp-action="Index" asp-route-schoolId="@Model.SchoolId" class="btn btn-outline-secondary">Отказ</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Помощна информация</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        Редактирате данни за историческо класиране. Обърнете внимание на следното:
+                    </p>
+                    <ul>
+                        <li>Ако промените профила, данните ще се отнасят за новия избран профил</li>
+                        <li>Минималният бал е най-важната информация за бъдещите кандидати</li>
+                        <li>Обикновено класирането има няколко кръга - уверете се, че сте избрали правилния кръг</li>
+                        <li>Броят приети ученици може да е различен от обявения брой места в паралелката</li>
+                    </ul>
+                    <p>
+                        Данните за класиранията се използват за изчисляване на шанса за прием на учениците.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

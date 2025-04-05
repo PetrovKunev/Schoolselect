@@ -27,10 +27,12 @@ namespace SchoolSelect.Web.Areas.Admin.ViewModels
 
         public ProfileType? Type { get; set; }
 
-        [StringLength(100)]
-        public string Specialty { get; set; } = string.Empty;
+        [StringLength(ValidationConstants.SchoolProfile.SpecialtyMaxLength)]
+        [Display(Name = "Специалност")]
+        public string? Specialty { get; set; }
 
-        [StringLength(100)]
-        public string ProfessionalQualification { get; set; } = string.Empty;
+        [StringLength(ValidationConstants.SchoolProfile.QualificationMaxLength)]
+        [Display(Name = "Професионална квалификация")]
+        public string? ProfessionalQualification { get; set; }
     }
 }
