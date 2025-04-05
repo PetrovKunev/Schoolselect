@@ -7,7 +7,6 @@ using SchoolSelect.Services.Implementations;
 using SchoolSelect.Services.Interfaces;
 using SchoolSelect.Web.Data;
 using SchoolSelect.Web.Infrastructure;
-using SchoolSelect.Web.TestData;
 
 namespace SchoolSelect.Web
 {
@@ -92,25 +91,7 @@ namespace SchoolSelect.Web
 
             WebApplication app = builder.Build();
 
-            // Зареждане на тестови данни
-            if (app.Environment.IsDevelopment())
-            {
-                using (var scope = app.Services.CreateScope())
-                {
-                    var services = scope.ServiceProvider;
-                    try
-                    {
-                        var context = services.GetRequiredService<ApplicationDbContext>();
-                        SeedData.Initialize(context);
-                    }
-                    catch (Exception ex)
-                    {
-                        var logger = services.GetRequiredService<ILogger<Program>>();
-                        logger.LogError(ex, "Грешка при инициализиране на тестовата база данни.");
-                    }
-                }
-            }
-
+            
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
