@@ -1,0 +1,64 @@
+﻿@model IEnumerable<SchoolSelect.Data.Models.School>
+@{
+    ViewData["Title"] = "Управление на профили на училища";
+}
+
+<div class="container-fluid mt-4">
+    <h2>@ViewData["Title"]</h2>
+    <hr />
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header">
+            <h5>Избор на училище</h5>
+        </div>
+        <div class="card-body">
+            <div class="input-group mb-3">
+                <input type="text" id="schoolSearch" class="form-control" placeholder="Въведете име на училище...">
+                <button class="btn btn-outline-secondary" type="button" id="searchButton">
+                    <i class="bi bi-search"></i> Търси
+                </button>
+            </div>
+
+            <div id="schoolResults" class="list-group mt-3" style="max-height: 400px; overflow-y: auto;">
+                @foreach (var school in Model)
+                {
+                    <a href="@Url.Action("Manage", new { id = school.Id })" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">@school.Name</h5>
+                            <small>@school.District</small>
+                        </div>
+                        <p class="mb-1">@school.Address, @school.City</p>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#schoolSearch').on('keyup', function () {
+                var value = $(this).val().toLowerCase();
+                $('#schoolResults a').filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+
+            $('#searchButton').on('click', function () {
+                var value = $('#schoolSearch').val().toLowerCase();
+                $('#schoolResults a').filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+}

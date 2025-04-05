@@ -33,6 +33,7 @@
   <ItemGroup>
     <Folder Include="Areas\Admin\Data\" />
     <Folder Include="Areas\Admin\Models\" />
+    <Folder Include="Areas\Admin\Views\Rankings\" />
     <Folder Include="wwwroot\css\themes\vapor\" />
     <Folder Include="wwwroot\css\themes\zephyr\" />
   </ItemGroup>
