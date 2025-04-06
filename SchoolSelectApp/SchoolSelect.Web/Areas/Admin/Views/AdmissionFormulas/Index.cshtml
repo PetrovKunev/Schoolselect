@@ -1,0 +1,77 @@
+﻿@model IEnumerable<SchoolSelect.Data.Models.School>
+@{
+    ViewData["Title"] = "Управление на формули за балообразуване";
+}
+
+<div class="container-fluid mt-4">
+    <h2>@ViewData["Title"]</h2>
+    <hr />
+
+    <div class="card">
+        <div class="card-header">
+            <h5>Изберете училище и профил</h5>
+        </div>
+        <div class="card-body">
+            <div class="input-group mb-3">
+                <input type="text" id="schoolSearch" class="form-control" placeholder="Въведете име на училище...">
+                <button class="btn btn-outline-secondary" type="button" id="searchButton">
+                    <i class="bi bi-search"></i> Търси
+                </button>
+            </div>
+
+            <div id="schoolResults">
+                @foreach (var school in Model)
+                {
+                    <div class="school-item mb-4">
+                        <h5>
+                            <i class="bi bi-building"></i> @school.Name
+                            <small class="text-muted">(@school.District)</small>
+                        </h5>
+                        <div class="profiles-list ms-4">
+                            @if (school.Profiles.Any())
+                            {
+                                <ul class="list-group">
+                                    @foreach (var profile in school.Profiles)
+                                    {
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            @profile.Name
+                                            <a asp-action="Profile" asp-route-id="@profile.Id" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-calculator"></i> Управление на формули
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">
+                                    Няма добавени профили за това училище.
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#schoolSearch').on('keyup', function () {
+                var value = $(this).val().toLowerCase();
+                $('#schoolResults .school-item').filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+
+            $('#searchButton').on('click', function () {
+                var value = $('#schoolSearch').val().toLowerCase();
+                $('#schoolResults .school-item').filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+}

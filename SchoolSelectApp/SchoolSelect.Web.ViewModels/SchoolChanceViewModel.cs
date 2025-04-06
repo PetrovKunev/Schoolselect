@@ -8,8 +8,8 @@ namespace SchoolSelect.Web.ViewModels
 {
     public class SchoolChanceViewModel
     {
-        public SchoolViewModel School { get; set; }
-        public UserGradesViewModel UserGrades { get; set; }
+        public required SchoolViewModel School { get; set; }
+        public required UserGradesViewModel UserGrades { get; set; }
         public List<ProfileChanceViewModel> ProfileChances { get; set; } = new List<ProfileChanceViewModel>();
     }
 

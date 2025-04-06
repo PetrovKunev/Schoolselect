@@ -1,0 +1,236 @@
+﻿@model SchoolSelect.Web.Areas.Admin.ViewModels.AdmissionFormulaViewModel
+@{
+    ViewData["Title"] = "Редактиране на формула за балообразуване";
+}
+
+<div class="container-fluid mt-4">
+    <h2>@ViewData["Title"]</h2>
+    <h5 class="text-muted">@Model.ProfileName - @Model.SchoolName</h5>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-8">
+            <form asp-action="Edit" method="post" id="formulaForm">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="SchoolProfileId" />
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Основна информация</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="Year" class="form-label">Година</label>
+                            <input asp-for="Year" class="form-control" type="number" />
+                            <span asp-validation-for="Year" class="text-danger"></span>
+                            <div class="form-text">Учебната година, за която важи формулата (напр. 2023 за учебната 2023-2024 година).</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="FormulaExpression" class="form-label">Формула</label>
+                            <input asp-for="FormulaExpression" class="form-control" />
+                            <span asp-validation-for="FormulaExpression" class="text-danger"></span>
+                            <div class="form-text">Въведете формулата като използвате съкращения за предмети (БЕЛ, МАТ и т.н.), напр. "(2*БЕЛ + 2*МАТ) + (1*ГЕ + 1*ИЦ)"</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="FormulaDescription" class="form-label">Описание</label>
+                            <textarea asp-for="FormulaDescription" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="FormulaDescription" class="text-danger"></span>
+                            <div class="form-text">Кратко описание на формулата за по-ясно представяне.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Компоненти на формулата</h5>
+                        <button type="button" class="btn btn-sm btn-success" id="addComponentBtn">
+                            <i class="bi bi-plus-circle"></i> Добави компонент
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="componentsContainer">
+                            @for (int i = 0; i < Model.Components.Count; i++)
+                            {
+                                <div class="component-item card mb-3">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Предмет</label>
+                                                    <select asp-for="Components[i].SubjectCode" class="form-select subject-code">
+                                                        <option value="">-- Изберете предмет --</option>
+                                                        @foreach (var subject in ViewBag.SubjectCodes)
+                                                        {
+                                                            @if (Model.Components[i].SubjectCode == subject.Key)
+                                                            {
+                                                                <option value="@subject.Key" data-name="@subject.Value" selected>@subject.Value (@subject.Key)</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@subject.Key" data-name="@subject.Value">@subject.Value (@subject.Key)</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                    <input type="hidden" asp-for="Components[i].SubjectName" class="subject-name" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Тип</label>
+                                                    <select asp-for="Components[i].ComponentType" asp-items="ViewBag.ComponentTypes" class="form-select"></select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Коефициент</label>
+                                                    <input asp-for="Components[i].Multiplier" class="form-control" type="number" step="0.1" min="0.1" max="10" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Описание</label>
+                                                    <input asp-for="Components[i].Description" class="form-control" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-1">
+                                                <div class="mb-3 d-flex align-items-end h-100">
+                                                    <button type="button" class="btn btn-sm btn-danger remove-component">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        
+                        <div id="noComponentsMessage" class="alert alert-warning @(Model.Components.Any() ? "d-none" : "")">
+                            <i class="bi bi-exclamation-triangle"></i> Няма добавени компоненти. Добавете поне един компонент към формулата.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Запази промените
+                    </button>
+                    <a asp-action="Profile" asp-route-id="@Model.SchoolProfileId" class="btn btn-outline-secondary">Отказ</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card position-sticky" style="top: 1rem;">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Помощна информация</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Как се формира балът?</h6>
+                    <p>
+                        Балът се формира като сума от оценки или точки от НВО, умножени по съответни коефициенти.
+                    </p>
+
+                    <h6>Съкращения за предмети:</h6>
+                    <ul>
+                        <li><strong>БЕЛ</strong> - Български език и литература</li>
+                        <li><strong>МАТ</strong> - Математика</li>
+                        <li><strong>АЕ</strong> - Английски език</li>
+                        <li><strong>ИТ</strong> - Информационни технологии</li>
+                        <li><strong>ГЕ</strong> - География и икономика</li>
+                        <li><strong>ИЦ</strong> - История и цивилизации</li>
+                        <li><strong>БЗО</strong> - Биология и здравно образование</li>
+                        <li><strong>ФА</strong> - Физика и астрономия</li>
+                        <li><strong>ХИ</strong> - Химия и опазване на околната среда</li>
+                    </ul>
+
+                    <h6>Примери за формули:</h6>
+                    <ul>
+                        <li><code>(2*БЕЛ + 2*МАТ) + (1*ГЕ + 1*ИЦ)</code></li>
+                        <li><code>(3*БЕЛ + 2*МАТ) + (2*БЗО + 1*ХИ)</code></li>
+                    </ul>
+
+                    <p class="mt-3">
+                        <strong>Важно:</strong> За всеки компонент във формулата, добавете съответния запис с неговия коефициент и тип.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let componentIndex = parseInt('@Model.Components.Count');
+
+            // Handle subject code selection to automatically set subject name
+            $(document).on('change', '.subject-code', function() {
+                const selectedOption = $(this).find('option:selected');
+                const subjectName = selectedOption.data('name');
+                $(this).closest('.component-item').find('.subject-name').val(subjectName);
+            });
+
+            // Initialize subject names for existing items
+            $('.subject-code').trigger('change');
+
+            // Add new component
+            $('#addComponentBtn').click(function () {
+                $.ajax({
+                    url: '@Url.Action("AddComponent")',
+                    type: 'POST',
+                    data: { index: componentIndex },
+                    success: function (result) {
+                        $('#componentsContainer').append(result);
+                        componentIndex++;
+                        $('#noComponentsMessage').addClass('d-none');
+                        
+                        // Initialize the newly added subject code dropdown
+                        $('#componentsContainer .component-item:last-child .subject-code').trigger('change');
+                    }
+                });
+            });
+
+            // Remove component
+            $(document).on('click', '.remove-component', function () {
+                $(this).closest('.component-item').remove();
+                
+                // Check if there are any components left
+                if ($('#componentsContainer .component-item').length === 0) {
+                    $('#noComponentsMessage').removeClass('d-none');
+                }
+                
+                // Re-index the components
+                reindexComponents();
+            });
+
+            // Reindex components to ensure proper form submission
+            function reindexComponents() {
+                $('#componentsContainer .component-item').each(function (idx) {
+                    $(this).find('select, input').each(function () {
+                        let name = $(this).attr('name');
+                        if (name) {
+                            let newName = name.replace(/\[\d+\]/, '[' + idx + ']');
+                            $(this).attr('name', newName);
+                            $(this).attr('id', newName);
+                        }
+                    });
+                });
+            }
+            
+            // Form validation
+            $('#formulaForm').submit(function(e) {
+                if ($('#componentsContainer .component-item').length === 0) {
+                    e.preventDefault();
+                    alert('Моля, добавете поне един компонент към формулата!');
+                    return false;
+                }
+                return true;
+            });
+        });
+    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

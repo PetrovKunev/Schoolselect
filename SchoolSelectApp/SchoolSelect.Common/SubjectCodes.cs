@@ -9,74 +9,119 @@
         /// Български език и литература
         /// </summary>
         public const string BulgarianLanguage = "БЕЛ";
-
         /// <summary>
         /// Математика
         /// </summary>
         public const string Mathematics = "МАТ";
-
         /// <summary>
         /// Чужд език
         /// </summary>
         public const string ForeignLanguage = "ЧЕз";
-
         /// <summary>
         /// Компютърно моделиране и информационни технологии
         /// </summary>
         public const string InformationTechnology = "КМИТ";
-
         /// <summary>
         /// Физика
         /// </summary>
         public const string Physics = "ФИЗ";
-
         /// <summary>
         /// Химия
         /// </summary>
         public const string Chemistry = "ХИМ";
-
         /// <summary>
         /// Биология
         /// </summary>
         public const string Biology = "БИО";
-
         /// <summary>
         /// История
         /// </summary>
         public const string History = "ИСТ";
-
         /// <summary>
         /// География
         /// </summary>
         public const string Geography = "ГЕО";
-
         /// <summary>
         /// Философия
         /// </summary>
         public const string Philosophy = "ФИЛ";
-
         /// <summary>
         /// Физическо възпитание и спорт
         /// </summary>
         public const string PhysicalEducation = "ФВС";
+        /// <summary>
+        /// Английски език
+        /// </summary>
+        public const string EnglishLanguage = "АЕ";
+        /// <summary>
+        /// Немски език
+        /// </summary>
+        public const string GermanLanguage = "НЕ";
+        /// <summary>
+        /// Френски език
+        /// </summary>
+        public const string FrenchLanguage = "ФЕ";
+        /// <summary>
+        /// Испански език
+        /// </summary>
+        public const string SpanishLanguage = "ИЕ";
+        /// <summary>
+        /// Италиански език
+        /// </summary>
+        public const string ItalianLanguage = "ИТ";
+        /// <summary>
+        /// Руски език
+        /// </summary>
+        public const string RussianLanguage = "РЕ";
+        /// <summary>
+        /// Изобразително изкуство
+        /// </summary>
+        public const string Art = "ИИ";
+        /// <summary>
+        /// Музика
+        /// </summary>
+        public const string Music = "МУЗ";
+        /// <summary>
+        /// Технологии и предприемачество
+        /// </summary>
+        public const string Technology = "ТП";
+        /// <summary>
+        /// Човек и природа
+        /// </summary>
+        public const string NatureStudies = "ЧП";
+        /// <summary>
+        /// Човек и общество
+        /// </summary>
+        public const string SocialStudies = "ЧО";
 
         /// <summary>
         /// Речник с пълните имена на предметите
         /// </summary>
         public static readonly Dictionary<string, string> SubjectNames = new Dictionary<string, string>
-        {
-            { BulgarianLanguage, "Български език и литература" },
-            { Mathematics, "Математика" },
-            { ForeignLanguage, "Чужд език" },
-            { InformationTechnology, "Компютърно моделиране и ИТ" },
-            { Physics, "Физика и астрономия" },
-            { Chemistry, "Химия и опазване на околната среда" },
-            { Biology, "Биология и здравно образование" },
-            { History, "История и цивилизации" },
-            { Geography, "География и икономика" },
-            { Philosophy, "Философия" },
-            { PhysicalEducation, "Физическо възпитание и спорт" }
-        };
+    {
+        { BulgarianLanguage, "Български език и литература" },
+        { Mathematics, "Математика" },
+        { ForeignLanguage, "Чужд език" },
+        { InformationTechnology, "Компютърно моделиране и ИТ" },
+        { Physics, "Физика и астрономия" },
+        { Chemistry, "Химия и опазване на околната среда" },
+        { Biology, "Биология и здравно образование" },
+        { History, "История и цивилизации" },
+        { Geography, "География и икономика" },
+        { Philosophy, "Философия" },
+        { PhysicalEducation, "Физическо възпитание и спорт" },
+        { EnglishLanguage, "Английски език" },
+        { GermanLanguage, "Немски език" },
+        { FrenchLanguage, "Френски език" },
+        { SpanishLanguage, "Испански език" },
+        { ItalianLanguage, "Италиански език" },
+        { RussianLanguage, "Руски език" },
+        { Art, "Изобразително изкуство" },
+        { Music, "Музика" },
+        { Technology, "Технологии и предприемачество" },
+        { NatureStudies, "Човек и природа" },
+        { SocialStudies, "Човек и общество" }
+    };
 
         /// <summary>
         /// Проверява дали даден код на предмет е валиден
