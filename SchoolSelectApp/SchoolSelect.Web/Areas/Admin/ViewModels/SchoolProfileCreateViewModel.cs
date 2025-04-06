@@ -16,10 +16,10 @@ namespace SchoolSelect.Web.Areas.Admin.ViewModels
         public string Code { get; set; } = string.Empty; 
 
         [StringLength(1000)]
-        public string Description { get; set; } = string.Empty;
+        public string? Description { get; set; }
 
         [StringLength(500)]
-        public string Subjects { get; set; } = string.Empty;
+        public string? Subjects { get; set; }
 
         [Range(0, 100, ErrorMessage = "Броят места трябва да бъде между 0 и 100")]
         public int AvailablePlaces { get; set; }

@@ -88,8 +88,8 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                     SchoolId = model.SchoolId,
                     Name = model.Name,
                     Code = model.Code,
-                    Description = model.Description,
-                    Subjects = model.Subjects,
+                    Description = string.IsNullOrEmpty(model.Description) ? string.Empty : model.Description,
+                    Subjects = string.IsNullOrEmpty(model.Subjects) ? string.Empty : model.Subjects,
                     AvailablePlaces = model.AvailablePlaces,
                     Type = model.Type,
                     Specialty = model.Specialty,
@@ -153,8 +153,8 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
 
                 profile.Name = model.Name;
                 profile.Code = model.Code;
-                profile.Description = model.Description;
-                profile.Subjects = model.Subjects;
+                profile.Description = string.IsNullOrEmpty(model.Description) ? string.Empty : model.Description;
+                profile.Subjects = string.IsNullOrEmpty(model.Subjects) ? string.Empty : model.Subjects;
                 profile.AvailablePlaces = model.AvailablePlaces;
                 profile.Type = model.Type;
                 profile.Specialty = model.Specialty;

@@ -21,10 +21,10 @@ namespace SchoolSelect.Data.Models
         public string Code { get; set; } = string.Empty;
 
         [StringLength(ValidationConstants.Common.DescriptionMaxLength)]
-        public string Description { get; set; } = string.Empty;
+        public string? Description { get; set; }
 
         [StringLength(ValidationConstants.SchoolProfile.SubjectsMaxLength)]
-        public string Subjects { get; set; } = string.Empty;
+        public string? Subjects { get; set; }
 
         [Range(0, ValidationConstants.SchoolProfile.MaxPlaces,
               ErrorMessage = ValidationMessages.PlacesRange)]
