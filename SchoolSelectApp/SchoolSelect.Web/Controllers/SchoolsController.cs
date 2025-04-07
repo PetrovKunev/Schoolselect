@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SchoolSelect.Repositories.Interfaces;
+using SchoolSelect.Web.Areas.Admin.ViewModels;
 using SchoolSelect.Web.ViewModels;
+using FormulaComponentViewModel = SchoolSelect.Web.ViewModels.FormulaComponentViewModel;
 
 namespace SchoolSelect.Web.Controllers
 {
@@ -98,6 +100,47 @@ namespace SchoolSelect.Web.Controllers
             };
 
             return View(schoolViewModel);
+        }
+
+        
+        [HttpGet]
+        public async Task<IActionResult> ViewFormula(int profileId)
+        {
+            var profile = await _unitOfWork.SchoolProfiles.GetProfileWithAdmissionFormulasAsync(profileId);
+
+            if (profile == null)
+            {
+                return NotFound();
+            }
+
+            var currentFormula = profile.AdmissionFormulas
+                .OrderByDescending(f => f.Year)
+                .FirstOrDefault();
+
+            if (currentFormula == null)
+            {
+                return View("NoFormula", profile);
+            }
+
+            var viewModel = new FormulaDisplayViewModel
+            {
+                ProfileId = profile.Id,
+                ProfileName = profile.Name,
+                SchoolName = profile.School?.Name ?? "Unknown School",
+                Year = currentFormula.Year,
+                FormulaExpression = currentFormula.FormulaExpression,
+                FormulaDescription = currentFormula.FormulaDescription,
+                Components = currentFormula.Components.Select(c => new FormulaComponentViewModel
+                {
+                    SubjectCode = c.SubjectCode,
+                    SubjectName = c.SubjectName,
+                    ComponentType = c.ComponentType,
+                    Multiplier = c.Multiplier,
+                    Description = c.Description
+                }).ToList()
+            };
+
+            return View(viewModel);
         }
     }
 }

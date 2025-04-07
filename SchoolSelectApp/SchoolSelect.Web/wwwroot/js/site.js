@@ -63,4 +63,42 @@ document.addEventListener('DOMContentLoaded', function () {
     if (document.querySelector('.notification-badge')) {
         setInterval(refreshNotificationCount, 60000);
     }
+
+    
+    $(function () {
+        $(".view-formula-btn").on("click", function () {
+            const profileId = $(this).data("profile-id");
+
+            $("#formulaModal .modal-content").html(`
+            <div class="d-flex justify-content-center p-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        `);
+
+            const formulaModal = new bootstrap.Modal(document.getElementById('formulaModal'));
+            formulaModal.show();
+
+            $.get(`/Schools/ViewFormula?profileId=${profileId}`)
+                .done(function (data) {
+                    $("#formulaModal .modal-content").html(data);
+                })
+                .fail(function () {
+                    $("#formulaModal .modal-content").html(`
+                    <div class="modal-header">
+                        <h5 class="modal-title">Грешка</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger">Възникна грешка при зареждане на формулата.</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Затвори</button>
+                    </div>
+                `);
+                });
+        });
+    });
+
 });

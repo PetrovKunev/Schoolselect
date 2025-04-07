@@ -1,0 +1,18 @@
+﻿@model SchoolSelect.Data.Models.SchoolProfile
+@{
+    ViewData["Title"] = "Няма формула за балообразуване";
+}
+
+<div class="modal-header">
+    <h5 class="modal-title">Няма формула за балообразуване</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        Няма добавена формула за балообразуване за паралелка "@Model.Name".
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Затвори</button>
+</div>

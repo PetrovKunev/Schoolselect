@@ -161,3 +161,67 @@ body {
     font-weight: 600;
     margin-bottom: 0.75rem;
 }
+
+/* Reset and fixes for modal issues */
+.modal-dialog {
+    margin: 1.75rem auto;
+    position: relative;
+    pointer-events: auto;
+    max-width: 800px; /* Adjust as needed */
+}
+
+.modal-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background-color: #fff;
+    border-radius: 0.3rem;
+    outline: 0;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.5);
+    overflow: hidden; /* Ensure content doesn't leak */
+}
+
+.formula-modal-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.modal-header,
+.modal-footer {
+    flex-shrink: 0; /* Prevent header and footer from shrinking */
+}
+
+.modal-body {
+    overflow-y: auto;
+    max-height: 70vh; /* Limit height and enable scrolling */
+    padding: 1rem;
+}
+
+.modal-footer {
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    position: relative;
+    z-index: 1060;
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1040;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+}
+
+/* Ensure the button is prominently displayed */
+.modal-footer .btn {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+}

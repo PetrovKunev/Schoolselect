@@ -43,6 +43,7 @@ namespace SchoolSelect.Repositories
         public async Task<SchoolProfile?> GetProfileWithAdmissionFormulasAsync(int profileId)
         {
             return await AppContext.SchoolProfiles
+                .Include(p => p.School)
                 .Include(p => p.AdmissionFormulas)
                     .ThenInclude(f => f.Components)
                 .SingleOrDefaultAsync(p => p.Id == profileId);

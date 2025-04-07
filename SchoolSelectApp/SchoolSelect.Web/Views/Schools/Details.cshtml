@@ -133,8 +133,11 @@
                                     }
                                 </div>
                                 <div class="card-footer bg-transparent d-flex justify-content-between">
-                                    <a href="#" class="btn btn-sm btn-outline-primary">Виж формула за бал</a>
-
+                                    @* <a href="#" class="btn btn-sm btn-outline-primary">Виж формула за бал</a> *@
+                                    <button class="btn btn-primary view-formula-btn"
+                                            data-profile-id="@profile.Id">
+                                        Виж формула за бал
+                                    </button>
                                     @* Добавяме бутон за сравнение и на ниво профил *@
                                     @await Component.InvokeAsync("AddToComparison", new { schoolId = Model.Id, profileId = profile.Id })
                                 </div>

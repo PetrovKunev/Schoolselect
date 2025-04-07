@@ -1,0 +1,73 @@
+﻿@model FormulaDisplayViewModel
+@{
+    ViewData["Title"] = "Формула за балообразуване";
+}
+<div class="formula-modal-wrapper">
+    <div class="modal-header">
+        <h5 class="modal-title">Формула за балообразуване - @Model.ProfileName</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        <div class="mb-3">
+            <h6>Училище:</h6>
+            <p>@Model.SchoolName</p>
+        </div>
+        <div class="mb-3">
+            <h6>Паралелка:</h6>
+            <p>@Model.ProfileName</p>
+        </div>
+        <div class="mb-3">
+            <h6>Учебна година:</h6>
+            <p>@Model.Year/@(Model.Year + 1)</p>
+        </div>
+        <div class="mb-3">
+            <h6>Формула:</h6>
+            <div class="alert alert-info">
+                <code>@Model.FormulaExpression</code>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.FormulaDescription))
+            {
+                <div class="mt-2">
+                    <p>@Model.FormulaDescription</p>
+                </div>
+            }
+        </div>
+        <div class="mb-3">
+            <h6>Компоненти на формулата:</h6>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Предмет</th>
+                            <th>Тип</th>
+                            <th>Коефициент</th>
+                            <th>Описание</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var component in Model.Components)
+                        {
+                            <tr>
+                                <td>@component.SubjectName (@component.SubjectCode)</td>
+                                <td>
+                                    @{
+                                        string typeText = component.ComponentType switch
+                                        {
+                                            1 => "Годишна оценка",
+                                            2 => "НВО",
+                                            3 => "Приемен изпит",
+                                            _ => "Друго"
+                                        };
+                                    }
+                                    @typeText
+                                </td>
+                                <td>@component.Multiplier</td>
+                                <td>@component.Description</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
