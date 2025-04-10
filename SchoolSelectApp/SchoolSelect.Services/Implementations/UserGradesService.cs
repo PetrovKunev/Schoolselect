@@ -22,8 +22,8 @@ namespace SchoolSelect.Services.Implementations
             {
                 Id = g.Id,
                 ConfigurationName = g.ConfigurationName,
-                BulgarianGrade = g.BulgarianGrade,
-                MathGrade = g.MathGrade,
+                BulgarianGrade = g.BulgarianGrade ?? 0,
+                MathGrade = g.MathGrade ?? 0,
                 BulgarianExamPoints = g.BulgarianExamPoints,
                 MathExamPoints = g.MathExamPoints,
                 CreatedAt = g.CreatedAt,
@@ -51,8 +51,8 @@ namespace SchoolSelect.Services.Implementations
             {
                 Id = grades.Id,
                 ConfigurationName = grades.ConfigurationName,
-                BulgarianGrade = grades.BulgarianGrade,
-                MathGrade = grades.MathGrade,
+                BulgarianGrade = grades.BulgarianGrade ?? 0,
+                MathGrade = grades.MathGrade ?? 0,
                 BulgarianExamPoints = grades.BulgarianExamPoints,
                 MathExamPoints = grades.MathExamPoints,
                 CreatedAt = grades.CreatedAt,
@@ -177,8 +177,8 @@ namespace SchoolSelect.Services.Implementations
                 {
                     Id = userGrades.Id,
                     ConfigurationName = userGrades.ConfigurationName,
-                    BulgarianGrade = userGrades.BulgarianGrade,
-                    MathGrade = userGrades.MathGrade,
+                    BulgarianGrade = userGrades.BulgarianGrade ?? 0,
+                    MathGrade = userGrades.MathGrade ?? 0,
                     BulgarianExamPoints = userGrades.BulgarianExamPoints,
                     MathExamPoints = userGrades.MathExamPoints
                 },
@@ -234,7 +234,7 @@ namespace SchoolSelect.Services.Implementations
                 {
                     if (component.ComponentType == 1) // Годишна оценка
                     {
-                        componentValue = userGrades.BulgarianGrade;
+                        componentValue = userGrades.BulgarianGrade ?? 0;
                     }
                     else if (component.ComponentType == 2) // НВО
                     {
@@ -245,7 +245,7 @@ namespace SchoolSelect.Services.Implementations
                 {
                     if (component.ComponentType == 1) // Годишна оценка
                     {
-                        componentValue = userGrades.MathGrade;
+                        componentValue = userGrades.MathGrade ?? 0;
                     }
                     else if (component.ComponentType == 2) // НВО
                     {

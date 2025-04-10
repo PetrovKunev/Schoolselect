@@ -23,11 +23,11 @@ namespace SchoolSelect.Data.Models
         // Оценки по основни предмети
         [Range(ValidationConstants.Grade.Min, ValidationConstants.Grade.Max,
               ErrorMessage = ValidationMessages.GradeRange)]
-        public double BulgarianGrade { get; set; }
+        public double? BulgarianGrade { get; set; }
 
         [Range(ValidationConstants.Grade.Min, ValidationConstants.Grade.Max,
               ErrorMessage = ValidationMessages.GradeRange)]
-        public double MathGrade { get; set; }
+        public double? MathGrade { get; set; }
 
         // Резултати от НВО (точки)
         [Range(ValidationConstants.ExamPoints.Min, ValidationConstants.ExamPoints.Max,

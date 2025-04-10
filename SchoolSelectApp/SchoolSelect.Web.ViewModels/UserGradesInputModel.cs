@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 using SchoolSelect.Common;
 
 namespace SchoolSelect.Web.ViewModels
@@ -15,13 +10,11 @@ namespace SchoolSelect.Web.ViewModels
         [Display(Name = "Име на конфигурацията")]
         public string ConfigurationName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = ValidationMessages.RequiredField)]
-        [Range(ValidationConstants.Grade.Min, ValidationConstants.Grade.Max, ErrorMessage = ValidationMessages.GradeRange)]
+       
         [Display(Name = "Годишна оценка по Български език и литература")]
         public double BulgarianGrade { get; set; }
 
-        [Required(ErrorMessage = ValidationMessages.RequiredField)]
-        [Range(ValidationConstants.Grade.Min, ValidationConstants.Grade.Max, ErrorMessage = ValidationMessages.GradeRange)]
+        
         [Display(Name = "Годишна оценка по Математика")]
         public double MathGrade { get; set; }
 
