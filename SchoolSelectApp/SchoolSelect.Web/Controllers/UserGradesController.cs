@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolSelect.Common;
+using SchoolSelect.Repositories.Interfaces;
 using SchoolSelect.Services.Interfaces;
 using SchoolSelect.Web.ViewModels;
 
@@ -11,11 +12,14 @@ namespace SchoolSelect.Web.Controllers
     {
         private readonly IUserGradesService _userGradesService;
         private readonly ILogger<UserGradesController> _logger;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public UserGradesController(IUserGradesService userGradesService, ILogger<UserGradesController> logger)
+
+        public UserGradesController(IUserGradesService userGradesService, ILogger<UserGradesController> logger, IUnitOfWork unitOfWork)
         {
             _userGradesService = userGradesService;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         // GET: UserGrades
@@ -198,6 +202,23 @@ namespace SchoolSelect.Web.Controllers
         {
             try
             {
+                // Проверка дали schoolId е валидно
+                if (schoolId <= 0)
+                {
+                    TempData["ErrorMessage"] = "Моля, изберете валидно училище.";
+                    return RedirectToAction(nameof(Calculate));
+                }
+
+                // Проверка дали училището съществува
+                var school = await _unitOfWork.Schools.GetByIdAsync(schoolId);
+
+                // Ако не съществува, отново редирект с подходящо съобщение
+                if (school == null)
+                {
+                    TempData["ErrorMessage"] = "Избраното училище не е намерено. Моля, изберете друго.";
+                    return RedirectToAction(nameof(Calculate));
+                }
+
                 var result = await _userGradesService.CalculateChanceAsync(gradesId, schoolId);
                 return View(result);
             }
@@ -208,5 +229,6 @@ namespace SchoolSelect.Web.Controllers
                 return RedirectToAction(nameof(Calculate), new { schoolId });
             }
         }
+        
     }
 }

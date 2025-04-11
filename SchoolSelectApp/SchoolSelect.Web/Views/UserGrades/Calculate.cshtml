@@ -96,37 +96,32 @@
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+                document.addEventListener('DOMContentLoaded', function () {
             const schoolSearchInput = document.getElementById('schoolSearchInput');
             const schoolSearchBtn = document.getElementById('schoolSearchBtn');
             const schoolResults = document.getElementById('schoolResults');
-            const schoolIdInput = document.getElementById('schoolIdInput');
+            const schoolIdInput = document.getElementById('schoolIdInput') || document.querySelector('input[name="schoolId"]');
             const selectedSchoolName = document.getElementById('selectedSchoolName');
             const changeSchoolBtn = document.getElementById('changeSchoolBtn');
             const schoolSearch = document.getElementById('schoolSearch');
 
-            // Ако има избрано училище, вкарваме стойността в JavaScript променлива
-            const schoolIdValue = '@(schoolId.HasValue ? schoolId.Value.ToString() : "")';
+            // Ако има бутон "Промяна", добавяме му събитие
+            if (changeSchoolBtn) {
+                changeSchoolBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log("Бутон Промяна е натиснат");
 
-            // Зареждане на информация за избраното училище, ако е налично
-            if (schoolIdValue) {
-                fetch('/api/schools/' + schoolIdValue)
-                    .then(response => response.json())
-                    .then(data => {
-                        selectedSchoolName.textContent = data.name;
-                    })
-                    .catch(error => {
-                        console.error('Error fetching school:', error);
-                        selectedSchoolName.textContent = 'Грешка при зареждане';
-                    });
+                    // Скриваме текущия избор
+                    const parentElement = changeSchoolBtn.closest('.d-flex');
+                    if (parentElement) {
+                        parentElement.style.display = 'none';
+                    }
 
-                if (changeSchoolBtn) {
-                    changeSchoolBtn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        changeSchoolBtn.parentElement.style.display = 'none';
+                    // Показваме полето за търсене
+                    if (schoolSearch) {
                         schoolSearch.style.display = 'block';
-                    });
-                }
+                    }
+                });
             }
 
             // Функция за търсене на училища
@@ -141,7 +136,12 @@
                 schoolResults.innerHTML = '<div class="list-group-item">Търсене...</div>';
 
                 fetch(`/api/schools/search?term=${encodeURIComponent(searchTerm)}`)
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Грешка при търсене');
+                        }
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.length === 0) {
                             schoolResults.innerHTML = '<div class="list-group-item">Няма намерени училища</div>';
@@ -153,7 +153,9 @@
                         data.forEach(school => {
                             const item = document.createElement('a');
                             item.href = '#';
-                            item.className = 'list-group-item list-group-item-action';
+                            item.className = 'list-group-item list-group-item-action school-result-item';
+                            item.dataset.schoolId = school.id; // Съхраняваме ID като data атрибут
+                            item.dataset.schoolName = school.name; // Съхраняваме името като data атрибут
                             item.innerHTML = `
                                 <div class="d-flex justify-content-between align-items-center">
                                     <strong>${school.name}</strong>
@@ -162,40 +164,70 @@
                                 <small>${school.city}</small>
                             `;
 
-                            item.addEventListener('click', function(e) {
-                                e.preventDefault();
-
-                                // Задаване на избраното училище
-                                schoolIdInput.value = school.id;
-                                schoolResults.innerHTML = '';
-                                schoolSearchInput.value = school.name;
-
-                                // Ако има елемент за показване на избраното училище
-                                if (selectedSchoolName) {
-                                    selectedSchoolName.textContent = school.name;
-                                    schoolSearch.style.display = 'none';
-                                    changeSchoolBtn.parentElement.style.display = 'flex';
-                                }
-                            });
-
                             schoolResults.appendChild(item);
                         });
                     })
                     .catch(error => {
                         console.error('Error searching schools:', error);
-                        schoolResults.innerHTML = '<div class="list-group-item text-danger">Грешка при търсене</div>';
+                        schoolResults.innerHTML = '<div class="list-group-item text-danger">Грешка при търсене. Моля, опитайте отново.</div>';
                     });
             };
 
-            // Добавяне на събития
-            schoolSearchBtn.addEventListener('click', searchSchools);
-
-            schoolSearchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
+            // Използваме event delegation за резултатите от търсенето
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.school-result-item')) {
                     e.preventDefault();
-                    searchSchools();
+
+                    // Намираме най-близкия елемент .school-result-item (това може да е самият target или негов родител)
+                    const item = e.target.closest('.school-result-item');
+
+                    // Взимаме ID и име от data атрибутите
+                    const schoolId = item.dataset.schoolId;
+                    const schoolName = item.dataset.schoolName;
+
+                    console.log(`Избрано училище: ${schoolName} (ID: ${schoolId})`);
+
+                    // Задаване на избраното училище
+                    if (schoolIdInput) {
+                        schoolIdInput.value = schoolId;
+                    } else {
+                        console.error("Не е намерено поле за ID на училище!");
+                    }
+
+                    // Актуализираме показваната информация
+                    if (selectedSchoolName) {
+                        selectedSchoolName.textContent = schoolName;
+                        if (schoolSearch) {
+                            schoolSearch.style.display = 'none';
+                        }
+                        if (changeSchoolBtn && changeSchoolBtn.parentElement) {
+                            changeSchoolBtn.parentElement.style.display = 'flex';
+                        }
+                    } else {
+                        // Ако нямаме елемент за показване, просто актуализираме input полето
+                        if (schoolSearchInput) {
+                            schoolSearchInput.value = schoolName;
+                        }
+                    }
+
+                    // Скриваме резултатите
+                    schoolResults.innerHTML = '';
                 }
             });
+
+            // Добавяне на събития
+            if (schoolSearchBtn) {
+                schoolSearchBtn.addEventListener('click', searchSchools);
+            }
+
+            if (schoolSearchInput) {
+                schoolSearchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        searchSchools();
+                    }
+                });
+            }
         });
     </script>
 }

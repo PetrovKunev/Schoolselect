@@ -22,13 +22,20 @@ namespace SchoolSelect.Repositories
 
         public async Task<School> GetSchoolWithDetailsAsync(int id)
         {
-            return await AppContext.Schools
+            var school = await AppContext.Schools
                 .Include(s => s.Profiles)
                 .Include(s => s.HistoricalRankings)
                 .Include(s => s.Facilities)
                 .Include(s => s.Reviews)
                     .ThenInclude(r => r.User)
-                .SingleOrDefaultAsync(s => s.Id == id) ?? throw new InvalidOperationException("School not found");
+                .SingleOrDefaultAsync(s => s.Id == id);
+
+            if (school == null)
+            {
+                throw new InvalidOperationException($"School with ID {id} not found.");
+            }
+
+            return school;
         }
 
         public async Task<IEnumerable<School>> SearchSchoolsAsync(string term, int? take = null)

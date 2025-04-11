@@ -20,6 +20,7 @@ namespace SchoolSelect.Repositories
         {
             return await AppContext.UserGrades
                 .Where(g => g.UserId == userId)
+                .Include(g => g.AdditionalGrades)
                 .OrderByDescending(g => g.CreatedAt)
                 .ToListAsync();
         }

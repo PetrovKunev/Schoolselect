@@ -18,7 +18,8 @@ namespace SchoolSelect.Repositories
 
         public virtual async Task<TEntity> GetByIdAsync(object id)
         {
-            return await _entities.FindAsync(id) ?? throw new InvalidOperationException("Entity not found");
+            var entity = await _entities.FindAsync(id);
+            return entity ?? throw new InvalidOperationException("Entity not found");
         }
 
         public virtual async Task<IEnumerable<TEntity>> GetAllAsync()

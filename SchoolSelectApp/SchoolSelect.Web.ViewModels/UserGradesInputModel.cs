@@ -10,13 +10,16 @@ namespace SchoolSelect.Web.ViewModels
         [Display(Name = "Име на конфигурацията")]
         public string ConfigurationName { get; set; } = string.Empty;
 
-       
-        [Display(Name = "Годишна оценка по Български език и литература")]
-        public double BulgarianGrade { get; set; }
 
-        
+        [Range(2, 6, ErrorMessage = "Оценката трябва да бъде между 2 и 6")]
+        [DisplayFormat(NullDisplayText = "")]
+        [Display(Name = "Годишна оценка по Български език и литература")]
+        public double? BulgarianGrade { get; set; }
+
+        [Range(2, 6, ErrorMessage = "Оценката трябва да бъде между 2 и 6")]
+        [DisplayFormat(NullDisplayText = "")]
         [Display(Name = "Годишна оценка по Математика")]
-        public double MathGrade { get; set; }
+        public double? MathGrade { get; set; }
 
         [Required(ErrorMessage = ValidationMessages.RequiredField)]
         [Range(ValidationConstants.ExamPoints.Min, ValidationConstants.ExamPoints.Max, ErrorMessage = ValidationMessages.ExamPointsRange)]
