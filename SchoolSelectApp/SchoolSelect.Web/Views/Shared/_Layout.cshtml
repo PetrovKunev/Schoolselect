@@ -46,15 +46,16 @@
         </nav>
     </header>
 
-    <div class="container mb-4">
-        <main role="main">
+
+    <div class="content-wrapper">
+        <div class="container">
             @RenderBody()
-        </main>
+        </div>
     </div>
 
-    <footer class="footer border-top text-muted">
-        <div class="container text-center text-white">
-            &copy; @DateTime.UtcNow.Year - SchoolSelect - Всички права запазени
+    <footer class="footer">
+        <div class="container text-center">
+            &copy; @DateTime.Now.Year - SchoolSelect - Всички права запазени
         </div>
     </footer>
 
