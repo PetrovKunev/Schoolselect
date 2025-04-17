@@ -21,9 +21,9 @@
         public const int EntranceExam = 3;
 
         /// <summary>
-        /// Друг компонент
+        /// Годишна оценка, преобразувана в точки
         /// </summary>
-        public const int OtherComponent = 4;
+        public const int YearlyGradeAsPoints = 4;
     }
 
     /// <summary>

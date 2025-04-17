@@ -51,7 +51,7 @@ namespace SchoolSelect.Web.Controllers
                 { ComponentTypes.YearlyGrade, "Годишна оценка" },
                 { ComponentTypes.NationalExam, "НВО" },
                 { ComponentTypes.EntranceExam, "Приемен изпит" },
-                { ComponentTypes.OtherComponent, "Друго" }
+                { ComponentTypes.YearlyGradeAsPoints, "Годишна оценка, преобразувана в точки" }
             };
             return View(new UserGradesInputModel());
         }
@@ -82,7 +82,7 @@ namespace SchoolSelect.Web.Controllers
                 { ComponentTypes.YearlyGrade, "Годишна оценка" },
                 { ComponentTypes.NationalExam, "НВО" },
                 { ComponentTypes.EntranceExam, "Приемен изпит" },
-                { ComponentTypes.OtherComponent, "Друго" }
+                { ComponentTypes.YearlyGradeAsPoints , "Годишна оценка, преобразувана в точки" }
             };
             return View(model);
         }
@@ -118,7 +118,7 @@ namespace SchoolSelect.Web.Controllers
                 { ComponentTypes.YearlyGrade, "Годишна оценка" },
                 { ComponentTypes.NationalExam, "НВО" },
                 { ComponentTypes.EntranceExam, "Приемен изпит" },
-                { ComponentTypes.OtherComponent, "Друго" }
+                { ComponentTypes.YearlyGradeAsPoints , "Годишна оценка, преобразувана в точки" }
             };
             return View(model);
         }
@@ -148,7 +148,7 @@ namespace SchoolSelect.Web.Controllers
                 { ComponentTypes.YearlyGrade, "Годишна оценка" },
                 { ComponentTypes.NationalExam, "НВО" },
                 { ComponentTypes.EntranceExam, "Приемен изпит" },
-                { ComponentTypes.OtherComponent, "Друго" }
+                { ComponentTypes.YearlyGradeAsPoints , "Годишна оценка, преобразувана в точки" }
             };
             return View(model);
         }

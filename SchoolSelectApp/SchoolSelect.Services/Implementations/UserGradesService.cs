@@ -1,4 +1,6 @@
-﻿using SchoolSelect.Data.Models;
+﻿using Microsoft.Extensions.Logging;
+using SchoolSelect.Common;
+using SchoolSelect.Data.Models;
 using SchoolSelect.Repositories.Interfaces;
 using SchoolSelect.Services.Interfaces;
 using SchoolSelect.Web.ViewModels;
@@ -8,10 +10,12 @@ namespace SchoolSelect.Services.Implementations
     public class UserGradesService : IUserGradesService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<UserGradesService> _logger;
 
-        public UserGradesService(IUnitOfWork unitOfWork)
+        public UserGradesService(IUnitOfWork unitOfWork, ILogger<UserGradesService> logger)
         {
             _unitOfWork = unitOfWork;
+            _logger = logger;
         }
 
         public async Task<List<UserGradesViewModel>> GetUserGradesAsync(Guid userId)
@@ -191,27 +195,44 @@ namespace SchoolSelect.Services.Implementations
                 // Получаване на последната формула за балообразуване за профила
                 var admissionFormula = await _unitOfWork.AdmissionFormulas.GetCurrentFormulaForProfileAsync(profile.Id);
 
-                if (admissionFormula == null)
-                {
-                    continue;
-                }
-
                 // Получаване на историческите данни за минимален бал
                 var historicalRankings = await _unitOfWork.HistoricalRankings.GetRankingsByProfileIdAsync(profile.Id);
                 var latestRanking = historicalRankings.OrderByDescending(r => r.Year).FirstOrDefault();
 
-                // Изчисляване на бал според формулата
-                double calculatedScore = CalculateScore(userGrades, admissionFormula);
+                double calculatedScore = 0;
+                double minimumScoreLastYear = latestRanking?.MinimumScore ?? 0;
+                double chancePercentage = 50; // Стойност по подразбиране, ако нямаме данни
 
-                // Изчисляване на шанс за прием
-                double chancePercentage = CalculateChancePercentage(calculatedScore, latestRanking?.MinimumScore ?? 0);
+                if (admissionFormula != null)
+                {
+                    // Изчисляване на бал според формулата
+                    calculatedScore = CalculateScore(userGrades, admissionFormula);
+
+                    // Изчисляване на шанс за прием
+                    chancePercentage = CalculateChancePercentage(calculatedScore, minimumScoreLastYear);
+                }
+                else
+                {
+                    // Ако нямаме формула, използваме опростен начин за изчисляване на бала
+                    // Например: БЕЛ (удвоен) + Математика (удвоен) + точки от НВО
+                    calculatedScore = ((userGrades.BulgarianGrade ?? 0) * 2) +
+                                     ((userGrades.MathGrade ?? 0) * 2) +
+                                     userGrades.BulgarianExamPoints +
+                                     userGrades.MathExamPoints;
+
+                    // Ако имаме исторически данни, изчисляваме шанса
+                    if (minimumScoreLastYear > 0)
+                    {
+                        chancePercentage = CalculateChancePercentage(calculatedScore, minimumScoreLastYear);
+                    }
+                }
 
                 result.ProfileChances.Add(new ProfileChanceViewModel
                 {
                     ProfileId = profile.Id,
                     ProfileName = profile.Name,
                     CalculatedScore = calculatedScore,
-                    MinimumScoreLastYear = latestRanking?.MinimumScore ?? 0,
+                    MinimumScoreLastYear = minimumScoreLastYear,
                     ChancePercentage = chancePercentage,
                     AvailablePlaces = profile.AvailablePlaces
                 });
@@ -223,52 +244,334 @@ namespace SchoolSelect.Services.Implementations
         // Изчисляване на бал според формулата за прием
         private double CalculateScore(UserGrades userGrades, AdmissionFormula formula)
         {
+            _logger.LogDebug($"Изчисляване на бал за формула: {formula.FormulaExpression}");
+
             double score = 0;
 
-            foreach (var component in formula.Components)
+            // 1. Опитваме с парсване и изчисляване на текстовата формула
+            if (!string.IsNullOrEmpty(formula.FormulaExpression))
             {
-                double componentValue = 0;
-
-                // Проверка за основните предмети
-                if (component.SubjectCode == "БЕЛ")
+                try
                 {
-                    if (component.ComponentType == 1) // Годишна оценка
+                    double parsedScore = ParseAndCalculateFormula(userGrades, formula.FormulaExpression);
+                    _logger.LogDebug($"Бал от парсване на формула: {parsedScore}");
+                    return Math.Round(parsedScore, 2);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning($"Неуспешно парсване на формула: {ex.Message}, опитваме с компоненти");
+                }
+            }
+
+            // 2. Ако парсването не успее или няма формула, опитваме с компонентите
+            if (formula.Components != null && formula.Components.Any())
+            {
+                score = CalculateScoreFromComponents(userGrades, formula.Components);
+                _logger.LogDebug($"Бал изчислен от компоненти: {score}");
+                return Math.Round(score, 2);
+            }
+
+            // 3. Ако нито един от методите не успее, използваме резервна формула
+            score = ((userGrades.BulgarianGrade ?? 0) * 2) +
+                    ((userGrades.MathGrade ?? 0) * 2) +
+                    userGrades.BulgarianExamPoints +
+                    userGrades.MathExamPoints;
+
+            _logger.LogDebug($"Бал от стандартна формула: {score}");
+            return Math.Round(score, 2);
+        }
+
+        // Метод за парсване и изчисляване на формулата
+        private double ParseAndCalculateFormula(UserGrades userGrades, string formulaExpression)
+        {
+            _logger.LogDebug($"Парсване на формула: {formulaExpression}");
+
+            // Подготвяме копие на формулата, което ще модифицираме
+            string workingFormula = formulaExpression;
+
+            // Създаваме речник с всички възможни термове в формулата и техните стойности
+            var valueMap = PrepareValueDictionary(userGrades);
+
+            // Извършваме заместване на всички променливи с техните стойности
+            foreach (var entry in valueMap)
+            {
+                // Спазваме формата на заместване, който виждаме в примерите
+                // Например: "2 * БЕЛ" => "2 * 5.50"
+                string searchPattern1 = $" * {entry.Key}";
+                string replaceWith1 = $" * {entry.Value}";
+
+                // Също търсим заместване без интервал: "2*БЕЛ" => "2*5.50"
+                string searchPattern2 = $"*{entry.Key}";
+                string replaceWith2 = $"*{entry.Value}";
+
+                // Заместваме всички срещания
+                workingFormula = workingFormula.Replace(searchPattern1, replaceWith1)
+                                               .Replace(searchPattern2, replaceWith2);
+            }
+
+            _logger.LogDebug($"Формула след заместване на променливи: {workingFormula}");
+
+            // Опитваме да изчислим резултата на модифицираната формула
+            return EvaluateExpression(workingFormula);
+        }
+
+        // Метод за подготовка на речник с всички възможни стойности
+        private Dictionary<string, double> PrepareValueDictionary(UserGrades userGrades)
+        {
+            var valueMap = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+
+            // Добавяме основните оценки (като оценки и като точки)
+            valueMap["БЕЛ"] = userGrades.BulgarianGrade ?? 0;  // Годишна оценка по БЕЛ
+            valueMap["МАТ"] = userGrades.MathGrade ?? 0;       // Годишна оценка по Математика
+
+            // Добавяме конвертираните в точки оценки
+            valueMap["БЕЛ_ТОЧКИ"] = ConvertGradeToPoints(userGrades.BulgarianGrade ?? 0);
+            valueMap["МАТ_ТОЧКИ"] = ConvertGradeToPoints(userGrades.MathGrade ?? 0);
+
+            // Добавяме точките от НВО
+            valueMap["БЕЛ1"] = userGrades.BulgarianExamPoints; // НВО по БЕЛ
+            valueMap["М"] = userGrades.MathExamPoints;         // НВО по Математика (формат от примера)
+            valueMap["МАТ1"] = userGrades.MathExamPoints;      // Алтернативен формат за НВО по Математика
+
+            // Проверяваме дали имаме допълнителни оценки
+            if (userGrades.AdditionalGrades != null)
+            {
+                // Добавяме всички допълнителни оценки с техните кодове
+                foreach (var grade in userGrades.AdditionalGrades)
+                {
+                    string key = grade.SubjectCode;
+
+                    // Ако имаме различни типове компоненти, добавяме индикатор за типа
+                    if (grade.ComponentType == ComponentTypes.NationalExam)
                     {
-                        componentValue = userGrades.BulgarianGrade ?? 0;
+                        key = $"{grade.SubjectCode}1";
                     }
-                    else if (component.ComponentType == 2) // НВО
+                    else if (grade.ComponentType == ComponentTypes.EntranceExam)
                     {
-                        componentValue = userGrades.BulgarianExamPoints;
+                        key = $"{grade.SubjectCode}2";
+                    }
+
+                    valueMap[key] = grade.Value;
+
+                    // Добавяме и стойности за конвертирани в точки оценки
+                    if (grade.ComponentType == ComponentTypes.YearlyGrade)
+                    {
+                        valueMap[$"{key}_ТОЧКИ"] = ConvertGradeToPoints(grade.Value);
+                    }
+
+                    // Добавяме и запис с оригиналния код за гъвкавост
+                    if (!valueMap.ContainsKey(grade.SubjectCode))
+                    {
+                        valueMap[grade.SubjectCode] = grade.Value;
                     }
                 }
-                else if (component.SubjectCode == "МАТ")
+            }
+
+            // Логваме всички налични стойности за дебъг
+            foreach (var entry in valueMap)
+            {
+                _logger.LogDebug($"Стойност за {entry.Key}: {entry.Value}");
+            }
+
+            return valueMap;
+        }
+
+        // Метод за изчисляване на математически израз
+        private double EvaluateExpression(string expression)
+        {
+            // Премахваме излишните скоби и пространства
+            expression = expression.Replace("(", "").Replace(")", "").Replace(" ", "");
+
+            _logger.LogDebug($"Опростен израз за изчисление: {expression}");
+
+            // Разделяме израза на компоненти по оператора за събиране
+            string[] addComponents = expression.Split('+');
+            double result = 0;
+
+            // Обработваме всеки компонент
+            foreach (string component in addComponents)
+            {
+                // Проверяваме дали компонентът съдържа умножение
+                if (component.Contains("*"))
                 {
-                    if (component.ComponentType == 1) // Годишна оценка
+                    // Разделяме по оператора за умножение
+                    string[] factors = component.Split('*');
+
+                    if (factors.Length != 2)
                     {
-                        componentValue = userGrades.MathGrade ?? 0;
+                        throw new ArgumentException($"Неочакван формат на компонент: {component}");
                     }
-                    else if (component.ComponentType == 2) // НВО
+
+                    // Парсваме и умножаваме факторите
+                    if (double.TryParse(factors[0], out double factor1) &&
+                        double.TryParse(factors[1], out double factor2))
                     {
-                        componentValue = userGrades.MathExamPoints;
+                        result += factor1 * factor2;
+                        _logger.LogDebug($"Умножение: {factor1} * {factor2} = {factor1 * factor2}");
                     }
+                    else
+                    {
+                        throw new ArgumentException($"Не може да се парсне числова стойност: {factors[0]} или {factors[1]}");
+                    }
+                }
+                // Проверяваме дали компонентът е просто число
+                else if (double.TryParse(component, out double value))
+                {
+                    result += value;
+                    _logger.LogDebug($"Добавяне на стойност: {value}");
                 }
                 else
                 {
-                    // Проверка за допълнителни предмети
-                    var additionalGrade = userGrades.AdditionalGrades
-                        .FirstOrDefault(ag => ag.SubjectCode == component.SubjectCode && ag.ComponentType == component.ComponentType);
-
-                    if (additionalGrade != null)
-                    {
-                        componentValue = additionalGrade.Value;
-                    }
+                    throw new ArgumentException($"Неочакван формат на компонент: {component}");
                 }
-
-                // Добавяне на компонента към общия бал
-                score += componentValue * component.Multiplier;
             }
 
-            return Math.Round(score, 2);
+            _logger.LogDebug($"Изчислен резултат: {result}");
+            return result;
+        }
+
+        // Помощен метод за изчисляване на бал от компоненти на формулата
+        private double CalculateScoreFromComponents(UserGrades userGrades, IEnumerable<FormulaComponent> components)
+        {
+            double score = 0;
+
+            foreach (var component in components)
+            {
+                double componentValue = GetComponentValue(userGrades, component.SubjectCode, component.ComponentType);
+                double contribution = componentValue * component.Multiplier;
+
+                _logger.LogDebug($"Компонент: {component.SubjectCode} (тип {component.ComponentType}), " +
+                                $"стойност: {componentValue}, коефициент: {component.Multiplier}, " +
+                                $"принос: {contribution}");
+
+                score += contribution;
+            }
+
+            return score;
+        }
+
+        // Метод за получаване на стойност на компонент от оценките
+        private double GetComponentValue(UserGrades userGrades, string subjectCode, int componentType)
+        {
+            // Проверка за основните предмети
+            if (subjectCode == SubjectCodes.BulgarianLanguage) // "БЕЛ"
+            {
+                if (componentType == ComponentTypes.YearlyGrade) // Годишна оценка
+                {
+                    return userGrades.BulgarianGrade ?? 0;
+                }
+                else if (componentType == ComponentTypes.NationalExam) // НВО
+                {
+                    return userGrades.BulgarianExamPoints;
+                }
+                else if (componentType == ComponentTypes.YearlyGradeAsPoints) // Годишна оценка като точки
+                {
+                    return ConvertGradeToPoints(userGrades.BulgarianGrade ?? 0);
+                }
+            }
+            else if (subjectCode == SubjectCodes.Mathematics) // "МАТ"
+            {
+                if (componentType == ComponentTypes.YearlyGrade) // Годишна оценка
+                {
+                    return userGrades.MathGrade ?? 0;
+                }
+                else if (componentType == ComponentTypes.NationalExam) // НВО
+                {
+                    return userGrades.MathExamPoints;
+                }
+                else if (componentType == ComponentTypes.YearlyGradeAsPoints) // Годишна оценка като точки
+                {
+                    return ConvertGradeToPoints(userGrades.MathGrade ?? 0);
+                }
+            }
+
+            // Търсим в допълнителните оценки
+            var additionalGrade = userGrades.AdditionalGrades
+                ?.FirstOrDefault(ag => ag.SubjectCode == subjectCode && ag.ComponentType == componentType);
+
+            if (additionalGrade != null)
+            {
+                if (componentType == ComponentTypes.YearlyGradeAsPoints)
+                {
+                    return ConvertGradeToPoints(additionalGrade.Value);
+                }
+                return additionalGrade.Value;
+            }
+
+            // Проверка за конвертиране между типове компоненти
+            if (componentType == ComponentTypes.YearlyGradeAsPoints)
+            {
+                // Търсим годишна оценка и я конвертираме в точки
+                var yearlyGrade = userGrades.AdditionalGrades?
+                    .FirstOrDefault(ag => ag.SubjectCode == subjectCode && ag.ComponentType == ComponentTypes.YearlyGrade);
+
+                if (yearlyGrade != null)
+                {
+                    return ConvertGradeToPoints(yearlyGrade.Value);
+                }
+            }
+
+            // Проверяваме и за близки съвпадения (например AE вместо АЕ)
+            if (componentType == ComponentTypes.YearlyGrade || componentType == ComponentTypes.YearlyGradeAsPoints)
+            {
+                var similarGrade = userGrades.AdditionalGrades?
+                    .FirstOrDefault(ag => (ag.ComponentType == ComponentTypes.YearlyGrade) &&
+                                    IsSubjectCodeSimilar(ag.SubjectCode, subjectCode));
+
+                if (similarGrade != null)
+                {
+                    _logger.LogWarning($"Използвана приблизителна оценка за {subjectCode}: " +
+                                     $"{similarGrade.SubjectCode} = {similarGrade.Value}");
+
+                    if (componentType == ComponentTypes.YearlyGradeAsPoints)
+                    {
+                        return ConvertGradeToPoints(similarGrade.Value);
+                    }
+                    return similarGrade.Value;
+                }
+            }
+
+            // Ако не намерим оценка, връщаме 0
+            _logger.LogWarning($"Не е намерена оценка за предмет {subjectCode}, тип {componentType}");
+            return 0;
+        }
+
+        // Помощен метод за проверка на близки съвпадения на кодове на предмети
+        private bool IsSubjectCodeSimilar(string code1, string code2)
+        {
+            // Проверка за идентични кодове
+            if (string.Equals(code1, code2, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            // Проверка за AE/АЕ, HE/НЕ, и т.н. (латиница vs кирилица)
+            string normalized1 = NormalizeSubjectCode(code1);
+            string normalized2 = NormalizeSubjectCode(code2);
+
+            return string.Equals(normalized1, normalized2, StringComparison.OrdinalIgnoreCase);
+        }
+
+        // Помощен метод за нормализиране на кодове на предмети
+        private string NormalizeSubjectCode(string code)
+        {
+            // Заместваме латински букви с кирилски и обратно
+            return code.Replace("A", "А")
+                       .Replace("А", "A")
+                       .Replace("E", "Е")
+                       .Replace("Е", "E")
+                       .Replace("O", "О")
+                       .Replace("О", "O")
+                       .Replace("C", "С")
+                       .Replace("С", "C")
+                       .Replace("P", "Р")
+                       .Replace("Р", "P")
+                       .Replace("X", "Х")
+                       .Replace("Х", "X")
+                       .Replace("B", "В")
+                       .Replace("В", "B")
+                       .Replace("H", "Н")
+                       .Replace("Н", "H")
+                       .Replace("M", "М")
+                       .Replace("М", "M");
         }
 
         // Изчисляване на процент шанс за прием
@@ -300,5 +603,15 @@ namespace SchoolSelect.Services.Implementations
                 return 10; // Много нисък бал
             }
         }
+
+        private static double ConvertGradeToPoints(double grade)
+        {
+            if (grade >= 5.50) return 50; // Отличен 6
+            if (grade >= 4.50) return 39; // Много добър 5
+            if (grade >= 3.50) return 26; // Добър 4
+            if (grade >= 2.50) return 15; // Среден 3
+            return 0; // По-ниски оценки
+        }
+
     }
 }

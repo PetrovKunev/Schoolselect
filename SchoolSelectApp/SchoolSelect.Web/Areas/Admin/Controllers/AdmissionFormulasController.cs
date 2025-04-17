@@ -132,7 +132,7 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                 new { Value = ComponentTypes.YearlyGrade, Text = "Годишна оценка" },
                 new { Value = ComponentTypes.NationalExam, Text = "НВО" },
                 new { Value = ComponentTypes.EntranceExam, Text = "Приемен изпит" },
-                new { Value = ComponentTypes.OtherComponent, Text = "Друго" }
+                new { Value = ComponentTypes.YearlyGradeAsPoints, Text = "Годишна оценка, преобразувана в точки" }
             }, "Value", "Text");
 
             ViewBag.SubjectCodes = SubjectCodes.SubjectNames;
@@ -195,7 +195,7 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                 new { Value = ComponentTypes.YearlyGrade, Text = "Годишна оценка" },
                 new { Value = ComponentTypes.NationalExam, Text = "НВО" },
                 new { Value = ComponentTypes.EntranceExam, Text = "Приемен изпит" },
-                new { Value = ComponentTypes.OtherComponent, Text = "Друго" }
+                new { Value = ComponentTypes.YearlyGradeAsPoints , Text = "Годишна оценка, преобразувана в точки" }
             }, "Value", "Text");
 
             ViewBag.SubjectCodes = SubjectCodes.SubjectNames;
@@ -241,7 +241,7 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                 new { Value = ComponentTypes.YearlyGrade, Text = "Годишна оценка" },
                 new { Value = ComponentTypes.NationalExam, Text = "НВО" },
                 new { Value = ComponentTypes.EntranceExam, Text = "Приемен изпит" },
-                new { Value = ComponentTypes.OtherComponent, Text = "Друго" }
+                new { Value = ComponentTypes.YearlyGradeAsPoints , Text = "Годишна оценка, преобразувана в точки" }
             }, "Value", "Text");
 
             ViewBag.SubjectCodes = SubjectCodes.SubjectNames;
@@ -314,7 +314,7 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                 new { Value = ComponentTypes.YearlyGrade, Text = "Годишна оценка" },
                 new { Value = ComponentTypes.NationalExam, Text = "НВО" },
                 new { Value = ComponentTypes.EntranceExam, Text = "Приемен изпит" },
-                new { Value = ComponentTypes.OtherComponent, Text = "Друго" }
+                new { Value = ComponentTypes.YearlyGradeAsPoints , Text = "Годишна оценка, преобразувана в точки" }
             }, "Value", "Text");
 
             ViewBag.SubjectCodes = SubjectCodes.SubjectNames;
@@ -393,7 +393,7 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                 new { Value = ComponentTypes.YearlyGrade, Text = "Годишна оценка" },
                 new { Value = ComponentTypes.NationalExam, Text = "НВО" },
                 new { Value = ComponentTypes.EntranceExam, Text = "Приемен изпит" },
-                new { Value = ComponentTypes.OtherComponent, Text = "Друго" }
+                new { Value = ComponentTypes.YearlyGradeAsPoints , Text = "Годишна оценка, преобразувана в точки" }
             }, "Value", "Text");
 
             ViewBag.SubjectCodes = SubjectCodes.SubjectNames;
