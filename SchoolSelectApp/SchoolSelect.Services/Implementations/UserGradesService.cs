@@ -4,6 +4,8 @@ using SchoolSelect.Data.Models;
 using SchoolSelect.Repositories.Interfaces;
 using SchoolSelect.Services.Interfaces;
 using SchoolSelect.Web.ViewModels;
+using System.Data;
+using System.Text.RegularExpressions;
 
 namespace SchoolSelect.Services.Implementations
 {
@@ -286,33 +288,229 @@ namespace SchoolSelect.Services.Implementations
         {
             _logger.LogDebug($"Парсване на формула: {formulaExpression}");
 
-            // Подготвяме копие на формулата, което ще модифицираме
-            string workingFormula = formulaExpression;
-
-            // Създаваме речник с всички възможни термове в формулата и техните стойности
-            var valueMap = PrepareValueDictionary(userGrades);
-
-            // Извършваме заместване на всички променливи с техните стойности
-            foreach (var entry in valueMap)
+            try
             {
-                // Спазваме формата на заместване, който виждаме в примерите
-                // Например: "2 * БЕЛ" => "2 * 5.50"
-                string searchPattern1 = $" * {entry.Key}";
-                string replaceWith1 = $" * {entry.Value}";
+                // Извличане на отделните части на формулата
+                string cleanedFormula = formulaExpression.Trim();
 
-                // Също търсим заместване без интервал: "2*БЕЛ" => "2*5.50"
-                string searchPattern2 = $"*{entry.Key}";
-                string replaceWith2 = $"*{entry.Value}";
+                // Проверяваме дали формулата отговаря на шаблона с две части в скоби
+                if (cleanedFormula.Contains("+") && cleanedFormula.Contains("("))
+                {
+                    // Извличаме двете части от формулата, заградени в скоби
+                    var match = Regex.Match(cleanedFormula, @"\(([^)]+)\)\s*\+\s*\(([^)]+)\)");
+                    if (match.Success && match.Groups.Count >= 3)
+                    {
+                        string nvoFormulaPart = match.Groups[1].Value.Trim();
+                        string gradesFormulaPart = match.Groups[2].Value.Trim();
 
-                // Заместваме всички срещания
-                workingFormula = workingFormula.Replace(searchPattern1, replaceWith1)
-                                               .Replace(searchPattern2, replaceWith2);
+                        _logger.LogDebug($"Извлечена НВО формула: {nvoFormulaPart}");
+                        _logger.LogDebug($"Извлечена формула за годишни оценки: {gradesFormulaPart}");
+
+                        // В първата част са точките от НВО
+                        double nvoScore = CalculateNVOScore(userGrades, nvoFormulaPart);
+                        _logger.LogDebug($"Резултат от НВО част: {nvoScore}");
+
+                        // Във втората част са годишни оценки, превърнати в точки
+                        double gradesScore = CalculateGradesScore(userGrades, gradesFormulaPart);
+                        _logger.LogDebug($"Резултат от годишни оценки: {gradesScore}");
+
+                        // Общият резултат е сумата от двете части
+                        double totalScore = nvoScore + gradesScore;
+                        _logger.LogDebug($"Общ резултат (НВО + оценки): {nvoScore} + {gradesScore} = {totalScore}");
+
+                        return totalScore;
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Формулата не отговаря на очаквания шаблон с две части в скоби.");
+                    }
+                }
+
+                // Ако не успеем да разделим формулата на части по шаблона, опитваме общ подход
+                _logger.LogDebug("Опитваме общ подход за изчисляване на формулата.");
+
+                // Замяна на всички променливи в израза с техните стойности
+                var valueDict = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
+                {
+                    // НВО точки
+                    { "БЕЛ", userGrades.BulgarianExamPoints },
+                    { "BEL", userGrades.BulgarianExamPoints },
+                    { "М", userGrades.MathExamPoints },
+                    { "M", userGrades.MathExamPoints },
+                    { "МАТ", userGrades.MathExamPoints },
+                    { "MAT", userGrades.MathExamPoints },
+                    
+                    // Годишни оценки, превърнати в точки
+                    { "БЕЛ_ТОЧКИ", ConvertGradeToPoints(userGrades.BulgarianGrade ?? 0) },
+                    { "BEL_ТОЧКИ", ConvertGradeToPoints(userGrades.BulgarianGrade ?? 0) },
+                    { "МАТ_ТОЧКИ", ConvertGradeToPoints(userGrades.MathGrade ?? 0) },
+                    { "MAT_ТОЧКИ", ConvertGradeToPoints(userGrades.MathGrade ?? 0) }
+                };
+
+                // Заместваме всички променливи във формулата
+                string processedFormula = cleanedFormula;
+                foreach (var entry in valueDict)
+                {
+                    processedFormula = ReplaceVariableInFormula(processedFormula, entry.Key, entry.Value);
+                }
+
+                _logger.LogDebug($"Формула след заместване на променливи: {processedFormula}");
+
+                // Оценяваме израза
+                using (var dt = new DataTable())
+                {
+                    var result = Convert.ToDouble(dt.Compute(processedFormula, string.Empty));
+                    _logger.LogDebug($"Резултат от изчисление: {result}");
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Грешка при парсване на формула '{formulaExpression}': {ex.Message}");
+                throw;
+            }
+        }
+
+        // Метод за заместване на променлива във формула
+        private string ReplaceVariableInFormula(string formula, string variable, double value)
+        {
+            // Използваме регулярен израз, за да заместим променливата само когато е самостоятелна дума
+            return Regex.Replace(
+                formula,
+                $@"\b{Regex.Escape(variable)}\b",
+                value.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            );
+        }
+
+        // Изчисляване на частта с НВО точки
+        private double CalculateNVOScore(UserGrades userGrades, string formula)
+        {
+            _logger.LogDebug($"Изчисляване на НВО част: {formula}");
+
+            // Подготвяме речник със стойностите за НВО
+            var nvoValues = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "БЕЛ", userGrades.BulgarianExamPoints },
+                { "BEL", userGrades.BulgarianExamPoints },
+                { "MAT", userGrades.MathExamPoints },
+                { "МАТ", userGrades.MathExamPoints },
+                { "M", userGrades.MathExamPoints },
+                { "М", userGrades.MathExamPoints }
+            };
+
+            // Заместваме всички променливи в израза
+            string processedFormula = formula;
+            foreach (var entry in nvoValues)
+            {
+                processedFormula = ReplaceVariableInFormula(processedFormula, entry.Key, entry.Value);
             }
 
-            _logger.LogDebug($"Формула след заместване на променливи: {workingFormula}");
+            _logger.LogDebug($"НВО формула след заместване: {processedFormula}");
 
-            // Опитваме да изчислим резултата на модифицираната формула
-            return EvaluateExpression(workingFormula);
+            // Изчисляваме и връщаме резултата
+            using (var dt = new DataTable())
+            {
+                var result = Convert.ToDouble(dt.Compute(processedFormula, string.Empty));
+                _logger.LogDebug($"Резултат от НВО част: {result}");
+                return result;
+            }
+        }
+
+        // Изчисляване на частта с годишни оценки (превърнати в точки)
+        private double CalculateGradesScore(UserGrades userGrades, string formula)
+        {
+            _logger.LogDebug($"Изчисляване на част с годишни оценки: {formula}");
+
+            // Подготвяме речник със стойностите за годишни оценки, превърнати в точки
+            var gradeValues = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "БЕЛ", ConvertGradeToPoints(userGrades.BulgarianGrade ?? 0) },
+                { "BEL", ConvertGradeToPoints(userGrades.BulgarianGrade ?? 0) },
+                { "MAT", ConvertGradeToPoints(userGrades.MathGrade ?? 0) },
+                { "МАТ", ConvertGradeToPoints(userGrades.MathGrade ?? 0) },
+                { "M", ConvertGradeToPoints(userGrades.MathGrade ?? 0) },
+                { "М", ConvertGradeToPoints(userGrades.MathGrade ?? 0) }
+            };
+
+            // Заместваме всички променливи в израза
+            string processedFormula = formula;
+            foreach (var entry in gradeValues)
+            {
+                processedFormula = ReplaceVariableInFormula(processedFormula, entry.Key, entry.Value);
+            }
+
+            _logger.LogDebug($"Формула с годишни оценки след заместване: {processedFormula}");
+
+            // Изчисляваме и връщаме резултата
+            using (var dt = new DataTable())
+            {
+                var result = Convert.ToDouble(dt.Compute(processedFormula, string.Empty));
+                _logger.LogDebug($"Резултат от годишни оценки: {result}");
+                return result;
+            }
+        }
+
+        // Опростен метод за изчисляване на израз
+        private double EvaluateSimpleExpression(string expression)
+        {
+            try
+            {
+                // Премахваме интервали
+                expression = expression.Replace(" ", "");
+
+                // Използваме DataTable.Compute за безопасно изчисление
+                using (var dt = new DataTable())
+                {
+                    return Convert.ToDouble(dt.Compute(expression, ""));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Грешка при изчисляване на израз с DataTable: {ex.Message}");
+                return EvaluateExpressionFallback(expression);
+            }
+        }
+
+        // Резервен метод за изчисляване (ако DataTable.Compute не работи)
+        private double EvaluateExpressionFallback(string expression)
+        {
+            // Опростена обработка на аритметични изрази
+            expression = expression.Replace(" ", "").Replace("(", "").Replace(")", "");
+
+            // Събиране
+            if (expression.Contains("+"))
+            {
+                var parts = expression.Split('+');
+                return parts.Sum(p => EvaluateExpressionFallback(p));
+            }
+
+            // Умножение
+            if (expression.Contains("*"))
+            {
+                var parts = expression.Split('*');
+                double result = 1;
+                foreach (var part in parts)
+                {
+                    if (double.TryParse(part, out double partValue))
+                    {
+                        result *= partValue;
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Не може да се парсне стойност: {part}");
+                    }
+                }
+                return result;
+            }
+
+            // Просто число
+            if (double.TryParse(expression, out double expressionValue))
+            {
+                return expressionValue;
+            }
+
+            _logger.LogWarning($"Не може да се изчисли израз: {expression}");
+            return 0;
         }
 
         // Метод за подготовка на речник с всички възможни стойности
@@ -323,15 +521,22 @@ namespace SchoolSelect.Services.Implementations
             // Добавяме основните оценки (като оценки и като точки)
             valueMap["БЕЛ"] = userGrades.BulgarianGrade ?? 0;  // Годишна оценка по БЕЛ
             valueMap["МАТ"] = userGrades.MathGrade ?? 0;       // Годишна оценка по Математика
+            valueMap["BEL"] = userGrades.BulgarianGrade ?? 0;  // Латински вариант
+            valueMap["MAT"] = userGrades.MathGrade ?? 0;       // Латински вариант
 
             // Добавяме конвертираните в точки оценки
             valueMap["БЕЛ_ТОЧКИ"] = ConvertGradeToPoints(userGrades.BulgarianGrade ?? 0);
             valueMap["МАТ_ТОЧКИ"] = ConvertGradeToPoints(userGrades.MathGrade ?? 0);
+            valueMap["BEL_ТОЧКИ"] = ConvertGradeToPoints(userGrades.BulgarianGrade ?? 0);
+            valueMap["MAT_ТОЧКИ"] = ConvertGradeToPoints(userGrades.MathGrade ?? 0);
 
             // Добавяме точките от НВО
             valueMap["БЕЛ1"] = userGrades.BulgarianExamPoints; // НВО по БЕЛ
             valueMap["М"] = userGrades.MathExamPoints;         // НВО по Математика (формат от примера)
             valueMap["МАТ1"] = userGrades.MathExamPoints;      // Алтернативен формат за НВО по Математика
+            valueMap["M"] = userGrades.MathExamPoints;         // Латински вариант
+            valueMap["MAT1"] = userGrades.MathExamPoints;      // Латински вариант
+            valueMap["BEL1"] = userGrades.BulgarianExamPoints; // Латински вариант
 
             // Проверяваме дали имаме допълнителни оценки
             if (userGrades.AdditionalGrades != null)
@@ -340,29 +545,38 @@ namespace SchoolSelect.Services.Implementations
                 foreach (var grade in userGrades.AdditionalGrades)
                 {
                     string key = grade.SubjectCode;
+                    string keyLatin = NormalizeToLatin(key);
+                    string keyCyrillic = NormalizeToCyrillic(key);
 
                     // Ако имаме различни типове компоненти, добавяме индикатор за типа
                     if (grade.ComponentType == ComponentTypes.NationalExam)
                     {
-                        key = $"{grade.SubjectCode}1";
+                        valueMap[$"{key}1"] = grade.Value;
+                        valueMap[$"{keyLatin}1"] = grade.Value;
+                        valueMap[$"{keyCyrillic}1"] = grade.Value;
                     }
                     else if (grade.ComponentType == ComponentTypes.EntranceExam)
                     {
-                        key = $"{grade.SubjectCode}2";
+                        valueMap[$"{key}2"] = grade.Value;
+                        valueMap[$"{keyLatin}2"] = grade.Value;
+                        valueMap[$"{keyCyrillic}2"] = grade.Value;
                     }
-
-                    valueMap[key] = grade.Value;
-
-                    // Добавяме и стойности за конвертирани в точки оценки
-                    if (grade.ComponentType == ComponentTypes.YearlyGrade)
+                    else if (grade.ComponentType == ComponentTypes.YearlyGrade)
                     {
+                        valueMap[key] = grade.Value;
+                        valueMap[keyLatin] = grade.Value;
+                        valueMap[keyCyrillic] = grade.Value;
+
+                        // Добавяме и превърнати в точки годишни оценки
                         valueMap[$"{key}_ТОЧКИ"] = ConvertGradeToPoints(grade.Value);
+                        valueMap[$"{keyLatin}_ТОЧКИ"] = ConvertGradeToPoints(grade.Value);
+                        valueMap[$"{keyCyrillic}_ТОЧКИ"] = ConvertGradeToPoints(grade.Value);
                     }
-
-                    // Добавяме и запис с оригиналния код за гъвкавост
-                    if (!valueMap.ContainsKey(grade.SubjectCode))
+                    else if (grade.ComponentType == ComponentTypes.YearlyGradeAsPoints)
                     {
-                        valueMap[grade.SubjectCode] = grade.Value;
+                        valueMap[$"{key}_ТОЧКИ"] = grade.Value;
+                        valueMap[$"{keyLatin}_ТОЧКИ"] = grade.Value;
+                        valueMap[$"{keyCyrillic}_ТОЧКИ"] = grade.Value;
                     }
                 }
             }
@@ -376,58 +590,143 @@ namespace SchoolSelect.Services.Implementations
             return valueMap;
         }
 
+        // Помощен метод за трансформиране на кирилица в латиница
+        private string NormalizeToLatin(string input)
+        {
+            return input
+                .Replace("А", "A")
+                .Replace("Б", "B")
+                .Replace("В", "B")
+                .Replace("Г", "G")
+                .Replace("Д", "D")
+                .Replace("Е", "E")
+                .Replace("Ж", "J")
+                .Replace("З", "Z")
+                .Replace("И", "I")
+                .Replace("Й", "Y")
+                .Replace("К", "K")
+                .Replace("Л", "L")
+                .Replace("М", "M")
+                .Replace("Н", "H")
+                .Replace("О", "O")
+                .Replace("П", "P")
+                .Replace("Р", "P")
+                .Replace("С", "C")
+                .Replace("Т", "T")
+                .Replace("У", "U")
+                .Replace("Ф", "F")
+                .Replace("Х", "X")
+                .Replace("Ц", "C")
+                .Replace("Ч", "CH")
+                .Replace("Ш", "SH")
+                .Replace("Щ", "SHT")
+                .Replace("Ъ", "A")
+                .Replace("Ь", "")
+                .Replace("Ю", "YU")
+                .Replace("Я", "YA");
+        }
+
+        // Помощен метод за трансформиране на латиница в кирилица
+        private string NormalizeToCyrillic(string input)
+        {
+            return input
+                .Replace("A", "А")
+                .Replace("B", "В")
+                .Replace("C", "С")
+                .Replace("D", "Д")
+                .Replace("E", "Е")
+                .Replace("F", "Ф")
+                .Replace("G", "Г")
+                .Replace("H", "Н")
+                .Replace("I", "И")
+                .Replace("J", "Ж")
+                .Replace("K", "К")
+                .Replace("L", "Л")
+                .Replace("M", "М")
+                .Replace("N", "Н")
+                .Replace("O", "О")
+                .Replace("P", "П")
+                .Replace("Q", "К")
+                .Replace("R", "Р")
+                .Replace("S", "С")
+                .Replace("T", "Т")
+                .Replace("U", "У")
+                .Replace("V", "В")
+                .Replace("W", "В")
+                .Replace("X", "Х")
+                .Replace("Y", "Й")
+                .Replace("Z", "З");
+        }
+
         // Метод за изчисляване на математически израз
         private double EvaluateExpression(string expression)
         {
-            // Премахваме излишните скоби и пространства
-            expression = expression.Replace("(", "").Replace(")", "").Replace(" ", "");
-
-            _logger.LogDebug($"Опростен израз за изчисление: {expression}");
-
-            // Разделяме израза на компоненти по оператора за събиране
-            string[] addComponents = expression.Split('+');
-            double result = 0;
-
-            // Обработваме всеки компонент
-            foreach (string component in addComponents)
+            try
             {
-                // Проверяваме дали компонентът съдържа умножение
-                if (component.Contains("*"))
+                // Премахваме интервали
+                expression = expression.Replace(" ", "");
+
+                // Използваме DataTable.Compute за безопасно изчисление
+                using (var dt = new DataTable())
                 {
-                    // Разделяме по оператора за умножение
-                    string[] factors = component.Split('*');
+                    var result = Convert.ToDouble(dt.Compute(expression, string.Empty));
+                    _logger.LogDebug($"Резултат от изчисление: {result}");
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Грешка с DataTable.Compute: {ex.Message}, опитваме ръчно изчисление");
 
-                    if (factors.Length != 2)
+                // Премахваме скобите и пространствата
+                expression = expression.Replace("(", "").Replace(")", "").Replace(" ", "");
+
+                _logger.LogDebug($"Опростен израз за изчисление: {expression}");
+
+                // Разделяме израза на компоненти по оператора за събиране
+                string[] addComponents = expression.Split('+');
+                double result = 0;
+
+                // Обработваме всеки компонент
+                foreach (string component in addComponents)
+                {
+                    // Проверяваме дали компонентът съдържа умножение
+                    if (component.Contains("*"))
                     {
-                        throw new ArgumentException($"Неочакван формат на компонент: {component}");
+                        // Разделяме по оператора за умножение
+                        string[] factors = component.Split('*');
+                        double mulResult = 1.0;
+
+                        foreach (var factor in factors)
+                        {
+                            if (double.TryParse(factor, out double factorValue))
+                            {
+                                mulResult *= factorValue;
+                            }
+                            else
+                            {
+                                _logger.LogWarning($"Не може да се парсне числото: {factor}");
+                            }
+                        }
+
+                        result += mulResult;
+                        _logger.LogDebug($"Умножение: {component} = {mulResult}");
                     }
-
-                    // Парсваме и умножаваме факторите
-                    if (double.TryParse(factors[0], out double factor1) &&
-                        double.TryParse(factors[1], out double factor2))
+                    // Проверяваме дали компонентът е просто число
+                    else if (double.TryParse(component, out double value))
                     {
-                        result += factor1 * factor2;
-                        _logger.LogDebug($"Умножение: {factor1} * {factor2} = {factor1 * factor2}");
+                        result += value;
+                        _logger.LogDebug($"Добавяне на стойност: {value}");
                     }
                     else
                     {
-                        throw new ArgumentException($"Не може да се парсне числова стойност: {factors[0]} или {factors[1]}");
+                        _logger.LogWarning($"Неочакван формат на компонент: {component}");
                     }
                 }
-                // Проверяваме дали компонентът е просто число
-                else if (double.TryParse(component, out double value))
-                {
-                    result += value;
-                    _logger.LogDebug($"Добавяне на стойност: {value}");
-                }
-                else
-                {
-                    throw new ArgumentException($"Неочакван формат на компонент: {component}");
-                }
-            }
 
-            _logger.LogDebug($"Изчислен резултат: {result}");
-            return result;
+                _logger.LogDebug($"Изчислен резултат: {result}");
+                return result;
+            }
         }
 
         // Помощен метод за изчисляване на бал от компоненти на формулата
@@ -612,6 +911,5 @@ namespace SchoolSelect.Services.Implementations
             if (grade >= 2.50) return 15; // Среден 3
             return 0; // По-ниски оценки
         }
-
     }
 }
