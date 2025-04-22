@@ -113,8 +113,6 @@ namespace SchoolSelect.Services.Implementations
             await _unitOfWork.CompleteAsync();
         }
 
-        // Махаме логиката за формули и шанс - тези отговорности са прехвърлени на AdmissionService
-
         private static UserGradesViewModel MapToViewModel(UserGrades g)
         {
             return new UserGradesViewModel
