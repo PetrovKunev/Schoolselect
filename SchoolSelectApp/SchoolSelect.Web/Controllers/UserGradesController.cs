@@ -13,13 +13,15 @@ namespace SchoolSelect.Web.Controllers
         private readonly IUserGradesService _userGradesService;
         private readonly ILogger<UserGradesController> _logger;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAdmissionService _admissionService;
 
 
-        public UserGradesController(IUserGradesService userGradesService, ILogger<UserGradesController> logger, IUnitOfWork unitOfWork)
+        public UserGradesController(IUserGradesService userGradesService, ILogger<UserGradesController> logger, IUnitOfWork unitOfWork, IAdmissionService admissionService)
         {
             _userGradesService = userGradesService;
             _logger = logger;
             _unitOfWork = unitOfWork;
+            _admissionService = admissionService;
         }
 
         // GET: UserGrades
@@ -219,7 +221,7 @@ namespace SchoolSelect.Web.Controllers
                     return RedirectToAction(nameof(Calculate));
                 }
 
-                var result = await _userGradesService.CalculateChanceAsync(gradesId, schoolId);
+                var result = await _admissionService.CalculateChanceAsync(gradesId, schoolId);
                 return View(result);
             }
             catch (Exception ex)

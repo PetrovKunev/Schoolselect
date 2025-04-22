@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using SchoolSelect.Data.Models;
 using SchoolSelect.Repositories.Interfaces;
 using SchoolSelect.Web.Data;
@@ -57,6 +58,16 @@ namespace SchoolSelect.Repositories
                 return 0;
 
             return rankings.Average(r => r.MinimumScore);
+        }
+
+        /// <summary>
+        /// Връща всички исторически класирания за даден набор от профили
+        /// </summary>
+        public async Task<IEnumerable<HistoricalRanking>> GetRankingsByProfileIdsAsync(IEnumerable<int> profileIds)
+        {
+            return await AppContext.HistoricalRankings
+                .Where(r => profileIds.Contains(r.ProfileId ?? 0))
+                .ToListAsync();
         }
     }
 }

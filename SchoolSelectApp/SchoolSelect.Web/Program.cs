@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SchoolSelect.Data.Models;
 using SchoolSelect.Repositories;
 using SchoolSelect.Repositories.Interfaces;
+using SchoolSelect.Services.Configurations;
 using SchoolSelect.Services.Implementations;
 using SchoolSelect.Services.Interfaces;
 using SchoolSelect.Web.Data;
@@ -61,6 +62,15 @@ namespace SchoolSelect.Web
             builder.Services.AddScoped<IComparisonService, ComparisonService>();
             builder.Services.AddScoped<IReviewService, ReviewService>();
             builder.Services.AddScoped<ISchoolImportService, SchoolImportService>();
+            builder.Services.AddScoped<IAdmissionService, AdmissionService>();
+            builder.Services.AddScoped<IExpressionParser, NCalcExpressionParser>();
+            builder.Services.AddScoped<IVariableResolver, DefaultVariableResolver>();
+            builder.Services.AddScoped<IChanceCalculator, DefaultChanceCalculator>();
+
+            // Конфигуриране на опции за ChanceCalculator
+            builder.Services.Configure<ChanceCalculatorOptions>(
+                builder.Configuration.GetSection("ChanceCalculator"));
+
 
             // Регистриране на Unit of Work
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

@@ -1,5 +1,5 @@
-﻿using SchoolSelect.Data.Models;
-using SchoolSelect.Web.ViewModels;
+﻿using SchoolSelect.Web.ViewModels;
+
 
 namespace SchoolSelect.Services.Interfaces
 {
@@ -30,9 +30,6 @@ namespace SchoolSelect.Services.Interfaces
         /// </summary>
         Task DeleteUserGradesAsync(int gradesId);
 
-        /// <summary>
-        /// Изчислява шанса за прием в училище
-        /// </summary>
-        Task<SchoolChanceViewModel> CalculateChanceAsync(int gradesId, int schoolId);
+
     }
 }
