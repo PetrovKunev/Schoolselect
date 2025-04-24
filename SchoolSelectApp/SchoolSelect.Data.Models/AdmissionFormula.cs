@@ -29,6 +29,14 @@ namespace SchoolSelect.Data.Models
         [StringLength(ValidationConstants.AdmissionFormula.DescriptionMaxLength)]
         public string FormulaDescription { get; set; } = string.Empty;
 
+        // Нови полета за структурирано изчисление
+        public double BelExamMultiplier { get; set; } = 0;
+        public double MatExamMultiplier { get; set; } = 0;
+        public double BelGradeMultiplier { get; set; } = 0;
+        public double MatGradeMultiplier { get; set; } = 0;
+        public double KmitGradeMultiplier { get; set; } = 0;
+        public bool IsStructured { get; set; } = false;
+
         // Релация
         [ForeignKey(nameof(SchoolProfileId))]
         public virtual SchoolProfile? SchoolProfile { get; set; }

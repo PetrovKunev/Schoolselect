@@ -13,6 +13,7 @@ namespace SchoolSelect.Services.Implementations
         private readonly IVariableResolver _resolver;
         private readonly IChanceCalculator _chanceCalc;
         private readonly ILogger<AdmissionService> _logger;
+        private readonly IScoreCalculationService _scoreCalculator;
 
         public AdmissionService(
             IUserGradesService gradesService,
@@ -20,7 +21,8 @@ namespace SchoolSelect.Services.Implementations
             IExpressionParser parser,
             IVariableResolver resolver,
             IChanceCalculator chanceCalc,
-            ILogger<AdmissionService> logger)
+            ILogger<AdmissionService> logger,
+            IScoreCalculationService scoreCalculator)
         {
             _gradesService = gradesService;
             _unitOfWork = unitOfWork;
@@ -28,6 +30,7 @@ namespace SchoolSelect.Services.Implementations
             _resolver = resolver;
             _chanceCalc = chanceCalc;
             _logger = logger;
+            _scoreCalculator = scoreCalculator;
         }
 
         public async Task<SchoolChanceViewModel> CalculateChanceAsync(int gradesId, int schoolId)
@@ -80,12 +83,6 @@ namespace SchoolSelect.Services.Implementations
                 ProfileChances = new List<ProfileChanceViewModel>()
             };
 
-            // Подготовка на променливите за формулата
-            var vars = _resolver.Resolve(userGradesEntity);
-
-            // Логване на променливите за диагностика
-            _logger.LogDebug("Променливи за формула: {@Variables}", vars);
-
             // Цикъл през профилите
             foreach (var profile in profiles)
             {
@@ -102,33 +99,14 @@ namespace SchoolSelect.Services.Implementations
                     double minScore = latest?.MinimumScore ?? 0;
                     double score;
 
-                    // Изчисляване на бал според формулата или с резервен метод
-                    if (formula != null && !string.IsNullOrWhiteSpace(formula.FormulaExpression))
+                    if (formula != null)
                     {
-                        _logger.LogInformation(
-                            "Изчисляване на бал за профил {ProfileId} с формула: {Formula}",
-                            profile.Id, formula.FormulaExpression);
-
-                        try
-                        {
-                            score = _parser.Evaluate(formula.FormulaExpression, vars);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex,
-                                "Грешка при изчисляване на формула {Formula} за профил {ProfileId}. " +
-                                "Използване на резервен метод.",
-                                formula.FormulaExpression, profile.Id);
-
-                            score = _chanceCalc.FallbackScore(userGradesEntity);
-                        }
+                        // Използваме новата услуга за изчисление
+                        score = await _scoreCalculator.CalculateScoreAsync(formula.Id, userGradesEntity);
                     }
                     else
                     {
-                        _logger.LogInformation(
-                            "Липсва формула за профил {ProfileId}, използване на резервен метод",
-                            profile.Id);
-
+                        // Използваме резервен метод, ако няма формула
                         score = _chanceCalc.FallbackScore(userGradesEntity);
                     }
 

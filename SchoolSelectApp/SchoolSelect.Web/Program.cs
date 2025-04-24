@@ -6,8 +6,10 @@ using SchoolSelect.Repositories.Interfaces;
 using SchoolSelect.Services.Configurations;
 using SchoolSelect.Services.Implementations;
 using SchoolSelect.Services.Interfaces;
+using SchoolSelect.Services.Migrations;
 using SchoolSelect.Web.Data;
 using SchoolSelect.Web.Infrastructure;
+
 
 namespace SchoolSelect.Web
 {
@@ -66,6 +68,8 @@ namespace SchoolSelect.Web
             builder.Services.AddScoped<IExpressionParser, NCalcExpressionParser>();
             builder.Services.AddScoped<IVariableResolver, DefaultVariableResolver>();
             builder.Services.AddScoped<IChanceCalculator, DefaultChanceCalculator>();
+            builder.Services.AddScoped<IScoreCalculationService, ScoreCalculationService>();
+
 
             // Конфигуриране на опции за ChanceCalculator
             builder.Services.Configure<ChanceCalculatorOptions>(
@@ -101,11 +105,12 @@ namespace SchoolSelect.Web
 
             WebApplication app = builder.Build();
 
-            
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();
+                app.MigrateFormulaData(); // Стартиране на миграцията
             }
             else
             {
@@ -113,6 +118,7 @@ namespace SchoolSelect.Web
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
