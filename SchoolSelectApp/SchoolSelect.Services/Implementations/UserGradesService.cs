@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using SchoolSelect.Data.Models;
 using SchoolSelect.Repositories.Interfaces;
 using SchoolSelect.Services.Interfaces;

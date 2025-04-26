@@ -9,8 +9,6 @@ namespace SchoolSelect.Services.Implementations
     {
         private readonly IUserGradesService _gradesService;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IExpressionParser _parser;
-        private readonly IVariableResolver _resolver;
         private readonly IChanceCalculator _chanceCalc;
         private readonly ILogger<AdmissionService> _logger;
         private readonly IScoreCalculationService _scoreCalculator;
@@ -18,16 +16,12 @@ namespace SchoolSelect.Services.Implementations
         public AdmissionService(
             IUserGradesService gradesService,
             IUnitOfWork unitOfWork,
-            IExpressionParser parser,
-            IVariableResolver resolver,
             IChanceCalculator chanceCalc,
             ILogger<AdmissionService> logger,
             IScoreCalculationService scoreCalculator)
         {
             _gradesService = gradesService;
             _unitOfWork = unitOfWork;
-            _parser = parser;
-            _resolver = resolver;
             _chanceCalc = chanceCalc;
             _logger = logger;
             _scoreCalculator = scoreCalculator;
@@ -97,21 +91,32 @@ namespace SchoolSelect.Services.Implementations
                         .FirstOrDefault();
 
                     double minScore = latest?.MinimumScore ?? 0;
-                    double score;
+                    double score = 0;
 
-                    if (formula != null)
+                    // Променено от IsStructured на HasComponents
+                    if (formula != null && formula.HasComponents)
                     {
+                        _logger.LogInformation("Изчисляване на бал по компоненти за профил {ProfileId} ({ProfileName})",
+                            profile.Id, profile.Name);
+
                         // Използваме новата услуга за изчисление
                         score = await _scoreCalculator.CalculateScoreAsync(formula.Id, userGradesEntity);
                     }
                     else
                     {
+                        _logger.LogWarning("Липсва формула или формулата няма компоненти за профил {ProfileId} ({ProfileName})",
+                            profile.Id, profile.Name);
+
                         // Използваме резервен метод, ако няма формула
                         score = _chanceCalc.FallbackScore(userGradesEntity);
                     }
 
+                    _logger.LogInformation("Изчислен бал за профил {ProfileId}: {Score}", profile.Id, score);
+                    _logger.LogInformation("Минимален бал от минала година: {MinScore}", minScore);
+
                     // Изчисляване на % шанс
                     double chance = _chanceCalc.Calculate(score, minScore);
+                    _logger.LogInformation("Изчислен шанс: {Chance}%", chance);
 
                     // Добавяне в резултатите
                     vm.ProfileChances.Add(new ProfileChanceViewModel

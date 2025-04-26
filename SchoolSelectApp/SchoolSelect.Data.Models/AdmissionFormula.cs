@@ -21,6 +21,7 @@ namespace SchoolSelect.Data.Models
         public int Year { get; set; }
 
         // Формула за балообразуване като текст (напр. "(2*БЕЛ + 2*МАТ) + (1*БЕЛ + 1*М)")
+        // Запазваме го за обратна съвместимост и документация
         [Required(ErrorMessage = ValidationMessages.RequiredField)]
         [StringLength(ValidationConstants.AdmissionFormula.ExpressionMaxLength)]
         public string FormulaExpression { get; set; } = null!;
@@ -29,13 +30,8 @@ namespace SchoolSelect.Data.Models
         [StringLength(ValidationConstants.AdmissionFormula.DescriptionMaxLength)]
         public string FormulaDescription { get; set; } = string.Empty;
 
-        // Нови полета за структурирано изчисление
-        public double BelExamMultiplier { get; set; } = 0;
-        public double MatExamMultiplier { get; set; } = 0;
-        public double BelGradeMultiplier { get; set; } = 0;
-        public double MatGradeMultiplier { get; set; } = 0;
-        public double KmitGradeMultiplier { get; set; } = 0;
-        public bool IsStructured { get; set; } = false;
+        // Флаг дали формулата има компоненти и може да бъде използвана
+        public bool HasComponents { get; set; } = false;
 
         // Релация
         [ForeignKey(nameof(SchoolProfileId))]
@@ -44,5 +40,4 @@ namespace SchoolSelect.Data.Models
         // Компоненти, включени във формулата
         public virtual ICollection<FormulaComponent> Components { get; set; } = new List<FormulaComponent>();
     }
-
 }

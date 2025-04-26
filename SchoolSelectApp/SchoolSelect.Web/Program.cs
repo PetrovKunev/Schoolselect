@@ -6,7 +6,6 @@ using SchoolSelect.Repositories.Interfaces;
 using SchoolSelect.Services.Configurations;
 using SchoolSelect.Services.Implementations;
 using SchoolSelect.Services.Interfaces;
-using SchoolSelect.Services.Migrations;
 using SchoolSelect.Web.Data;
 using SchoolSelect.Web.Infrastructure;
 
@@ -65,8 +64,6 @@ namespace SchoolSelect.Web
             builder.Services.AddScoped<IReviewService, ReviewService>();
             builder.Services.AddScoped<ISchoolImportService, SchoolImportService>();
             builder.Services.AddScoped<IAdmissionService, AdmissionService>();
-            builder.Services.AddScoped<IExpressionParser, NCalcExpressionParser>();
-            builder.Services.AddScoped<IVariableResolver, DefaultVariableResolver>();
             builder.Services.AddScoped<IChanceCalculator, DefaultChanceCalculator>();
             builder.Services.AddScoped<IScoreCalculationService, ScoreCalculationService>();
 
@@ -110,7 +107,6 @@ namespace SchoolSelect.Web
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();
-                app.MigrateFormulaData(); // Стартиране на миграцията
             }
             else
             {
@@ -136,8 +132,6 @@ namespace SchoolSelect.Web
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
             app.MapRazorPages();
-
-            
 
             app.Run();
         }
