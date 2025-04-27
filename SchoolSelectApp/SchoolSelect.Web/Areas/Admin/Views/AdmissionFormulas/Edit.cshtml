@@ -31,7 +31,7 @@
                             <label asp-for="FormulaExpression" class="form-label">Формула</label>
                             <input asp-for="FormulaExpression" class="form-control" />
                             <span asp-validation-for="FormulaExpression" class="text-danger"></span>
-                            <div class="form-text">Въведете формулата като използвате съкращения за предмети (БЕЛ, МАТ и т.н.), напр. "(2*БЕЛ + 2*МАТ) + (1*ГЕ + 1*ИЦ)"</div>
+                            <div class="form-text">Въведете формулата като използвате съкращения за предмети (БЕЛ, МАТ и т.н.), напр. "(2*БЕЛ + 2*МАТ) + (1*БЕЛ + 1*МАТ)"</div>
                         </div>
 
                         <div class="mb-3">
@@ -107,7 +107,7 @@
                                 </div>
                             }
                         </div>
-                        
+
                         <div id="noComponentsMessage" class="alert alert-warning @(Model.Components.Any() ? "d-none" : "")">
                             <i class="bi bi-exclamation-triangle"></i> Няма добавени компоненти. Добавете поне един компонент към формулата.
                         </div>
@@ -149,7 +149,7 @@
 
                     <h6>Примери за формули:</h6>
                     <ul>
-                        <li><code>(2*БЕЛ + 2*МАТ) + (1*ГЕ + 1*ИЦ)</code></li>
+                        <li><code>(2*БЕЛ + 2*МАТ) + (1*БЕЛ + 1*МАТ)</code></li>
                         <li><code>(3*БЕЛ + 2*МАТ) + (2*БЗО + 1*ХИ)</code></li>
                     </ul>
 
@@ -184,10 +184,12 @@
                     type: 'POST',
                     data: { index: componentIndex },
                     success: function (result) {
+                        // Replace the index placeholder with the actual index
+                        result = result.replace(/\[0\]/g, '[' + componentIndex + ']');
                         $('#componentsContainer').append(result);
                         componentIndex++;
                         $('#noComponentsMessage').addClass('d-none');
-                        
+
                         // Initialize the newly added subject code dropdown
                         $('#componentsContainer .component-item:last-child .subject-code').trigger('change');
                     }
@@ -197,12 +199,12 @@
             // Remove component
             $(document).on('click', '.remove-component', function () {
                 $(this).closest('.component-item').remove();
-                
+
                 // Check if there are any components left
                 if ($('#componentsContainer .component-item').length === 0) {
                     $('#noComponentsMessage').removeClass('d-none');
                 }
-                
+
                 // Re-index the components
                 reindexComponents();
             });
@@ -220,17 +222,35 @@
                     });
                 });
             }
-            
+
             // Form validation
             $('#formulaForm').submit(function(e) {
+                // Check if there are any components
                 if ($('#componentsContainer .component-item').length === 0) {
                     e.preventDefault();
                     alert('Моля, добавете поне един компонент към формулата!');
                     return false;
                 }
-                return true;
+
+                // Validate each component
+                var isValid = true;
+                $('#componentsContainer .component-item').each(function() {
+                    var subjectCode = $(this).find('.subject-code').val();
+                    var subjectName = $(this).find('.subject-name').val();
+                    var multiplier = $(this).find('input[name*="Multiplier"]').val();
+
+                    if (!subjectCode || !subjectName || !multiplier) {
+                        isValid = false;
+                        alert('Моля, попълнете всички полета за компонентите!');
+                        return false;
+                    }
+                });
+
+                return isValid;
             });
         });
     </script>
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

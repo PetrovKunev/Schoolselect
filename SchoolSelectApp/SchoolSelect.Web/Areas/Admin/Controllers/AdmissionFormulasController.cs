@@ -5,7 +5,6 @@ using SchoolSelect.Common;
 using SchoolSelect.Data.Models;
 using SchoolSelect.Repositories.Interfaces;
 using SchoolSelect.Web.Areas.Admin.ViewModels;
-using System.Text.RegularExpressions;
 
 namespace SchoolSelect.Web.Areas.Admin.Controllers
 {
@@ -155,20 +154,24 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                         SchoolProfileId = model.SchoolProfileId,
                         Year = model.Year,
                         FormulaExpression = model.FormulaExpression,
-                        FormulaDescription = model.FormulaDescription
+                        FormulaDescription = model.FormulaDescription,
+                        HasComponents = model.Components != null && model.Components.Any() // Задаваме HasComponents на true ако има компоненти
                     };
 
                     // Add all components
-                    foreach (var componentModel in model.Components)
+                    if (model.Components != null) // Ensure Components is not null
                     {
-                        formula.Components.Add(new FormulaComponent
+                        foreach (var componentModel in model.Components)
                         {
-                            SubjectCode = componentModel.SubjectCode,
-                            SubjectName = componentModel.SubjectName,
-                            ComponentType = componentModel.ComponentType,
-                            Multiplier = componentModel.Multiplier,
-                            Description = componentModel.Description
-                        });
+                            formula.Components.Add(new FormulaComponent
+                            {
+                                SubjectCode = componentModel.SubjectCode,
+                                SubjectName = componentModel.SubjectName,
+                                ComponentType = componentModel.ComponentType,
+                                Multiplier = componentModel.Multiplier,
+                                Description = componentModel.Description
+                            });
+                        }
                     }
 
                     await _unitOfWork.AdmissionFormulas.AddAsync(formula);
@@ -195,7 +198,7 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                 new { Value = ComponentTypes.YearlyGrade, Text = "Годишна оценка" },
                 new { Value = ComponentTypes.NationalExam, Text = "НВО" },
                 new { Value = ComponentTypes.EntranceExam, Text = "Приемен изпит" },
-                new { Value = ComponentTypes.YearlyGradeAsPoints , Text = "Годишна оценка, преобразувана в точки" }
+                new { Value = ComponentTypes.YearlyGradeAsPoints, Text = "Годишна оценка, преобразувана в точки" }
             }, "Value", "Text");
 
             ViewBag.SubjectCodes = SubjectCodes.SubjectNames;
@@ -241,7 +244,7 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                 new { Value = ComponentTypes.YearlyGrade, Text = "Годишна оценка" },
                 new { Value = ComponentTypes.NationalExam, Text = "НВО" },
                 new { Value = ComponentTypes.EntranceExam, Text = "Приемен изпит" },
-                new { Value = ComponentTypes.YearlyGradeAsPoints , Text = "Годишна оценка, преобразувана в точки" }
+                new { Value = ComponentTypes.YearlyGradeAsPoints, Text = "Годишна оценка, преобразувана в точки" }
             }, "Value", "Text");
 
             ViewBag.SubjectCodes = SubjectCodes.SubjectNames;
@@ -273,21 +276,25 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                     formula.Year = model.Year;
                     formula.FormulaExpression = model.FormulaExpression;
                     formula.FormulaDescription = model.FormulaDescription;
+                    formula.HasComponents = model.Components != null && model.Components.Any(); // Обновяваме и HasComponents
 
                     // Remove all existing components
                     formula.Components.Clear();
 
                     // Add all components from the model
-                    foreach (var componentModel in model.Components)
-                    {
-                        formula.Components.Add(new FormulaComponent
+                    if (model.Components != null)
+                    {     // Ensure Components is not null
+                        foreach (var componentModel in model.Components)
                         {
-                            SubjectCode = componentModel.SubjectCode,
-                            SubjectName = componentModel.SubjectName,
-                            ComponentType = componentModel.ComponentType,
-                            Multiplier = componentModel.Multiplier,
-                            Description = componentModel.Description
-                        });
+                            formula.Components.Add(new FormulaComponent
+                            {
+                                SubjectCode = componentModel.SubjectCode,
+                                SubjectName = componentModel.SubjectName,
+                                ComponentType = componentModel.ComponentType,
+                                Multiplier = componentModel.Multiplier,
+                                Description = componentModel.Description
+                            });
+                        }
                     }
 
                     _unitOfWork.AdmissionFormulas.Update(formula);
@@ -314,7 +321,7 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                 new { Value = ComponentTypes.YearlyGrade, Text = "Годишна оценка" },
                 new { Value = ComponentTypes.NationalExam, Text = "НВО" },
                 new { Value = ComponentTypes.EntranceExam, Text = "Приемен изпит" },
-                new { Value = ComponentTypes.YearlyGradeAsPoints , Text = "Годишна оценка, преобразувана в точки" }
+                new { Value = ComponentTypes.YearlyGradeAsPoints, Text = "Годишна оценка, преобразувана в точки" }
             }, "Value", "Text");
 
             ViewBag.SubjectCodes = SubjectCodes.SubjectNames;
@@ -342,48 +349,6 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
             return RedirectToAction(nameof(Profile), new { id = profileId });
         }
 
-        // Helper method to parse formula
-        private bool ParseFormula(string formula, out string error)
-        {
-            error = string.Empty;
-
-            // Simple validation - check for balanced parentheses and basic structure
-            int parenthesisCount = 0;
-            foreach (char c in formula)
-            {
-                if (c == '(') parenthesisCount++;
-                else if (c == ')') parenthesisCount--;
-
-                if (parenthesisCount < 0)
-                {
-                    error = "Невалидни скоби във формулата.";
-                    return false;
-                }
-            }
-
-            if (parenthesisCount != 0)
-            {
-                error = "Броят на отваращите и затварящите скоби не съвпада.";
-                return false;
-            }
-
-            // Validate that the formula references valid subject codes
-            var subjectPattern = @"\b([А-Я]+)\b";
-            var matches = Regex.Matches(formula, subjectPattern);
-
-            foreach (Match match in matches)
-            {
-                string subjectCode = match.Groups[1].Value;
-                if (!SubjectCodes.SubjectNames.ContainsKey(subjectCode))
-                {
-                    error = $"Невалиден код на предмет: {subjectCode}";
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
         // This action will handle adding more components via AJAX
         [HttpPost]
         public IActionResult AddComponent()
@@ -398,6 +363,7 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
 
             ViewBag.SubjectCodes = SubjectCodes.SubjectNames;
 
+            // Get the index from the request - needed for proper form field names
             if (Request.Form.TryGetValue("index", out var indexValue) && int.TryParse(indexValue, out int index))
             {
                 ViewBag.Index = index;
@@ -407,8 +373,16 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                 ViewBag.Index = 0;
             }
 
-            return PartialView("_FormulaComponentPartial", new FormulaComponentViewModel());
+            // Create a new component with default values
+            var componentModel = new FormulaComponentViewModel
+            {
+                Multiplier = 1.0, // Default multiplier
+                ComponentType = ComponentTypes.YearlyGrade, // Default to yearly grade
+                SubjectCode = "БЕЛ", // Default subject
+                SubjectName = "Български език и литература" // Default subject name
+            };
+
+            return PartialView("_FormulaComponentPartial", componentModel);
         }
     }
-
 }
