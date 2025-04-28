@@ -30,12 +30,11 @@ namespace SchoolSelect.Repositories
         /// <returns>Текущата формула или null ако не съществува</returns>
         public async Task<AdmissionFormula?> GetCurrentFormulaForProfileAsync(int profileId)
         {
-            int currentYear = DateTime.UtcNow.Year;
-
             return await AppContext.AdmissionFormulas
                 .Include(f => f.Components)
-                .Where(f => f.SchoolProfileId == profileId && f.Year == currentYear)
-                .FirstOrDefaultAsync();
+                .Where(f => f.SchoolProfileId == profileId)
+                .OrderByDescending(f => f.Year) // Първо сортираме по година в низходящ ред
+                .FirstOrDefaultAsync(); // Взимаме най-новата формула
         }
 
         /// <summary>

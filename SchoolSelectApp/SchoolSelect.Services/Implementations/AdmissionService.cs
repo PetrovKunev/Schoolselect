@@ -93,7 +93,7 @@ namespace SchoolSelect.Services.Implementations
                     double minScore = latest?.MinimumScore ?? 0;
                     double score = 0;
 
-                    // Променено от IsStructured на HasComponents
+                    
                     if (formula != null && formula.HasComponents)
                     {
                         _logger.LogInformation("Изчисляване на бал по компоненти за профил {ProfileId} ({ProfileName})",
