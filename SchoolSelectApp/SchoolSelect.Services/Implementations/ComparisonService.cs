@@ -184,19 +184,21 @@ namespace SchoolSelect.Services.Implementations
         public async Task<bool> RemoveItemFromComparisonAsync(int itemId, Guid userId)
         {
             // Намиране на елемента
-            var comparisonSets = await _unitOfWork.ComparisonSets.FindAsync(i => i.Items.Any(item => item.Id == itemId));
-            var item = comparisonSets.FirstOrDefault();
+            var comparisonSet = await _unitOfWork.ComparisonSets
+                .FindAsync(c => c.Items.Any(i => i.Id == itemId));
 
-            if (item == null || item.UserId != userId)
+            var comparisonItem = comparisonSet.FirstOrDefault();
+
+            if (comparisonItem == null || comparisonItem.UserId != userId)
                 return false;
 
-            // Намиране на компонента, който трябва да бъде премахнат
-            var comparisonItem = item.Items.FirstOrDefault(i => i.Id == itemId);
-            if (comparisonItem == null)
+            // Намиране на компонента, който трябва да се премахне
+            var item = comparisonItem.Items.FirstOrDefault(i => i.Id == itemId);
+            if (item == null)
                 return false;
 
             // Премахване на елемента
-            item.Items.Remove(comparisonItem);
+            comparisonItem.Items.Remove(item);
             await _unitOfWork.CompleteAsync();
 
             return true;

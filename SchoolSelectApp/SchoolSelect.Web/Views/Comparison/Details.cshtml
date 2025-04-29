@@ -48,9 +48,10 @@
                                                     <small class="d-block text-muted">@item.ProfileName</small>
                                                 }
                                             </a>
-                                            <form asp-action="RemoveItem" method="post" class="ml-2">
+                                            <form asp-action="RemoveItem" asp-controller="Comparison" method="post" class="ml-2">
                                                 <input type="hidden" name="itemId" value="@item.Id" />
                                                 <input type="hidden" name="comparisonSetId" value="@Model.Id" />
+                                                @Html.AntiForgeryToken()
                                                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Премахни">
                                                     <i class="bi bi-x"></i>
                                                 </button>

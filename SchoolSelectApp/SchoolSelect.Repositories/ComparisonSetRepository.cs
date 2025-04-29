@@ -15,6 +15,7 @@ namespace SchoolSelect.Repositories
         {
             return await AppContext.ComparisonSets
                 .Where(c => c.UserId == userId)
+                .Include(c => c.Items)
                 .OrderByDescending(c => c.CreatedAt)
                 .ToListAsync();
         }
@@ -30,6 +31,29 @@ namespace SchoolSelect.Repositories
                 .SingleOrDefaultAsync(c => c.Id == comparisonSetId);
 
             return result;
+        }
+
+        public async Task<ComparisonItem?> GetComparisonItemByIdAsync(int itemId)
+        {
+            return await AppContext.ComparisonItems.FindAsync(itemId);
+        }
+
+        public async Task<ComparisonSet?> GetComparisonSetByItemIdAsync(int itemId)
+        {
+            return await AppContext.ComparisonSets
+                .Include(c => c.Items)
+                .FirstOrDefaultAsync(c => c.Items.Any(i => i.Id == itemId));
+        }
+
+        public async Task<bool> RemoveComparisonItemAsync(int itemId)
+        {
+            var item = await AppContext.ComparisonItems.FindAsync(itemId);
+            if (item == null)
+                return false;
+
+            AppContext.ComparisonItems.Remove(item);
+            await AppContext.SaveChangesAsync();
+            return true;
         }
     }
 }

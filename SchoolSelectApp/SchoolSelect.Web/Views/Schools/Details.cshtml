@@ -507,6 +507,26 @@
                 }
             }
         });
+
+        function prepareProfileComparison(profileId) {
+            // Set the hidden profile ID input in the modal form
+            var profileIdInput = document.querySelector('input[name="profileId"]');
+            if (!profileIdInput) {
+                // Create the input if it doesn't exist
+                profileIdInput = document.createElement('input');
+                profileIdInput.type = 'hidden';
+                profileIdInput.name = 'profileId';
+
+                // Add it to the form
+                var form = document.querySelector('#addToComparisonModal form');
+                if (form) {
+                    form.appendChild(profileIdInput);
+                }
+            }
+
+            // Set the profile ID value
+            profileIdInput.value = profileId;
+        }
     </script>
 
 @* Добавяме JavaScript файла за функционалността на сравнение *@
