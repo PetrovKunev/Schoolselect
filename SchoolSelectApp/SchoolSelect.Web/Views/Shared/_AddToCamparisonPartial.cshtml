@@ -1,0 +1,53 @@
+﻿@model SchoolSelect.ViewModels.AddToComparisonViewModel
+
+<div class="modal fade" id="addToComparisonModal" tabindex="-1" aria-labelledby="addToComparisonModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addToComparisonModalLabel">Добавяне към сравнение</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if (!Model.UserComparisonSets.Any())
+                {
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Нямате създадени сравнения. Първо трябва да създадете сравнение.
+                    </div>
+                    <div class="text-center mt-3">
+                        <a asp-controller="Comparison" asp-action="Create" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Създай ново сравнение
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <form asp-controller="Comparison" asp-action="AddItem" method="post">
+                        <input type="hidden" name="schoolId" value="@Model.SchoolId" />
+                        @if (Model.ProfileId.HasValue)
+                        {
+                            <input type="hidden" name="profileId" value="@Model.ProfileId" />
+                        }
+
+                        <div class="mb-3">
+                            <label for="comparisonSetId" class="form-label">Изберете сравнение</label>
+                            <select id="comparisonSetId" name="comparisonSetId" class="form-select" required>
+                                <option value="">-- Изберете сравнение --</option>
+                                @foreach (var set in Model.UserComparisonSets)
+                                {
+                                    <option value="@set.Id">@(string.IsNullOrEmpty(set.Name) ? "Без име" : set.Name) (@set.Items.Count училища)</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отказ</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Добави към сравнение
+                            </button>
+                        </div>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>

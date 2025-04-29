@@ -1,0 +1,214 @@
+﻿@model SchoolSelect.Web.ViewModels.ComparisonViewModel
+@{
+    ViewData["Title"] = "Сравнение: " + Model.Name;
+}
+
+<div class="container-fluid mt-4">
+    <h2>@ViewData["Title"]</h2>
+    <p class="text-muted">Създадено на @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+
+    <div class="mb-3">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Назад към всички сравнения
+        </a>
+
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-inline" onsubmit="return confirm('Сигурни ли сте, че искате да изтриете това сравнение?');">
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash"></i> Изтрий сравнението
+            </button>
+        </form>
+    </div>
+
+    @if (!Model.Items.Any())
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Това сравнение не съдържа училища. Добавете училища от страницата с детайли за училища.
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-header">
+                <h5>Сравнителна таблица</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Критерии</th>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <th>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <a href="/Schools/Details/@item.SchoolId" target="_blank">
+                                                @item.SchoolName
+                                                @if (!string.IsNullOrEmpty(item.ProfileName))
+                                                {
+                                                    <small class="d-block text-muted">@item.ProfileName</small>
+                                                }
+                                            </a>
+                                            <form asp-action="RemoveItem" method="post" class="ml-2">
+                                                <input type="hidden" name="itemId" value="@item.Id" />
+                                                <input type="hidden" name="comparisonSetId" value="@Model.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Премахни">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Район/Местоположение -->
+                            <tr>
+                                <td><strong>Район</strong></td>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <td>
+                                        @item.District
+                                        <small class="d-block text-muted">@item.City</small>
+                                    </td>
+                                }
+                            </tr>
+
+                            <!-- Рейтинг -->
+                            <tr>
+                                <td><strong>Рейтинг</strong></td>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rating">
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    if (i <= Math.Round(item.AverageRating))
+                                                    {
+                                                        <i class="bi bi-star-fill text-warning"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="bi bi-star text-warning"></i>
+                                                    }
+                                                }
+                                            </div>
+                                            <span class="ml-2">@item.AverageRating.ToString("0.0")</span>
+                                        </div>
+                                    </td>
+                                }
+                            </tr>
+
+                            <!-- Минимален бал -->
+                            <tr>
+                                <td><strong>Минимален бал (последно класиране)</strong></td>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <td>
+                                        @if (item.LastYearMinimumScore.HasValue)
+                                        {
+                                            <span>@item.LastYearMinimumScore.Value.ToString("0.00")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Няма данни</span>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+
+                            <!-- Среден минимален бал -->
+                            <tr>
+                                <td><strong>Среден минимален бал (3 години)</strong></td>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <td>
+                                        @if (item.AverageMinimumScore.HasValue)
+                                        {
+                                            <span>@item.AverageMinimumScore.Value.ToString("0.00")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Няма данни</span>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+
+                            <!-- Брой места -->
+                            <tr>
+                                <td><strong>Брой места</strong></td>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <td>
+                                        @if (item.AvailablePlaces.HasValue)
+                                        {
+                                            <span>@item.AvailablePlaces</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Не е посочено</span>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+
+                            <!-- Допълнителни възможности -->
+                            <tr>
+                                <td><strong>Допълнителни възможности</strong></td>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <td>
+                                        @if (item.FacilitiesCount > 0)
+                                        {
+                                            <span>@item.FacilitiesCount съоръжения</span>
+                                            <ul class="mt-2 list-unstyled">
+                                                @foreach (var facility in item.TopFacilities)
+                                                {
+                                                    <li>
+                                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                                        @facility.Name
+                                                    </li>
+                                                }
+                                            </ul>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Няма данни</span>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Изравняване на височините на клетките
+            function equalizeRowHeights() {
+                $('.comparison-table tbody tr').each(function() {
+                    var highestCell = 0;
+                    $(this).find('td').each(function() {
+                        if ($(this).height() > highestCell) {
+                            highestCell = $(this).height();
+                        }
+                    });
+                    $(this).find('td').height(highestCell);
+                });
+            }
+
+            // Изпълняваме изравняването при зареждане и при промяна на размера на прозореца
+            equalizeRowHeights();
+            $(window).resize(function() {
+                $('.comparison-table tbody tr td').height('auto');
+                equalizeRowHeights();
+            });
+        });
+    </script>
+}

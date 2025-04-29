@@ -99,6 +99,12 @@ namespace SchoolSelect.Web.Controllers
                 Rankings = rankings.OrderByDescending(r => r.Year).ThenBy(r => r.Round).ToList()
             };
 
+            // Добавете тук проверката за автентикация и подготовката на модела за сравнение
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                ViewBag.AddToComparisonViewModel = await PrepareAddToComparisonViewModel(id);
+            }
+
             return View(schoolViewModel);
         }
 
@@ -141,6 +147,19 @@ namespace SchoolSelect.Web.Controllers
             };
 
             return View(viewModel);
+        }
+
+        private async Task<SchoolSelect.ViewModels.AddToComparisonViewModel> PrepareAddToComparisonViewModel(int schoolId, int? profileId = null)
+        {
+            var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty);
+            var userComparisonSets = await _unitOfWork.ComparisonSets.GetComparisonSetsByUserIdAsync(userId);
+
+            return new SchoolSelect.ViewModels.AddToComparisonViewModel
+            {
+                SchoolId = schoolId,
+                ProfileId = profileId,
+                UserComparisonSets = userComparisonSets
+            };
         }
     }
 }
