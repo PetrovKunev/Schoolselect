@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SchoolSelect.Common;
 using SchoolSelect.Repositories.Interfaces;
-using SchoolSelect.Web.Areas.Admin.ViewModels;
 using SchoolSelect.Web.ViewModels;
 using FormulaComponentViewModel = SchoolSelect.Web.ViewModels.FormulaComponentViewModel;
 
@@ -153,6 +153,8 @@ namespace SchoolSelect.Web.Controllers
         {
             var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty);
             var userComparisonSets = await _unitOfWork.ComparisonSets.GetComparisonSetsByUserIdAsync(userId);
+
+            ViewBag.MaxComparisonItems = ValidationConstants.Comparison.MaxItems;
 
             return new SchoolSelect.ViewModels.AddToComparisonViewModel
             {

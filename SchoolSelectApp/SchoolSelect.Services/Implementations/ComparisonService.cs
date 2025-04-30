@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SchoolSelect.Common;
 using SchoolSelect.Data.Models;
 using SchoolSelect.Repositories.Interfaces;
 using SchoolSelect.Services.Interfaces;
@@ -160,6 +161,9 @@ namespace SchoolSelect.Services.Implementations
                 if (profile == null || profile.SchoolId != schoolId)
                     return false;
             }
+
+            if (comparisonSet.Items.Count >= ValidationConstants.Comparison.MaxItems)
+                return false; // Maximum items limit reached
 
             // Добавяне на нов елемент
             var comparisonItem = new ComparisonItem

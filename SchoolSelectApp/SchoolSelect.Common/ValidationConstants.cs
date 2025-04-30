@@ -136,7 +136,7 @@
         public static class Comparison
         {
             public const int NameMaxLength = 100;
-            public const int MaxItems = 10; // Максимален брой училища за сравнение
+            public const int MaxItems = 5; // Максимален брой училища за сравнение
         }
 
         public static class Notification
