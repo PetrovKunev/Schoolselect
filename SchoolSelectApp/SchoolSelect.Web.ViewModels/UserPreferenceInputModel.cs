@@ -13,7 +13,7 @@ namespace SchoolSelect.Web.ViewModels
         // Район на ученика
         [StringLength(ValidationConstants.UserPreference.NameMaxLength)]
         [Display(Name = "Предпочитан район")]
-        public string UserDistrict { get; set; } = string.Empty;
+        public string? UserDistrict { get; set; } = string.Empty;
 
         // Географски координати
         [Display(Name = "Географска ширина")]
