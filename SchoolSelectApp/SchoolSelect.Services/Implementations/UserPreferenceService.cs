@@ -9,7 +9,7 @@ namespace SchoolSelect.Services.Implementations
 {
     public class UserPreferenceService : IUserPreferenceService
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;   
 
         public UserPreferenceService(IUnitOfWork unitOfWork)
         {
@@ -24,7 +24,7 @@ namespace SchoolSelect.Services.Implementations
             {
                 Id = p.Id,
                 PreferenceName = p.PreferenceName,
-                UserDistrict = p.UserDistrict,
+                UserDistrict = p.UserDistrict ?? string.Empty,
                 UserLatitude = p.UserLatitude,
                 UserLongitude = p.UserLongitude,
                 PreferredProfiles = string.IsNullOrEmpty(p.PreferredProfiles)
@@ -44,19 +44,23 @@ namespace SchoolSelect.Services.Implementations
                 return null;
             }
 
-            return new UserPreferenceViewModel
+            var criteriaWeights = DeserializeCriteriaWeights(preference.CriteriaWeights);
+
+            var viewModel = new UserPreferenceViewModel
             {
                 Id = preference.Id,
                 PreferenceName = preference.PreferenceName,
-                UserDistrict = preference.UserDistrict,
+                UserDistrict = preference.UserDistrict ?? string.Empty, // Fix for CS8601
                 UserLatitude = preference.UserLatitude,
                 UserLongitude = preference.UserLongitude,
                 PreferredProfiles = string.IsNullOrEmpty(preference.PreferredProfiles)
                     ? new List<string>()
                     : preference.PreferredProfiles.Split(',').ToList(),
-                CriteriaWeights = DeserializeCriteriaWeights(preference.CriteriaWeights),
+                CriteriaWeights = criteriaWeights,
                 CreatedAt = preference.CreatedAt
             };
+
+            return viewModel;
         }
 
         public async Task<int> CreateUserPreferenceAsync(UserPreferenceInputModel model, Guid userId)
@@ -67,14 +71,15 @@ namespace SchoolSelect.Services.Implementations
                 { "Rating", model.RatingWeight },
                 { "ScoreMatch", model.ScoreMatchWeight },
                 { "ProfileMatch", model.ProfileMatchWeight },
-                { "Facilities", model.FacilitiesWeight }
+                { "Facilities", model.FacilitiesWeight },
+                { "SearchRadius", model.SearchRadius }
             };
 
             var userPreference = new UserPreference
             {
                 UserId = userId,
                 PreferenceName = model.PreferenceName,
-                UserDistrict = model.UserDistrict,
+                UserDistrict = model.UserDistrict ?? string.Empty,
                 UserLatitude = model.UserLatitude,
                 UserLongitude = model.UserLongitude,
                 PreferredProfiles = string.Join(",", model.PreferredProfiles),
@@ -103,7 +108,8 @@ namespace SchoolSelect.Services.Implementations
                 { "Rating", model.RatingWeight },
                 { "ScoreMatch", model.ScoreMatchWeight },
                 { "ProfileMatch", model.ProfileMatchWeight },
-                { "Facilities", model.FacilitiesWeight }
+                { "Facilities", model.FacilitiesWeight },
+                { "SearchRadius", model.SearchRadius }
             };
 
             preference.PreferenceName = model.PreferenceName;
@@ -162,7 +168,8 @@ namespace SchoolSelect.Services.Implementations
                     { "Rating", 3 },
                     { "ScoreMatch", 4 },
                     { "ProfileMatch", 5 },
-                    { "Facilities", 2 }
+                    { "Facilities", 2 },
+                    { "SearchRadius", 5 }
                 };
             }
 

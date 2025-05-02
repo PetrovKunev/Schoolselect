@@ -52,6 +52,28 @@ namespace SchoolSelect.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(UserPreferenceInputModel model)
         {
+            // Проверяваме дали има поне един от двата начина за определяне на местоположение
+            bool hasLocation = !string.IsNullOrEmpty(model.UserDistrict) ||
+                               (model.UserLatitude.HasValue && model.UserLongitude.HasValue);
+
+            // Ако нямаме никакво местоположение, добавяме грешка
+            if (!hasLocation)
+            {
+                // Добавяме ръчно грешка за местоположението
+                ModelState.AddModelError("UserDistrict", "Моля, изберете район или задайте точно местоположение на картата.");
+
+                ViewBag.Districts = await _userPreferenceService.GetAllDistrictsAsync();
+                ViewBag.ProfileTypes = await _userPreferenceService.GetAllProfileTypesAsync();
+
+                return View(model);
+            }
+
+            // Ако имаме координати, но радиусът не е зададен, задаваме стойност по подразбиране
+            if (model.UserLatitude.HasValue && model.UserLongitude.HasValue && model.SearchRadius <= 0)
+            {
+                model.SearchRadius = 5; // Стойност по подразбиране в километри
+            }
+
             if (ModelState.IsValid)
             {
                 try
@@ -85,6 +107,12 @@ namespace SchoolSelect.Web.Controllers
 
             var criteriaWeights = preference.CriteriaWeights;
 
+            var searchRadius = 5; // стойност по подразбиране
+            if (criteriaWeights.TryGetValue("SearchRadius", out double radiusValue))
+            {
+                searchRadius = (int)radiusValue;
+            }
+
             var model = new UserPreferenceInputModel
             {
                 PreferenceName = preference.PreferenceName,
@@ -96,7 +124,8 @@ namespace SchoolSelect.Web.Controllers
                 RatingWeight = GetWeightValue(criteriaWeights, "Rating"),
                 ScoreMatchWeight = GetWeightValue(criteriaWeights, "ScoreMatch"),
                 ProfileMatchWeight = GetWeightValue(criteriaWeights, "ProfileMatch"),
-                FacilitiesWeight = GetWeightValue(criteriaWeights, "Facilities")
+                FacilitiesWeight = GetWeightValue(criteriaWeights, "Facilities"),
+                SearchRadius = searchRadius // Добавяме радиуса
             };
 
             ViewBag.Districts = await _userPreferenceService.GetAllDistrictsAsync();

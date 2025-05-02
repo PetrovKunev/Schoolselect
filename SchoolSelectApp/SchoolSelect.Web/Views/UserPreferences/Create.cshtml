@@ -35,7 +35,9 @@
                         </div>
 
                         <h4 class="mt-4 mb-3">Местоположение</h4>
-
+                        <div class="alert alert-info mb-3">
+                            <i class="bi bi-info-circle"></i> Можете да изберете район, да зададете точно местоположение на картата, или и двете. За по-точни препоръки препоръчваме да използвате картата.
+                        </div>
                         <div class="mb-3">
                             <label asp-for="UserDistrict" class="form-label"></label>
                             <select asp-for="UserDistrict" class="form-select">
@@ -48,7 +50,7 @@
                                     }
                                 }
                             </select>
-                            <span asp-validation-for="UserDistrict" class="text-danger"></span>
+                            
                         </div>
 
                         <div class="card mb-3">
@@ -313,6 +315,51 @@
                 }
             });
         }
+
+                // Премахване на валидацията за UserDistrict
+        $(document).ready(function() {
+            // Премахване на атрибути data-val-required
+            $('#UserDistrict').removeAttr('data-val-required');
+
+            // Премахване на правилата за валидация за UserDistrict
+            if ($.validator && $.validator.unobtrusive) {
+                var $form = $('form');
+
+                // Повторно парсване на формата след премахване на валидацията
+                $.validator.unobtrusive.parse($form);
+
+                // Премахване на изричното правило за UserDistrict
+                var $userDistrict = $('#UserDistrict');
+                if ($userDistrict.length && $userDistrict.rules) {
+                    $userDistrict.rules('remove', 'required');
+                }
+            }
+
+            // Добавяне на собствена валидация за поне един метод за местоположение
+            $('form').on('submit', function(e) {
+                var userDistrict = $('#UserDistrict').val();
+                var latitude = $('#latitude-field').val();
+                var longitude = $('#longitude-field').val();
+
+                var hasLocation = userDistrict || (latitude && longitude);
+
+                if (!hasLocation) {
+                    // Показваме информативно съобщение за грешка
+                    if (!$('.location-error').length) {
+                        $('.alert-info').after('<div class="alert alert-danger location-error">Моля, изберете район или задайте точно местоположение на картата.</div>');
+                    }
+
+                    // Спираме изпращането на формата
+                    e.preventDefault();
+                    return false;
+                } else {
+                    // Изчистваме грешката, ако е показана
+                    $('.location-error').remove();
+                }
+
+                return true;
+            });
+        });
     </script>
    
     <style>

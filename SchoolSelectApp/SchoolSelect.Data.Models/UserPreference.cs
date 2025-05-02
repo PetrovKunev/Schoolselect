@@ -23,7 +23,7 @@ namespace SchoolSelect.Data.Models
 
         // Предпочитан район
         [StringLength(ValidationConstants.School.DistrictMaxLength)]
-        public string UserDistrict { get; set; } = string.Empty;
+        public string? UserDistrict { get; set; } = string.Empty;
 
         // Географски координати на ученика
         [Range(ValidationConstants.GeoCoordinates.MinLatitude,

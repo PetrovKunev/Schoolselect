@@ -11,7 +11,7 @@ namespace SchoolSelect.Web.ViewModels
         public string PreferenceName { get; set; } = string.Empty;
 
         // Район на ученика
-        [Required(ErrorMessage = ValidationMessages.RequiredField)]
+        [StringLength(ValidationConstants.UserPreference.NameMaxLength)]
         [Display(Name = "Предпочитан район")]
         public string UserDistrict { get; set; } = string.Empty;
 
@@ -52,5 +52,9 @@ namespace SchoolSelect.Web.ViewModels
         [Display(Name = "Допълнителни възможности")]
         [Range(0, 5, ErrorMessage = ValidationMessages.ValueRange)]
         public int FacilitiesWeight { get; set; } = 2;
+
+        [Display(Name = "Радиус за търсене (км)")]
+        [Range(1, 20, ErrorMessage = ValidationMessages.ValueRange)]
+        public int SearchRadius { get; set; } = 5;
     }
 }
