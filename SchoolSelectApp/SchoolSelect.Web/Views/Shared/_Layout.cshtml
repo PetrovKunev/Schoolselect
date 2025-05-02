@@ -28,9 +28,16 @@
                         <li class="nav-item">
                             <a class="nav-link text-white" asp-controller="Schools" asp-action="Index">Училища</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white" asp-controller="Comparison" asp-action="Index">Сравнение</a>
-                        </li>
+                        
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-controller="Comparison" asp-action="Index">Сравнение</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="UserPreferences" asp-action="Index">Предпочитания</a>
+                            </li>
+                        }
                         @if (User.IsInRole("Admin") || User.IsInRole("Moderator"))
                         {
                             <li class="nav-item">

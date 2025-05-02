@@ -66,6 +66,12 @@
 
                                 <div id="map" style="height: 400px; width: 100%;" class="mb-3"></div>
 
+                                <div class="mb-3 text-end">
+                                    <button type="button" id="clear-location-btn" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-x-circle"></i> Изчисти местоположението
+                                    </button>
+                                </div>
+
                                 <div class="row">
                                     <div class="col-md-6">
                                         <label asp-for="UserLatitude" class="form-label"></label>
@@ -209,7 +215,10 @@
             const latField = document.getElementById('latitude-field');
             const lngField = document.getElementById('longitude-field');
 
-            if (latField.value && lngField.value) {
+            // Check if there are coordinates saved
+            const hasCoordinates = latField.value && lngField.value;
+
+            if (hasCoordinates) {
                 defaultLocation.lat = parseFloat(latField.value);
                 defaultLocation.lng = parseFloat(lngField.value);
             }
@@ -223,39 +232,76 @@
                 fullscreenControl: true
             });
 
-            // Създаване на маркер, който може да се премества
-            marker = new google.maps.Marker({
-                position: defaultLocation,
-                map: map,
-                draggable: true,
-                title: "Вашето местоположение",
-                animation: google.maps.Animation.DROP
-            });
+            // Create marker and circle only if coordinates exist or no coordinates are set yet
+            if (hasCoordinates || !latField.value) {
+                // Създаване на маркер, който може да се премества
+                marker = new google.maps.Marker({
+                    position: defaultLocation,
+                    map: map,
+                    draggable: true,
+                    title: "Вашето местоположение",
+                    animation: google.maps.Animation.DROP
+                });
 
-            // Създаване на кръг за визуализация на радиуса
-            circle = new google.maps.Circle({
-                map: map,
-                radius: searchRadius * 1000, // превръщане в метри
-                fillColor: '#007bff',
-                fillOpacity: 0.1,
-                strokeColor: '#007bff',
-                strokeOpacity: 0.8,
-                strokeWeight: 2
-            });
+                // Създаване на кръг за визуализация на радиуса
+                circle = new google.maps.Circle({
+                    map: map,
+                    radius: searchRadius * 1000, // превръщане в метри
+                    fillColor: '#007bff',
+                    fillOpacity: 0.1,
+                    strokeColor: '#007bff',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2
+                });
 
-            // Свързване на кръга с маркера
-            circle.bindTo('center', marker, 'position');
+                // Свързване на кръга с маркера
+                circle.bindTo('center', marker, 'position');
+            }
 
-            // Записване на координатите при преместване на маркера
-            google.maps.event.addListener(marker, 'dragend', function() {
-                updateCoordinates(marker.getPosition());
-            });
-
-            // Обработка на кликване върху картата
+            // Enable map click to add a marker if none exists
             google.maps.event.addListener(map, 'click', function(event) {
-                marker.setPosition(event.latLng);
+                if (!marker) {
+                    // Create a new marker if it doesn't exist
+                    marker = new google.maps.Marker({
+                        position: event.latLng,
+                        map: map,
+                        draggable: true,
+                        title: "Вашето местоположение",
+                        animation: google.maps.Animation.DROP
+                    });
+
+                    // Create a new circle if it doesn't exist
+                    circle = new google.maps.Circle({
+                        map: map,
+                        radius: searchRadius * 1000,
+                        fillColor: '#007bff',
+                        fillOpacity: 0.1,
+                        strokeColor: '#007bff',
+                        strokeOpacity: 0.8,
+                        strokeWeight: 2
+                    });
+
+                    // Bind the circle to the marker
+                    circle.bindTo('center', marker, 'position');
+
+                    // Add drag event listener to the new marker
+                    google.maps.event.addListener(marker, 'dragend', function() {
+                        updateCoordinates(marker.getPosition());
+                    });
+                } else {
+                    // Move existing marker
+                    marker.setPosition(event.latLng);
+                }
+
                 updateCoordinates(event.latLng);
             });
+
+            // Записване на координатите при преместване на маркера
+            if (marker) {
+                google.maps.event.addListener(marker, 'dragend', function() {
+                    updateCoordinates(marker.getPosition());
+                });
+            }
 
             // Търсене на адрес
             document.getElementById('search-button').addEventListener('click', function() {
@@ -275,8 +321,37 @@
                 updateRadius(this.value);
             });
 
+            // Add the clear location functionality
+            document.getElementById('clear-location-btn').addEventListener('click', function() {
+                // Clear the coordinate fields
+                document.getElementById('latitude-field').value = '';
+                document.getElementById('longitude-field').value = '';
+
+                // Remove the marker from the map
+                if (marker) {
+                    marker.setMap(null);
+                    marker = null;
+                }
+
+                // Hide the circle
+                if (circle) {
+                    circle.setMap(null);
+                    circle = null;
+                }
+
+                // Notify user
+                $('.alert-info').after('<div class="alert alert-success clear-notification">Местоположението е изчистено. Само районът ще бъде използван.</div>');
+
+                // Remove the notification after 5 seconds
+                setTimeout(function() {
+                    $('.clear-notification').fadeOut('slow', function() {
+                        $(this).remove();
+                    });
+                }, 5000);
+            });
+
             // Ако има запазени координати, актуализираме формата
-            if (latField.value && lngField.value) {
+            if (hasCoordinates && marker) {
                 updateCoordinates(marker.getPosition());
             }
         }
@@ -287,7 +362,9 @@
             document.getElementById('longitude-field').value = position.lng().toFixed(6);
 
             // Актуализиране на кръга
-            circle.setRadius(searchRadius * 1000);
+            if (circle) {
+                circle.setRadius(searchRadius * 1000);
+            }
         }
 
         function updateRadius(value) {
@@ -307,7 +384,44 @@
             geocoder.geocode({ address: address + ', София, България' }, function(results, status) {
                 if (status === 'OK') {
                     map.setCenter(results[0].geometry.location);
-                    marker.setPosition(results[0].geometry.location);
+
+                    // Create marker if it doesn't exist
+                    if (!marker) {
+                        marker = new google.maps.Marker({
+                            position: results[0].geometry.location,
+                            map: map,
+                            draggable: true,
+                            title: "Вашето местоположение",
+                            animation: google.maps.Animation.DROP
+                        });
+
+                        // Add drag event listener
+                        google.maps.event.addListener(marker, 'dragend', function() {
+                            updateCoordinates(marker.getPosition());
+                        });
+                    } else {
+                        marker.setPosition(results[0].geometry.location);
+                        marker.setMap(map); // Make sure it's visible
+                    }
+
+                    // Create circle if it doesn't exist
+                    if (!circle) {
+                        circle = new google.maps.Circle({
+                            map: map,
+                            radius: searchRadius * 1000,
+                            fillColor: '#007bff',
+                            fillOpacity: 0.1,
+                            strokeColor: '#007bff',
+                            strokeOpacity: 0.8,
+                            strokeWeight: 2
+                        });
+
+                        // Bind to marker
+                        circle.bindTo('center', marker, 'position');
+                    } else {
+                        circle.setMap(map); // Make sure it's visible
+                    }
+
                     updateCoordinates(results[0].geometry.location);
                     map.setZoom(15);
                 } else {
@@ -316,7 +430,7 @@
             });
         }
 
-                // Премахване на валидацията за UserDistrict
+        // Премахване на валидацията за UserDistrict
         $(document).ready(function() {
             // Премахване на атрибути data-val-required
             $('#UserDistrict').removeAttr('data-val-required');
@@ -361,7 +475,7 @@
             });
         });
     </script>
-   
+
     <style>
         .range-input-group {
             display: flex;
