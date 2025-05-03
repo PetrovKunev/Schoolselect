@@ -183,5 +183,20 @@ namespace SchoolSelect.Web.Controllers
             // Пренасочваме обратно към страницата с детайли
             return RedirectToAction(nameof(Details), new { id = comparisonSetId });
         }
+
+        /// <summary>
+        /// Извлича всички набори за сравнение на текущия потребител.
+        /// Този метод се използва за AJAX заявки за динамично обновяване 
+        /// на списъка с набори за сравнение.
+        /// </summary>
+        /// <returns>Частичен изглед, съдържащ списък с набори за сравнение на потребителя.</returns>
+        [HttpGet]
+        public async Task<IActionResult> GetComparisonSets()
+        {
+            var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty);
+            var comparisonSets = await _comparisonService.GetComparisonSetsByUserIdAsync(userId);
+
+            return PartialView("_ComparisonSetsPartial", comparisonSets);
+        }
     }
 }

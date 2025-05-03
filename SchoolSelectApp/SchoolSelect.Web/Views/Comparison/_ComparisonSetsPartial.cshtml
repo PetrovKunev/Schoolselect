@@ -1,0 +1,22 @@
+﻿@model IEnumerable<SchoolSelect.Data.Models.ComparisonSet>
+
+<form asp-controller="Comparison" asp-action="AddItem" method="post">
+    <input type="hidden" id="schoolId" name="schoolId" />
+    <input type="hidden" name="profileId" value="" />
+
+    <div class="form-group mb-3">
+        <label for="comparisonSetId" class="form-label">Изберете набор за сравнение</label>
+        <select id="comparisonSetId" name="comparisonSetId" class="form-select" required>
+            <option value="">-- Изберете набор --</option>
+            @foreach (var set in Model)
+            {
+                <option value="@set.Id">@set.Name</option>
+            }
+        </select>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отказ</button>
+        <button type="submit" class="btn btn-primary">Добави</button>
+    </div>
+</form>

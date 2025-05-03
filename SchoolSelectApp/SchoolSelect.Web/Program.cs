@@ -66,6 +66,7 @@ namespace SchoolSelect.Web
             builder.Services.AddScoped<IAdmissionService, AdmissionService>();
             builder.Services.AddScoped<IChanceCalculator, DefaultChanceCalculator>();
             builder.Services.AddScoped<IScoreCalculationService, ScoreCalculationService>();
+            builder.Services.AddScoped<ISchoolRecommendationService, SchoolRecommendationService>();
 
 
             // Конфигуриране на опции за ChanceCalculator
