@@ -1,8 +1,8 @@
 ﻿@model SchoolSelect.Web.ViewModels.UserGradesInputModel
 @{
     ViewData["Title"] = "Редактиране на оценки";
-    var subjectCodes = ViewBag.SubjectCodes as Dictionary<string, string>;
-    var componentTypes = ViewBag.ComponentTypes as Dictionary<int, string>;
+    var subjectCodes = ViewBag.SubjectCodes as Dictionary<string, string> ?? new Dictionary<string, string>();
+    var componentTypes = ViewBag.ComponentTypes as Dictionary<int, string> ?? new Dictionary<int, string>();
 }
 
 <div class="container">
@@ -181,72 +181,65 @@
     </div>
 </template>
 
+<!-- Добавяме един контейнер със „data-” атрибути над скрипта -->
+<div id="configData"
+     data-subject-names='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(subjectCodes))'
+     data-initial-index='@(Model.AdditionalGrades?.Count ?? 0)'>
+</div>
+
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 
-    <script>
+    <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function () {
+            // Взимаме данните от data-атрибутите
+            const configEl = document.getElementById('configData');
+            const subjectNames = JSON.parse(configEl.dataset.subjectNames);
+            let indexCounter = parseInt(configEl.dataset.initialIndex, 10);
+
             const addSubjectBtn = document.getElementById('addSubjectBtn');
             const additionalGradesContainer = document.getElementById('additionalGradesContainer');
             const template = document.getElementById('additionalGradeTemplate');
-            const subjectNames = @Html.Raw(Json.Serialize(subjectCodes));
 
-            let indexCounter = @Model.AdditionalGrades.Count;
-
-            // Функционалност за премахване на предмет към съществуващите
+            // Премахване на вече съществуващите бутони „Премахни“
             document.querySelectorAll('.remove-subject-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    this.closest('.additional-grade-item').remove();
-                });
+                btn.addEventListener('click', () => btn.closest('.additional-grade-item').remove());
             });
 
-            // Функция за добавяне на нов предмет
             addSubjectBtn.addEventListener('click', function () {
                 const newItem = template.content.cloneNode(true);
 
-                // Задаване на коректните имена на полетата с текущия индекс
+                // Задаваме коректни имена на полетата (Razor вече не фигурира тук)
                 newItem.querySelectorAll('[data-input-name]').forEach(input => {
-                    const inputName = input.getAttribute('data-input-name').replace('{index}', indexCounter);
-                    input.setAttribute('name', inputName);
-                    input.setAttribute('id', inputName);
+                    const name = input.getAttribute('data-input-name').replace('{index}', indexCounter);
+                    input.setAttribute('name', name);
+                    input.setAttribute('id', name);
                 });
 
-                // Добавяне на функционалност за промяна на предмета
+                // change-събитие за subject-select
                 const subjectSelect = newItem.querySelector('.subject-code-select');
                 const subjectNameInput = newItem.querySelector('.subject-name-input');
-
-                subjectSelect.addEventListener('change', function() {
-                    const selectedSubjectCode = this.value;
-                    if (selectedSubjectCode) {
-                        subjectNameInput.value = subjectNames[selectedSubjectCode];
-                    } else {
-                        subjectNameInput.value = '';
-                    }
+                subjectSelect.addEventListener('change', function () {
+                    subjectNameInput.value = subjectNames[this.value] || '';
                 });
 
-                // Функционалност за премахване на предмет
-                const removeBtn = newItem.querySelector('.remove-subject-btn');
-                removeBtn.addEventListener('click', function() {
-                    this.closest('.additional-grade-item').remove();
-                });
+                // бутон „Премахни“
+                newItem.querySelector('.remove-subject-btn')
+                       .addEventListener('click', function () {
+                           this.closest('.additional-grade-item').remove();
+                       });
 
                 additionalGradesContainer.appendChild(newItem);
                 indexCounter++;
             });
 
-            // Обновяване на имената на предметите за съществуващите полета
+            // За вече съществуващите selects да обновят имената
             document.querySelectorAll('.subject-code-select').forEach(select => {
-                select.addEventListener('change', function() {
-                    const selectedSubjectCode = this.value;
-                    const subjectNameInput = this.parentElement.querySelector('.subject-name-input');
-
-                    if (selectedSubjectCode) {
-                        subjectNameInput.value = subjectNames[selectedSubjectCode];
-                    } else {
-                        subjectNameInput.value = '';
-                    }
+                select.addEventListener('change', function () {
+                    const hidden = this.parentElement.querySelector('.subject-name-input');
+                    hidden.value = subjectNames[this.value] || '';
                 });
             });
         });

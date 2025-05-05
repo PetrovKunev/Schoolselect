@@ -1,8 +1,8 @@
 ﻿@model SchoolSelect.Web.ViewModels.UserPreferenceInputModel
 @{
     ViewData["Title"] = "Редактиране на предпочитание";
-    var districts = ViewBag.Districts as List<string>;
-    var profileTypes = ViewBag.ProfileTypes as Dictionary<string, string>;
+    var districts = ViewBag.Districts as List<string> ?? new List<string>();
+    var profileTypes = ViewBag.ProfileTypes as Dictionary<string, string> ?? new Dictionary<string, string>();
 }
 
 <div class="container">
