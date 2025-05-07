@@ -22,7 +22,7 @@ namespace SchoolSelect.Web.Areas.Admin.ViewModels
         [StringLength(500)]
         public string? Subjects { get; set; }
 
-        [Range(0, 100, ErrorMessage = "Броят места трябва да бъде между 0 и 100")]
+        [Range(0, 1000, ErrorMessage = "Броят места трябва да бъде между 0 и 1000")]
         public int AvailablePlaces { get; set; }
 
         public ProfileType? Type { get; set; }

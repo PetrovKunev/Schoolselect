@@ -187,10 +187,45 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
 
             var schoolId = profile.SchoolId;
 
-            _unitOfWork.SchoolProfiles.Remove(profile);
-            await _unitOfWork.CompleteAsync();
+            // Проверка за свързани исторически данни за класиране
+            var hasHistoricalRankings = await _unitOfWork.HistoricalRankings.AnyAsync(hr => hr.ProfileId == id);
+            if (hasHistoricalRankings)
+            {
+                TempData["ErrorMessage"] = "Невъзможно изтриване! Профилът има свързани исторически данни за класиране. Първо трябва да изтриете историческите данни.";
+                return RedirectToAction(nameof(Manage), new { id = schoolId });
+            }
 
-            TempData["SuccessMessage"] = "Профилът беше успешно изтрит.";
+            // Проверка за свързани формули за прием
+            var hasAdmissionFormulas = await _unitOfWork.AdmissionFormulas.AnyAsync(f => f.SchoolProfileId == id);
+            if (hasAdmissionFormulas)
+            {
+                TempData["ErrorMessage"] = "Невъзможно изтриване! Профилът има свързани формули за прием. Първо трябва да изтриете формулите за прием.";
+                return RedirectToAction(nameof(Manage), new { id = schoolId });
+            }
+
+            // Проверка за свързани набори за сравнение
+            var hasComparisonItems = await _unitOfWork.ComparisonSets.AnyAsync(cs =>
+                cs.Items.Any(i => i.ProfileId == id));
+            if (hasComparisonItems)
+            {
+                TempData["ErrorMessage"] = "Невъзможно изтриване! Профилът се използва в набори за сравнение. Първо трябва да премахнете профила от всички сравнения.";
+                return RedirectToAction(nameof(Manage), new { id = schoolId });
+            }
+
+            // Ако няма свързани данни, продължаваме с изтриването
+            _unitOfWork.SchoolProfiles.Remove(profile);
+
+            try
+            {
+                await _unitOfWork.CompleteAsync();
+                TempData["SuccessMessage"] = "Профилът беше успешно изтрит.";
+            }
+            catch (Exception ex)
+            {
+                // Като допълнителна защита хващаме евентуални грешки
+                TempData["ErrorMessage"] = $"Възникна грешка при изтриването: {ex.Message}. Профилът може да има свързани данни.";
+            }
+
             return RedirectToAction(nameof(Manage), new { id = schoolId });
         }
     }
