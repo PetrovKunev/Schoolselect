@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using SchoolSelect.Common;
 using SchoolSelect.Data.Models;
 using SchoolSelect.Repositories.Interfaces;
@@ -377,8 +378,62 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
 
         // This action will handle adding more components via AJAX
         [HttpPost]
+        //public IActionResult AddComponent()
+        //{
+        //    ViewBag.ComponentTypes = new SelectList(new[]
+        //    {
+        //        new { Value = ComponentTypes.YearlyGrade, Text = "Годишна оценка" },
+        //        new { Value = ComponentTypes.NationalExam, Text = "НВО" },
+        //        new { Value = ComponentTypes.EntranceExam, Text = "Приемен изпит" },
+        //        new { Value = ComponentTypes.YearlyGradeAsPoints , Text = "Годишна оценка, преобразувана в точки" }
+        //    }, "Value", "Text");
+
+        //    ViewBag.SubjectCodes = SubjectCodes.SubjectNames;
+
+        //    // Get the index from the request - needed for proper form field names
+        //    if (Request.Form.TryGetValue("index", out var indexValue) && int.TryParse(indexValue, out int index))
+        //    {
+        //        ViewBag.Index = index;
+        //    }
+        //    else
+        //    {
+        //        ViewBag.Index = 0;
+        //    }
+
+        //    // Create a new component with default values
+        //    var componentModel = new FormulaComponentViewModel
+        //    {
+        //        Multiplier = 1.0, // Default multiplier
+        //        ComponentType = ComponentTypes.YearlyGrade, // Default to yearly grade
+        //        SubjectCode = "БЕЛ", // Default subject
+        //        SubjectName = "Български език и литература" // Default subject name
+        //    };
+
+        //    var viewData = new ViewDataDictionary(ViewData)
+        //    {
+        //        TemplateInfo = new TemplateInfo
+        //        {
+        //            HtmlFieldPrefix = $"Components[{index}]"
+        //        }
+        //    };
+        //    return PartialView("_FormulaComponentPartial", componentModel, viewData);
+
+        //}
+
+        [HttpPost]
         public IActionResult AddComponent()
         {
+            // 1. Прочети index-а от формата (или го дай 0, ако не е подаден)
+            int index = 0;
+            if (Request.Form.TryGetValue("index", out var iv) && int.TryParse(iv, out var parsed))
+            {
+                index = parsed;
+            }
+
+            // 2. Настрой HtmlFieldPrefix върху съществуващия ViewData
+            ViewData.TemplateInfo.HtmlFieldPrefix = $"Components[{index}]";
+
+            // 3. Напълни ViewBag-та каквито ти трябват
             ViewBag.ComponentTypes = new SelectList(new[]
             {
                 new { Value = ComponentTypes.YearlyGrade, Text = "Годишна оценка" },
@@ -386,29 +441,20 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                 new { Value = ComponentTypes.EntranceExam, Text = "Приемен изпит" },
                 new { Value = ComponentTypes.YearlyGradeAsPoints , Text = "Годишна оценка, преобразувана в точки" }
             }, "Value", "Text");
-
             ViewBag.SubjectCodes = SubjectCodes.SubjectNames;
 
-            // Get the index from the request - needed for proper form field names
-            if (Request.Form.TryGetValue("index", out var indexValue) && int.TryParse(indexValue, out int index))
-            {
-                ViewBag.Index = index;
-            }
-            else
-            {
-                ViewBag.Index = 0;
-            }
-
-            // Create a new component with default values
+            // 4. Създай default-овия модел
             var componentModel = new FormulaComponentViewModel
             {
-                Multiplier = 1.0, // Default multiplier
-                ComponentType = ComponentTypes.YearlyGrade, // Default to yearly grade
-                SubjectCode = "БЕЛ", // Default subject
-                SubjectName = "Български език и литература" // Default subject name
+                Multiplier = 1,
+                ComponentType = ComponentTypes.YearlyGrade,
+                SubjectCode = "БЕЛ",
+                SubjectName = "Български език и литература"
             };
 
+            // 5. Върни partial-а с модела – вече ще ползва ViewData.TemplateInfo.HtmlFieldPrefix
             return PartialView("_FormulaComponentPartial", componentModel);
         }
+
     }
 }

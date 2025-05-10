@@ -185,19 +185,10 @@
                     type: 'POST',
                     data: { index: componentIndex },
                     success: function (result) {
-                        // Replace the index placeholder with the actual index
-                        result = result.replace(/\[0\]/g, '[' + componentIndex + ']');
-                        $('#componentsContainer').append(result);
-                        componentIndex++;
-                        $('#noComponentsMessage').addClass('d-none');
-
-                        // Initialize the newly added subject code dropdown
-                        $('#componentsContainer .component-item:last-child .subject-code').trigger('change');
-
-                        // Reindex all components after adding
-                        reindexComponents();
-
-                        console.log('Component added, new count:', $('#componentsContainer .component-item').length);
+                            $('#componentsContainer').append(result);
+                            componentIndex++;
+                            $('#noComponentsMessage').addClass('d-none');
+                            $('#componentsContainer .component-item:last-child .subject-code').trigger('change');
                     }
                 });
             });
