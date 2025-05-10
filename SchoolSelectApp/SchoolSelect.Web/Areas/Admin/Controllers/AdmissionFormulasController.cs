@@ -376,50 +376,6 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
             return RedirectToAction(nameof(Profile), new { id = profileId });
         }
 
-        // This action will handle adding more components via AJAX
-        [HttpPost]
-        //public IActionResult AddComponent()
-        //{
-        //    ViewBag.ComponentTypes = new SelectList(new[]
-        //    {
-        //        new { Value = ComponentTypes.YearlyGrade, Text = "Годишна оценка" },
-        //        new { Value = ComponentTypes.NationalExam, Text = "НВО" },
-        //        new { Value = ComponentTypes.EntranceExam, Text = "Приемен изпит" },
-        //        new { Value = ComponentTypes.YearlyGradeAsPoints , Text = "Годишна оценка, преобразувана в точки" }
-        //    }, "Value", "Text");
-
-        //    ViewBag.SubjectCodes = SubjectCodes.SubjectNames;
-
-        //    // Get the index from the request - needed for proper form field names
-        //    if (Request.Form.TryGetValue("index", out var indexValue) && int.TryParse(indexValue, out int index))
-        //    {
-        //        ViewBag.Index = index;
-        //    }
-        //    else
-        //    {
-        //        ViewBag.Index = 0;
-        //    }
-
-        //    // Create a new component with default values
-        //    var componentModel = new FormulaComponentViewModel
-        //    {
-        //        Multiplier = 1.0, // Default multiplier
-        //        ComponentType = ComponentTypes.YearlyGrade, // Default to yearly grade
-        //        SubjectCode = "БЕЛ", // Default subject
-        //        SubjectName = "Български език и литература" // Default subject name
-        //    };
-
-        //    var viewData = new ViewDataDictionary(ViewData)
-        //    {
-        //        TemplateInfo = new TemplateInfo
-        //        {
-        //            HtmlFieldPrefix = $"Components[{index}]"
-        //        }
-        //    };
-        //    return PartialView("_FormulaComponentPartial", componentModel, viewData);
-
-        //}
-
         [HttpPost]
         public IActionResult AddComponent()
         {
