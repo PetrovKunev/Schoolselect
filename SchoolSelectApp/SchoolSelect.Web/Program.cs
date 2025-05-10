@@ -97,11 +97,14 @@ namespace SchoolSelect.Web
                 options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
             });
 
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllersWithViews(options =>
+            {
+                options.MaxModelBindingCollectionSize = 100;
+            });
 
             builder.Services.AddHostedService<IdentityDataInitializerHostedService>();
 
-            WebApplication app = builder.Build();
+            WebApplication app = builder.Build();   
 
 
             // Configure the HTTP request pipeline.

@@ -158,6 +158,7 @@
     <script>
         $(document).ready(function () {
             let componentIndex = parseInt('@Model.Components.Count');
+            console.log('Initial component count:', componentIndex);
 
             // Handle subject code selection to automatically set subject name
             $(document).on('change', '.subject-code', function() {
@@ -184,6 +185,11 @@
 
                         // Initialize the newly added subject code dropdown
                         $('#componentsContainer .component-item:last-child .subject-code').trigger('change');
+
+                        // Reindex all components after adding
+                        reindexComponents();
+
+                        console.log('Component added, new count:', $('#componentsContainer .component-item').length);
                     }
                 });
             });
@@ -199,24 +205,41 @@
 
                 // Re-index the components
                 reindexComponents();
+
+                console.log('Component removed, remaining count:', $('#componentsContainer .component-item').length);
             });
 
-            // Reindex components to ensure proper form submission
+            // Improved reindex components function to ensure proper form submission
             function reindexComponents() {
+                console.log('Reindexing components');
                 $('#componentsContainer .component-item').each(function (idx) {
                     $(this).find('select, input').each(function () {
                         let name = $(this).attr('name');
                         if (name) {
-                            let newName = name.replace(/\[\d+\]/, '[' + idx + ']');
+                            // More robust replacement using regex pattern
+                            let newName = name.replace(/Components\[\d+\]/, 'Components[' + idx + ']');
                             $(this).attr('name', newName);
-                            $(this).attr('id', newName);
+
+                            // Also update the id attribute if it exists
+                            let id = $(this).attr('id');
+                            if (id) {
+                                let newId = id.replace(/Components_\d+_/, 'Components_' + idx + '_');
+                                $(this).attr('id', newId);
+                            }
+
+                            console.log(`Renamed element from ${name} to ${newName}`);
                         }
                     });
                 });
             }
 
-            // Form validation
+            // Form validation with proper reindexing before submit
             $('#formulaForm').submit(function(e) {
+                // Reindex all components before submission
+                reindexComponents();
+
+                console.log('Form submitted with component count:', $('#componentsContainer .component-item').length);
+
                 // Check if there are any components
                 if ($('#componentsContainer .component-item').length === 0) {
                     e.preventDefault();
@@ -226,10 +249,12 @@
 
                 // Validate each component
                 var isValid = true;
-                $('#componentsContainer .component-item').each(function() {
+                $('#componentsContainer .component-item').each(function(idx) {
                     var subjectCode = $(this).find('.subject-code').val();
                     var subjectName = $(this).find('.subject-name').val();
                     var multiplier = $(this).find('input[name*="Multiplier"]').val();
+
+                    console.log(`Validating component ${idx} - Subject: ${subjectCode}, Name: ${subjectName}, Multiplier: ${multiplier}`);
 
                     if (!subjectCode || !subjectName || !multiplier) {
                         isValid = false;

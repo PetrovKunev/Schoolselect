@@ -144,10 +144,15 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AdmissionFormulaViewModel model)
         {
+
+
             if (ModelState.IsValid)
             {
                 try
                 {
+                    // Отпечатваме броя компоненти за дебъг
+                    _logger.LogInformation("Получени {ComponentCount} компонента", model.Components?.Count ?? 0);
+
                     // Create the formula
                     var formula = new AdmissionFormula
                     {
@@ -155,14 +160,20 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                         Year = model.Year,
                         FormulaExpression = model.FormulaExpression,
                         FormulaDescription = model.FormulaDescription,
-                        HasComponents = model.Components != null && model.Components.Any() // Задаваме HasComponents на true ако има компоненти
+                        HasComponents = model.Components != null && model.Components.Any()
                     };
 
-                    // Add all components
-                    if (model.Components != null) // Ensure Components is not null
+                    // Важно: Създаваме нова колекция от компоненти
+                    formula.Components = new List<FormulaComponent>();
+
+                    // Добавяме всички компоненти към формулата преди да я запазим
+                    if (model.Components != null)
                     {
                         foreach (var componentModel in model.Components)
                         {
+                            _logger.LogInformation("Добавяне на компонент: {Subject}, {Type}, {Multiplier}",
+                                componentModel.SubjectCode, componentModel.ComponentType, componentModel.Multiplier);
+
                             formula.Components.Add(new FormulaComponent
                             {
                                 SubjectCode = componentModel.SubjectCode,
@@ -174,20 +185,25 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                         }
                     }
 
+                    // Записваме формулата заедно с всички компоненти
                     await _unitOfWork.AdmissionFormulas.AddAsync(formula);
                     await _unitOfWork.CompleteAsync();
+
+                    _logger.LogInformation("Успешно запазена формула с ID {FormulaId} и {ComponentCount} компонента",
+                        formula.Id, formula.Components.Count);
 
                     TempData["SuccessMessage"] = "Формулата беше успешно създадена.";
                     return RedirectToAction(nameof(Profile), new { id = model.SchoolProfileId });
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error creating admission formula");
+                    _logger.LogError(ex, "Error creating admission formula with {ComponentCount} components: {ErrorMessage}",
+                        model.Components?.Count ?? 0, ex.Message);
                     ModelState.AddModelError("", "Възникна грешка при създаване на формулата. Моля опитайте отново.");
                 }
             }
 
-            // If we got here, something failed; redisplay form
+            // Ако стигнем дотук, нещо не е наред, покажи отново формата
             var profile = await _unitOfWork.SchoolProfiles.GetByIdAsync(model.SchoolProfileId);
             var school = await _unitOfWork.Schools.GetByIdAsync(profile.SchoolId);
             model.SchoolName = school.Name;
@@ -266,6 +282,9 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
             {
                 try
                 {
+                    _logger.LogInformation("Редактиране на формула {FormulaId} с {ComponentCount} компонента",
+                        id, model.Components?.Count ?? 0);
+
                     var formula = await _unitOfWork.AdmissionFormulas.GetFormulaWithComponentsAsync(id);
                     if (formula == null)
                     {
@@ -276,16 +295,19 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                     formula.Year = model.Year;
                     formula.FormulaExpression = model.FormulaExpression;
                     formula.FormulaDescription = model.FormulaDescription;
-                    formula.HasComponents = model.Components != null && model.Components.Any(); // Обновяваме и HasComponents
+                    formula.HasComponents = model.Components != null && model.Components.Any();
 
                     // Remove all existing components
                     formula.Components.Clear();
 
                     // Add all components from the model
                     if (model.Components != null)
-                    {     // Ensure Components is not null
+                    {
                         foreach (var componentModel in model.Components)
                         {
+                            _logger.LogInformation("Добавяне на компонент: {Subject}, {Type}, {Multiplier}",
+                                componentModel.SubjectCode, componentModel.ComponentType, componentModel.Multiplier);
+
                             formula.Components.Add(new FormulaComponent
                             {
                                 SubjectCode = componentModel.SubjectCode,
@@ -300,12 +322,16 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                     _unitOfWork.AdmissionFormulas.Update(formula);
                     await _unitOfWork.CompleteAsync();
 
+                    _logger.LogInformation("Успешно обновена формула с ID {FormulaId} и {ComponentCount} компонента",
+                        formula.Id, formula.Components.Count);
+
                     TempData["SuccessMessage"] = "Формулата беше успешно обновена.";
                     return RedirectToAction(nameof(Profile), new { id = model.SchoolProfileId });
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error updating admission formula");
+                    _logger.LogError(ex, "Error updating admission formula with {ComponentCount} components: {ErrorMessage}",
+                        model.Components?.Count ?? 0, ex.Message);
                     ModelState.AddModelError("", "Възникна грешка при обновяване на формулата. Моля опитайте отново.");
                 }
             }
