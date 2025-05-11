@@ -94,6 +94,8 @@
         /// </summary>
         public const string SocialStudies = "ЧО";
 
+        public const string NPMGCompetitions = "НПМГ-СЪСТЕЗ";
+
         /// <summary>
         /// Речник с пълните имена на предметите
         /// </summary>
@@ -120,7 +122,8 @@
         { Music, "Музика" },
         { Technology, "Технологии и предприемачество" },
         { NatureStudies, "Човек и природа" },
-        { SocialStudies, "Човек и общество" }
+        { SocialStudies, "Човек и общество" },
+        { NPMGCompetitions, "Състезания и олимпиади (НПМГ)" }
     };
 
         /// <summary>

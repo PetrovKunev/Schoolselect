@@ -53,7 +53,12 @@ namespace SchoolSelect.Web.Controllers
                 { ComponentTypes.YearlyGrade, "Годишна оценка" },
                 { ComponentTypes.NationalExam, "НВО" },
                 { ComponentTypes.EntranceExam, "Приемен изпит" },
-                { ComponentTypes.YearlyGradeAsPoints, "Годишна оценка, преобразувана в точки" }
+                { ComponentTypes.PhysicsOlympiad60Percent, "Олимпиада по физика (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив физик" },
+                { ComponentTypes.BiologyOlympiad60Percent, "Олимпиада по биология (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив биолог" },
+                { ComponentTypes.ChemistryOlympiad60Percent, "Олимпиада по химия (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив химик" },
+                { ComponentTypes.ChakalovTalentedBiologist, "Акад. Л. Чакалов - модул Талантлив биолог" },
+                { ComponentTypes.ChakalovTalentedChemist, "Акад. Л. Чакалов - модул Талантлив химик" },
+                { ComponentTypes.GeographyOlympiad60Percent, "Олимпиада по география (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив географ" }
             };
             return View(new UserGradesInputModel());
         }
@@ -84,7 +89,12 @@ namespace SchoolSelect.Web.Controllers
                 { ComponentTypes.YearlyGrade, "Годишна оценка" },
                 { ComponentTypes.NationalExam, "НВО" },
                 { ComponentTypes.EntranceExam, "Приемен изпит" },
-                { ComponentTypes.YearlyGradeAsPoints , "Годишна оценка, преобразувана в точки" }
+                { ComponentTypes.PhysicsOlympiad60Percent, "Олимпиада по физика (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив физик" },
+                { ComponentTypes.BiologyOlympiad60Percent, "Олимпиада по биология (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив биолог" },
+                { ComponentTypes.ChemistryOlympiad60Percent, "Олимпиада по химия (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив химик" },
+                { ComponentTypes.ChakalovTalentedBiologist, "Акад. Л. Чакалов - модул Талантлив биолог" },
+                { ComponentTypes.ChakalovTalentedChemist, "Акад. Л. Чакалов - модул Талантлив химик" },
+                { ComponentTypes.GeographyOlympiad60Percent, "Олимпиада по география (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив географ" }
             };
             return View(model);
         }
@@ -120,7 +130,12 @@ namespace SchoolSelect.Web.Controllers
                 { ComponentTypes.YearlyGrade, "Годишна оценка" },
                 { ComponentTypes.NationalExam, "НВО" },
                 { ComponentTypes.EntranceExam, "Приемен изпит" },
-                { ComponentTypes.YearlyGradeAsPoints , "Годишна оценка, преобразувана в точки" }
+                { ComponentTypes.PhysicsOlympiad60Percent, "Олимпиада по физика (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив физик" },
+                { ComponentTypes.BiologyOlympiad60Percent, "Олимпиада по биология (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив биолог" },
+                { ComponentTypes.ChemistryOlympiad60Percent, "Олимпиада по химия (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив химик" },
+                { ComponentTypes.ChakalovTalentedBiologist, "Акад. Л. Чакалов - модул Талантлив биолог" },
+                { ComponentTypes.ChakalovTalentedChemist, "Акад. Л. Чакалов - модул Талантлив химик" },
+                { ComponentTypes.GeographyOlympiad60Percent, "Олимпиада по география (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив географ" }
             };
             return View(model);
         }
@@ -150,7 +165,12 @@ namespace SchoolSelect.Web.Controllers
                 { ComponentTypes.YearlyGrade, "Годишна оценка" },
                 { ComponentTypes.NationalExam, "НВО" },
                 { ComponentTypes.EntranceExam, "Приемен изпит" },
-                { ComponentTypes.YearlyGradeAsPoints , "Годишна оценка, преобразувана в точки" }
+                { ComponentTypes.PhysicsOlympiad60Percent, "Олимпиада по физика (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив физик" },
+                { ComponentTypes.BiologyOlympiad60Percent, "Олимпиада по биология (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив биолог" },
+                { ComponentTypes.ChemistryOlympiad60Percent, "Олимпиада по химия (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив химик" },
+                { ComponentTypes.ChakalovTalentedBiologist, "Акад. Л. Чакалов - модул Талантлив биолог" },
+                { ComponentTypes.ChakalovTalentedChemist, "Акад. Л. Чакалов - модул Талантлив химик" },
+                { ComponentTypes.GeographyOlympiad60Percent, "Олимпиада по география (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив географ" }
             };
             return View(model);
         }

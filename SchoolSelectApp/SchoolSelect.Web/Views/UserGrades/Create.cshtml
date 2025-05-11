@@ -148,7 +148,63 @@
     </div>
 </template>
 
+<div id="additionalGradesContainer"
+     data-subject-names='@Html.Raw(Json.Serialize(subjectCodes ?? new Dictionary<string,string>()))'>
+</div>
+
 @section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const addSubjectBtn = document.getElementById('addSubjectBtn');
+            const additionalGradesContainer = document.getElementById('additionalGradesContainer');
+            const template = document.getElementById('additionalGradeTemplate');
+            // Четем subjectNames от data-атрибут
+            const subjectNames = JSON.parse(additionalGradesContainer.dataset.subjectNames);
+
+            let indexCounter = 0;
+
+            // Функция за добавяне на нов предмет
+            addSubjectBtn.addEventListener('click', function () {
+                const newItem = template.content.cloneNode(true);
+
+                // Задаване на коректните имена на полетата с текущия индекс
+                newItem.querySelectorAll('[data-input-name]').forEach(input => {
+                    const inputName = input
+                        .getAttribute('data-input-name')
+                        .replace('{index}', indexCounter);
+                    input.setAttribute('name', inputName);
+                    input.setAttribute('id', inputName);
+                });
+
+                // Функционалност за промяна на предмета
+                const subjectSelect = newItem.querySelector('.subject-code-select');
+                const subjectNameInput = newItem.querySelector('.subject-name-input');
+
+                subjectSelect.addEventListener('change', function() {
+                    subjectNameInput.value = this.value
+                        ? subjectNames[this.value]
+                        : '';
+                });
+
+                // Функционалност за премахване на предмет
+                const removeBtn = newItem.querySelector('.remove-subject-btn');
+                removeBtn.addEventListener('click', function() {
+                    this.closest('.additional-grade-item').remove();
+                });
+
+                additionalGradesContainer.appendChild(newItem);
+                indexCounter++;
+            });
+        });
+    </script>
+}
+
+
+@* @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
@@ -197,4 +253,4 @@
             });
         });
     </script>
-}
+} *@

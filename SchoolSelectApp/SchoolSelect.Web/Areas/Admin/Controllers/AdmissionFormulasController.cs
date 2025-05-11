@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using SchoolSelect.Common;
 using SchoolSelect.Data.Models;
 using SchoolSelect.Repositories.Interfaces;
@@ -132,8 +131,14 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                 new { Value = ComponentTypes.YearlyGrade, Text = "Годишна оценка" },
                 new { Value = ComponentTypes.NationalExam, Text = "НВО" },
                 new { Value = ComponentTypes.EntranceExam, Text = "Приемен изпит" },
-                new { Value = ComponentTypes.YearlyGradeAsPoints, Text = "Годишна оценка, преобразувана в точки" }
+                new { Value = ComponentTypes.PhysicsOlympiad60Percent, Text = "Олимпиада по физика (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив физик" },
+                new { Value = ComponentTypes.BiologyOlympiad60Percent, Text = "Олимпиада по биология (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив биолог" },
+                new { Value = ComponentTypes.ChemistryOlympiad60Percent, Text = "Олимпиада по химия (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив химик" },
+                new { Value = ComponentTypes.ChakalovTalentedBiologist, Text = "Акад. Л. Чакалов - модул Талантлив биолог" },
+                new { Value = ComponentTypes.ChakalovTalentedChemist, Text = "Акад. Л. Чакалов - модул Талантлив химик" },
+                new { Value = ComponentTypes.GeographyOlympiad60Percent, Text = "Олимпиада по география (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив географ" }
             }, "Value", "Text");
+
 
             ViewBag.SubjectCodes = SubjectCodes.SubjectNames;
 
@@ -215,7 +220,12 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                 new { Value = ComponentTypes.YearlyGrade, Text = "Годишна оценка" },
                 new { Value = ComponentTypes.NationalExam, Text = "НВО" },
                 new { Value = ComponentTypes.EntranceExam, Text = "Приемен изпит" },
-                new { Value = ComponentTypes.YearlyGradeAsPoints, Text = "Годишна оценка, преобразувана в точки" }
+                new { Value = ComponentTypes.PhysicsOlympiad60Percent, Text = "Олимпиада по физика (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив физик" },
+                new { Value = ComponentTypes.BiologyOlympiad60Percent, Text = "Олимпиада по биология (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив биолог" },
+                new { Value = ComponentTypes.ChemistryOlympiad60Percent, Text = "Олимпиада по химия (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив химик" },
+                new { Value = ComponentTypes.ChakalovTalentedBiologist, Text = "Акад. Л. Чакалов - модул Талантлив биолог" },
+                new { Value = ComponentTypes.ChakalovTalentedChemist, Text = "Акад. Л. Чакалов - модул Талантлив химик" },
+                new { Value = ComponentTypes.GeographyOlympiad60Percent, Text = "Олимпиада по география (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив географ" }
             }, "Value", "Text");
 
             ViewBag.SubjectCodes = SubjectCodes.SubjectNames;
@@ -261,7 +271,12 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                 new { Value = ComponentTypes.YearlyGrade, Text = "Годишна оценка" },
                 new { Value = ComponentTypes.NationalExam, Text = "НВО" },
                 new { Value = ComponentTypes.EntranceExam, Text = "Приемен изпит" },
-                new { Value = ComponentTypes.YearlyGradeAsPoints, Text = "Годишна оценка, преобразувана в точки" }
+                new { Value = ComponentTypes.PhysicsOlympiad60Percent, Text = "Олимпиада по физика (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив физик" },
+                new { Value = ComponentTypes.BiologyOlympiad60Percent, Text = "Олимпиада по биология (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив биолог" },
+                new { Value = ComponentTypes.ChemistryOlympiad60Percent, Text = "Олимпиада по химия (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив химик" },
+                new { Value = ComponentTypes.ChakalovTalentedBiologist, Text = "Акад. Л. Чакалов - модул Талантлив биолог" },
+                new { Value = ComponentTypes.ChakalovTalentedChemist, Text = "Акад. Л. Чакалов - модул Талантлив химик" },
+                new { Value = ComponentTypes.GeographyOlympiad60Percent, Text = "Олимпиада по география (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив географ" }
             }, "Value", "Text");
 
             ViewBag.SubjectCodes = SubjectCodes.SubjectNames;
@@ -348,7 +363,12 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                 new { Value = ComponentTypes.YearlyGrade, Text = "Годишна оценка" },
                 new { Value = ComponentTypes.NationalExam, Text = "НВО" },
                 new { Value = ComponentTypes.EntranceExam, Text = "Приемен изпит" },
-                new { Value = ComponentTypes.YearlyGradeAsPoints, Text = "Годишна оценка, преобразувана в точки" }
+                new { Value = ComponentTypes.PhysicsOlympiad60Percent, Text = "Олимпиада по физика (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив физик" },
+                new { Value = ComponentTypes.BiologyOlympiad60Percent, Text = "Олимпиада по биология (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив биолог" },
+                new { Value = ComponentTypes.ChemistryOlympiad60Percent, Text = "Олимпиада по химия (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив химик" },
+                new { Value = ComponentTypes.ChakalovTalentedBiologist, Text = "Акад. Л. Чакалов - модул Талантлив биолог" },
+                new { Value = ComponentTypes.ChakalovTalentedChemist, Text = "Акад. Л. Чакалов - модул Талантлив химик" },
+                new { Value = ComponentTypes.GeographyOlympiad60Percent, Text = "Олимпиада по география (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив географ" }
             }, "Value", "Text");
 
             ViewBag.SubjectCodes = SubjectCodes.SubjectNames;
@@ -395,7 +415,12 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
                 new { Value = ComponentTypes.YearlyGrade, Text = "Годишна оценка" },
                 new { Value = ComponentTypes.NationalExam, Text = "НВО" },
                 new { Value = ComponentTypes.EntranceExam, Text = "Приемен изпит" },
-                new { Value = ComponentTypes.YearlyGradeAsPoints , Text = "Годишна оценка, преобразувана в точки" }
+                new { Value = ComponentTypes.PhysicsOlympiad60Percent, Text = "Олимпиада по физика (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив физик" },
+                new { Value = ComponentTypes.BiologyOlympiad60Percent, Text = "Олимпиада по биология (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив биолог" },
+                new { Value = ComponentTypes.ChemistryOlympiad60Percent, Text = "Олимпиада по химия (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив химик" },
+                new { Value = ComponentTypes.ChakalovTalentedBiologist, Text = "Акад. Л. Чакалов - модул Талантлив биолог" },
+                new { Value = ComponentTypes.ChakalovTalentedChemist, Text = "Акад. Л. Чакалов - модул Талантлив химик" },
+                new { Value = ComponentTypes.GeographyOlympiad60Percent, Text = "Олимпиада по география (областен кръг 60%+) / Акад. Л. Чакалов - Талантлив географ" }
             }, "Value", "Text");
             ViewBag.SubjectCodes = SubjectCodes.SubjectNames;
 

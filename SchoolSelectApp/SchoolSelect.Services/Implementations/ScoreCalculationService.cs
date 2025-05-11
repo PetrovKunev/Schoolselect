@@ -57,10 +57,21 @@ namespace SchoolSelect.Services.Implementations
                 // Определяне на стойността според типа на компонента
                 value = component.ComponentType switch
                 {
+                    // Базови типове
                     ComponentTypes.NationalExam => GetExamPoints(component.SubjectCode, userGrades),
                     ComponentTypes.YearlyGrade => ConvertGradeToPoints(GetGrade(component.SubjectCode, userGrades)),
-                    ComponentTypes.YearlyGradeAsPoints => GetGradeAsPoints(component.SubjectCode, userGrades),
+
                     ComponentTypes.EntranceExam => GetExamPoints(component.SubjectCode, userGrades),
+
+                    // Нови специализирани типове за олимпиади и състезания
+                    ComponentTypes.PhysicsOlympiad60Percent => GetCompetitionPoints(component.SubjectCode, "ФИЗ", "PhysicsOlympiad", userGrades),
+                    ComponentTypes.BiologyOlympiad60Percent => GetCompetitionPoints(component.SubjectCode, "БИО", "BiologyOlympiad", userGrades),
+                    ComponentTypes.ChemistryOlympiad60Percent => GetCompetitionPoints(component.SubjectCode, "ХИМ", "ChemistryOlympiad", userGrades),
+                    ComponentTypes.ChakalovTalentedBiologist => GetCompetitionPoints(component.SubjectCode, "БИО", "ChakalovBiology", userGrades),
+                    ComponentTypes.ChakalovTalentedChemist => GetCompetitionPoints(component.SubjectCode, "ХИМ", "ChakalovChemistry", userGrades),
+                    ComponentTypes.GeographyOlympiad60Percent => GetCompetitionPoints(component.SubjectCode, "ГЕО", "GeographyOlympiad", userGrades),
+
+                    // Default за неразпознати типове
                     _ => 0
                 };
 
@@ -74,6 +85,57 @@ namespace SchoolSelect.Services.Implementations
 
             _logger.LogInformation("Общ бал: {TotalScore}", totalScore);
             return totalScore;
+        }
+
+        /// <summary>
+        /// Метод за изчисляване на точки от олимпиади и състезания
+        /// </summary>
+        private double GetCompetitionPoints(string subjectCode, string defaultSubject, string competitionType, UserGrades userGrades)
+        {
+            // Определяме предмета - ако е подаден конкретен, използваме него, иначе използваме подразбиращия се
+            string effectiveSubject = !string.IsNullOrEmpty(subjectCode) ? subjectCode : defaultSubject;
+
+            // Търсим в допълнителните оценки по код на предмет и тип на компонента според състезанието
+            var additionalGrade = userGrades.AdditionalGrades
+                .FirstOrDefault(g => g.SubjectCode.Equals(effectiveSubject, StringComparison.OrdinalIgnoreCase) &&
+                                    g.Value > 0 &&
+                                    g.SubjectName.Contains(competitionType, StringComparison.OrdinalIgnoreCase));
+
+            if (additionalGrade != null)
+            {
+                _logger.LogDebug("Намерена е оценка от състезание {CompetitionType} по предмет {Subject}: {Value}",
+                    competitionType, effectiveSubject, additionalGrade.Value);
+                return additionalGrade.Value;
+            }
+
+            // Ако не намерим директно съвпадение по описание, търсим по-общо съвпадение за олимпиада или Чакалов
+            if (competitionType.Contains("Olympiad"))
+            {
+                // Търсим оценка от олимпиада по предмета
+                additionalGrade = userGrades.AdditionalGrades
+                    .FirstOrDefault(g => g.SubjectCode.Equals(effectiveSubject, StringComparison.OrdinalIgnoreCase) &&
+                                        g.Value > 0 &&
+                                        g.SubjectName.Contains("олимпиада", StringComparison.OrdinalIgnoreCase));
+            }
+            else if (competitionType.Contains("Chakalov"))
+            {
+                // Търсим оценка от състезание Чакалов
+                additionalGrade = userGrades.AdditionalGrades
+                    .FirstOrDefault(g => g.SubjectCode.Equals(effectiveSubject, StringComparison.OrdinalIgnoreCase) &&
+                                        g.Value > 0 &&
+                                        g.SubjectName.Contains("чакалов", StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (additionalGrade != null)
+            {
+                _logger.LogDebug("Намерена е обща оценка от състезание за предмет {Subject}: {Value}",
+                    effectiveSubject, additionalGrade.Value);
+                return additionalGrade.Value;
+            }
+
+            _logger.LogWarning("Не е намерена оценка от състезание {CompetitionType} по предмет {Subject}",
+                competitionType, effectiveSubject);
+            return 0;
         }
 
         /// <summary>
