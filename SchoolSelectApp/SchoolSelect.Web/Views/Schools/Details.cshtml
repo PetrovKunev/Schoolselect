@@ -117,7 +117,7 @@
                                     <h5 class="card-title">@profile.Name</h5>
                                     <p class="card-text">@profile.Description</p>
 
-                                    <p class="card-text"><strong>Предмети:</strong> @profile.Subjects</p>
+                                    @* <p class="card-text"><strong>Предмети:</strong> @profile.Subjects</p> *@
                                     <p class="card-text"><strong>Брой места:</strong> @profile.AvailablePlaces</p>
 
                                     @{
@@ -133,7 +133,6 @@
                                     }
                                 </div>
                                 <div class="card-footer bg-transparent d-flex justify-content-between">
-                                    @* <a href="#" class="btn btn-sm btn-outline-primary">Виж формула за бал</a> *@
                                     <button class="btn btn-primary view-formula-btn"
                                             data-profile-id="@profile.Id">
                                         Виж формула за бал
