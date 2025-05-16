@@ -86,14 +86,15 @@ namespace SchoolSelect.Services.Implementations
                         .GetCurrentFormulaForProfileAsync(profile.Id);
 
                     var latest = historical
-                        .Where(r => r.ProfileId == profile.Id)
-                        .OrderByDescending(r => r.Year)
-                        .FirstOrDefault();
+                            .Where(r => r.ProfileId == profile.Id)
+                            .OrderByDescending(r => r.Year)
+                            .FirstOrDefault();
 
                     double minScore = latest?.MinimumScore ?? 0;
                     double score = 0;
+                    bool isNewProfile = latest == null;
 
-                    
+
                     if (formula != null && formula.HasComponents)
                     {
                         _logger.LogInformation("Изчисляване на бал по компоненти за профил {ProfileId} ({ProfileName})",
@@ -126,7 +127,8 @@ namespace SchoolSelect.Services.Implementations
                         CalculatedScore = Math.Round(score, 2),
                         MinimumScoreLastYear = minScore,
                         ChancePercentage = Math.Round(chance, 2),
-                        AvailablePlaces = profile.AvailablePlaces
+                        AvailablePlaces = profile.AvailablePlaces,
+                        IsNewProfile = isNewProfile
                     });
                 }
                 catch (Exception ex)

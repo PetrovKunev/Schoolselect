@@ -290,6 +290,14 @@ body {
     color: #2c3e50;
 }
 
+.chance-unknown {
+    background-color: #6c757d; /* Сиво за неизвестни шансове */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 @media (max-width: 768px) {
     .chance-circle {
         position: relative;

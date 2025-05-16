@@ -28,29 +28,50 @@
 
     @foreach (var profile in Model.ProfileChances)
     {
-        string chanceClass = profile.ChancePercentage >= 75 ? "chance-high" :
-        profile.ChancePercentage >= 50 ? "chance-medium" : "chance-low";
-
-        <div class="chance-profile">
-            <div class="chance-profile-details">
-                <h3>@profile.ProfileName</h3>
-                <p><strong>Твоят бал:</strong> @profile.CalculatedScore.ToString("0.00")</p>
-                <p><strong>Минимален бал (предх. година):</strong> @profile.MinimumScoreLastYear.ToString("0.00")</p>
-                <p>
-                    <strong>Разлика:</strong>
-                    @{
-                        var difference = profile.CalculatedScore - profile.MinimumScoreLastYear;
-                        var differenceClass = difference >= 0 ? "text-success" : "text-danger";
-                    }
-                    <span class="@differenceClass">@difference.ToString("+0.00;-0.00")</span>
-                </p>
-                <p><strong>Свободни места:</strong> @profile.AvailablePlaces</p>
+        @if (profile.IsNewProfile)
+        {
+            <!-- Специално представяне за нови профили -->
+            <div class="chance-profile">
+                <div class="chance-profile-details">
+                    <h3>@profile.ProfileName</h3>
+                    <p><strong>Твоят бал:</strong> @profile.CalculatedScore.ToString("0.00")</p>
+                    <p>
+                        <strong>Минимален бал:</strong>
+                        <span class="badge bg-info">Нов профил</span>
+                    </p>
+                    <p><small class="text-muted">Липсват исторически данни за този профил</small></p>
+                    <p><strong>Свободни места:</strong> @profile.AvailablePlaces</p>
+                </div>
+                <div class="chance-circle chance-unknown">
+                    <span class="fs-6">Нов</span>
+                </div>
             </div>
-
-            <div class="chance-circle @chanceClass">
-                @profile.ChancePercentage.ToString("0")%
+        }
+        else
+        {
+            <!-- Съществуващо представяне за профили с исторически данни -->
+            string chanceClass = profile.ChancePercentage >= 75 ? "chance-high" :
+            profile.ChancePercentage >= 50 ? "chance-medium" : "chance-low";
+            <div class="chance-profile">
+                <div class="chance-profile-details">
+                    <h3>@profile.ProfileName</h3>
+                    <p><strong>Твоят бал:</strong> @profile.CalculatedScore.ToString("0.00")</p>
+                    <p><strong>Минимален бал (предх. година):</strong> @profile.MinimumScoreLastYear.ToString("0.00")</p>
+                    <p>
+                        <strong>Разлика:</strong>
+                        @{
+                            var difference = profile.CalculatedScore - profile.MinimumScoreLastYear;
+                            var differenceClass = difference >= 0 ? "text-success" : "text-danger";
+                        }
+                        <span class="@differenceClass">@difference.ToString("+0.00;-0.00")</span>
+                    </p>
+                    <p><strong>Свободни места:</strong> @profile.AvailablePlaces</p>
+                </div>
+                <div class="chance-circle @chanceClass">
+                    @profile.ChancePercentage.ToString("0")%
+                </div>
             </div>
-        </div>
+        }
     }
 
     <div class="mt-4 text-center">
