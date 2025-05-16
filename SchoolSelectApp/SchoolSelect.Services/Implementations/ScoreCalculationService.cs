@@ -60,16 +60,39 @@ namespace SchoolSelect.Services.Implementations
                     // Базови типове
                     ComponentTypes.NationalExam => GetExamPoints(component.SubjectCode, userGrades),
                     ComponentTypes.YearlyGrade => ConvertGradeToPoints(GetGrade(component.SubjectCode, userGrades)),
-
                     ComponentTypes.EntranceExam => GetExamPoints(component.SubjectCode, userGrades),
 
-                    // Нови специализирани типове за олимпиади и състезания
-                    ComponentTypes.PhysicsOlympiad60Percent => GetCompetitionPoints(component.SubjectCode, "ФИЗ", "PhysicsOlympiad", userGrades),
-                    ComponentTypes.BiologyOlympiad60Percent => GetCompetitionPoints(component.SubjectCode, "БИО", "BiologyOlympiad", userGrades),
-                    ComponentTypes.ChemistryOlympiad60Percent => GetCompetitionPoints(component.SubjectCode, "ХИМ", "ChemistryOlympiad", userGrades),
-                    ComponentTypes.ChakalovTalentedBiologist => GetCompetitionPoints(component.SubjectCode, "БИО", "ChakalovBiology", userGrades),
-                    ComponentTypes.ChakalovTalentedChemist => GetCompetitionPoints(component.SubjectCode, "ХИМ", "ChakalovChemistry", userGrades),
-                    ComponentTypes.GeographyOlympiad60Percent => GetCompetitionPoints(component.SubjectCode, "ГЕО", "GeographyOlympiad", userGrades),
+                    // Нови специализирани типове за олимпиади и състезания (4-9)
+                    // Ако SubjectCode съдържа "НПМГ", използваме специалната логика за НПМГ, иначе нормалната логика
+                    ComponentTypes.PhysicsOlympiad60Percent =>
+                        (component.SubjectCode != null && component.SubjectCode.Contains("НПМГ")) ?
+                        GetNPMGCompetitionPoints(component.ComponentType, userGrades) :
+                        GetCompetitionPoints(component.SubjectCode, "ФИЗ", "PhysicsOlympiad", userGrades),
+
+                    ComponentTypes.BiologyOlympiad60Percent =>
+                        (component.SubjectCode != null && component.SubjectCode.Contains("НПМГ")) ?
+                        GetNPMGCompetitionPoints(component.ComponentType, userGrades) :
+                        GetCompetitionPoints(component.SubjectCode, "БИО", "BiologyOlympiad", userGrades),
+
+                    ComponentTypes.ChemistryOlympiad60Percent =>
+                        (component.SubjectCode != null && component.SubjectCode.Contains("НПМГ")) ?
+                        GetNPMGCompetitionPoints(component.ComponentType, userGrades) :
+                        GetCompetitionPoints(component.SubjectCode, "ХИМ", "ChemistryOlympiad", userGrades),
+
+                    ComponentTypes.ChakalovTalentedBiologist =>
+                        (component.SubjectCode != null && component.SubjectCode.Contains("НПМГ")) ?
+                        GetNPMGCompetitionPoints(component.ComponentType, userGrades) :
+                        GetCompetitionPoints(component.SubjectCode, "БИО", "ChakalovBiology", userGrades),
+
+                    ComponentTypes.ChakalovTalentedChemist =>
+                        (component.SubjectCode != null && component.SubjectCode.Contains("НПМГ")) ?
+                        GetNPMGCompetitionPoints(component.ComponentType, userGrades) :
+                        GetCompetitionPoints(component.SubjectCode, "ХИМ", "ChakalovChemistry", userGrades),
+
+                    ComponentTypes.GeographyOlympiad60Percent =>
+                        (component.SubjectCode != null && component.SubjectCode.Contains("НПМГ")) ?
+                        GetNPMGCompetitionPoints(component.ComponentType, userGrades) :
+                        GetCompetitionPoints(component.SubjectCode, "ГЕО", "GeographyOlympiad", userGrades),
 
                     // Default за неразпознати типове
                     _ => 0
@@ -90,7 +113,7 @@ namespace SchoolSelect.Services.Implementations
         /// <summary>
         /// Метод за изчисляване на точки от олимпиади и състезания
         /// </summary>
-        private double GetCompetitionPoints(string subjectCode, string defaultSubject, string competitionType, UserGrades userGrades)
+        private double GetCompetitionPoints(string? subjectCode, string defaultSubject, string competitionType, UserGrades userGrades)
         {
             // Определяме предмета - ако е подаден конкретен, използваме него, иначе използваме подразбиращия се
             string effectiveSubject = !string.IsNullOrEmpty(subjectCode) ? subjectCode : defaultSubject;
@@ -158,37 +181,27 @@ namespace SchoolSelect.Services.Implementations
         /// <summary>
         /// Взима точки от НВО според кода на предмета
         /// </summary>
-        private double GetExamPoints(string subjectCode, UserGrades userGrades)
+        private double GetExamPoints(string? subjectCode, UserGrades userGrades)
         {
-            return subjectCode.ToUpperInvariant() switch
+            return (subjectCode?.ToUpperInvariant() ?? string.Empty) switch
             {
                 "БЕЛ" => userGrades.BulgarianExamPoints,
                 "МАТ" => userGrades.MathExamPoints,
-                _ => GetAdditionalExamPoints(subjectCode, userGrades)
+                _ => GetAdditionalExamPoints(subjectCode ?? string.Empty, userGrades)
             };
         }
 
         /// <summary>
         /// Взима оценка според кода на предмета
         /// </summary>
-        private double GetGrade(string subjectCode, UserGrades userGrades)
+        private double GetGrade(string? subjectCode, UserGrades userGrades)
         {
-            return subjectCode.ToUpperInvariant() switch
+            return (subjectCode?.ToUpperInvariant() ?? string.Empty) switch
             {
                 "БЕЛ" => userGrades.BulgarianGrade ?? 0,
                 "МАТ" => userGrades.MathGrade ?? 0,
-                _ => GetAdditionalGrade(subjectCode, userGrades)
+                _ => GetAdditionalGrade(subjectCode ?? string.Empty, userGrades)
             };
-        }
-
-        /// <summary>
-        /// Взима годишна оценка като точки (без конвертиране)
-        /// </summary>
-        private double GetGradeAsPoints(string subjectCode, UserGrades userGrades)
-        {
-            // Тук можете да добавите специална логика за годишни оценки като точки
-            // За момента просто връщаме оценката
-            return GetGrade(subjectCode, userGrades);
         }
 
         /// <summary>
@@ -214,6 +227,30 @@ namespace SchoolSelect.Services.Implementations
 
             return additionalGrade?.Value ?? 0;
         }
+
+        /// <summary>
+        /// Метод специално за НПМГ състезания
+        /// </summary>
+        private double GetNPMGCompetitionPoints(int componentType, UserGrades userGrades)
+        {
+            // Търсим само оценка със съвпадащ ComponentType - премахваме fallback логиката!
+            var additionalGrade = userGrades.AdditionalGrades
+                .FirstOrDefault(g => g.SubjectCode != null &&
+                                   g.SubjectCode.Contains("НПМГ") &&
+                                   g.ComponentType == componentType);
+
+            if (additionalGrade != null)
+            {
+                _logger.LogDebug("Намерена е оценка от НПМГ състезание (тип {ComponentType}): {Value}",
+                    componentType, additionalGrade.Value);
+                return additionalGrade.Value;
+            }
+
+            // Ако нямаме съвпадение, връщаме 0 вместо да търсим общо НПМГ състезание
+            _logger.LogWarning("Не е намерена оценка от НПМГ състезание за тип {ComponentType}", componentType);
+            return 0;
+        }
+
 
         /// <summary>
         /// Конвертира оценки (2-6) в точки (0-50)
