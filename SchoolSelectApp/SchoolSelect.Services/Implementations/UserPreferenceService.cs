@@ -9,7 +9,7 @@ namespace SchoolSelect.Services.Implementations
 {
     public class UserPreferenceService : IUserPreferenceService
     {
-        private readonly IUnitOfWork _unitOfWork;   
+        private readonly IUnitOfWork _unitOfWork;
 
         public UserPreferenceService(IUnitOfWork unitOfWork)
         {
@@ -29,7 +29,9 @@ namespace SchoolSelect.Services.Implementations
                 UserLongitude = p.UserLongitude,
                 PreferredProfiles = string.IsNullOrEmpty(p.PreferredProfiles)
                     ? new List<string>()
-                    : p.PreferredProfiles.Split(',').ToList(),
+                    : p.PreferredProfiles.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(profile => profile.Trim())
+                        .ToList(),
                 CriteriaWeights = DeserializeCriteriaWeights(p.CriteriaWeights),
                 CreatedAt = p.CreatedAt
             }).ToList();
@@ -50,12 +52,14 @@ namespace SchoolSelect.Services.Implementations
             {
                 Id = preference.Id,
                 PreferenceName = preference.PreferenceName,
-                UserDistrict = preference.UserDistrict ?? string.Empty, // Fix for CS8601
+                UserDistrict = preference.UserDistrict ?? string.Empty,
                 UserLatitude = preference.UserLatitude,
                 UserLongitude = preference.UserLongitude,
                 PreferredProfiles = string.IsNullOrEmpty(preference.PreferredProfiles)
                     ? new List<string>()
-                    : preference.PreferredProfiles.Split(',').ToList(),
+                    : preference.PreferredProfiles.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(profile => profile.Trim())
+                        .ToList(),
                 CriteriaWeights = criteriaWeights,
                 CreatedAt = preference.CreatedAt
             };
@@ -71,7 +75,7 @@ namespace SchoolSelect.Services.Implementations
                 { "Rating", model.RatingWeight },
                 { "ScoreMatch", model.ScoreMatchWeight },
                 { "ProfileMatch", model.ProfileMatchWeight },
-                { "Facilities", model.FacilitiesWeight },
+                //{ "Facilities", model.FacilitiesWeight },
                 { "SearchRadius", model.SearchRadius }
             };
 
@@ -82,7 +86,7 @@ namespace SchoolSelect.Services.Implementations
                 UserDistrict = model.UserDistrict ?? string.Empty,
                 UserLatitude = model.UserLatitude,
                 UserLongitude = model.UserLongitude,
-                PreferredProfiles = string.Join(",", model.PreferredProfiles),
+                PreferredProfiles = string.Join(",", model.PreferredProfiles.Select(p => p.Trim())),
                 CriteriaWeights = JsonSerializer.Serialize(criteriaWeights),
                 CreatedAt = DateTime.UtcNow
             };
@@ -108,7 +112,7 @@ namespace SchoolSelect.Services.Implementations
                 { "Rating", model.RatingWeight },
                 { "ScoreMatch", model.ScoreMatchWeight },
                 { "ProfileMatch", model.ProfileMatchWeight },
-                { "Facilities", model.FacilitiesWeight },
+                //{ "Facilities", model.FacilitiesWeight },
                 { "SearchRadius", model.SearchRadius }
             };
 
@@ -116,7 +120,7 @@ namespace SchoolSelect.Services.Implementations
             preference.UserDistrict = model.UserDistrict;
             preference.UserLatitude = model.UserLatitude;
             preference.UserLongitude = model.UserLongitude;
-            preference.PreferredProfiles = string.Join(",", model.PreferredProfiles);
+            preference.PreferredProfiles = string.Join(",", model.PreferredProfiles.Select(p => p.Trim()));
             preference.CriteriaWeights = JsonSerializer.Serialize(criteriaWeights);
 
             _unitOfWork.UserPreferences.Update(preference);
@@ -144,18 +148,103 @@ namespace SchoolSelect.Services.Implementations
 
         public async Task<Dictionary<string, string>> GetAllProfileTypesAsync()
         {
-            // Връщаме предефинираните профили от ProfileTypes
-            return await Task.FromResult(new Dictionary<string, string>
+            // Основен речник с предварително дефинирани профили
+            var profileTypesDict = new Dictionary<string, string>
             {
-                { ProfileTypes.Mathematics, ProfileTypes.Mathematics },
-                { ProfileTypes.NaturalSciences, ProfileTypes.NaturalSciences },
-                { ProfileTypes.Humanities, ProfileTypes.Humanities },
-                { ProfileTypes.ForeignLanguages, ProfileTypes.ForeignLanguages },
-                { ProfileTypes.ComputerSciences, ProfileTypes.ComputerSciences },
-                { ProfileTypes.Entrepreneurship, ProfileTypes.Entrepreneurship },
-                { ProfileTypes.Arts, ProfileTypes.Arts },
-                { ProfileTypes.Sports, ProfileTypes.Sports }
-            });
+                { ProfileTypes.Mathematics, "Математически профил" },
+                { ProfileTypes.NaturalSciences, "Природни науки (Биология, Химия, Физика)" },
+                { ProfileTypes.Humanities, "Хуманитарни науки (История, География, Езици)" },
+                { ProfileTypes.ForeignLanguages, "Чужди езици (АЕ, НЕ, ФЕ и др.)" },
+                { ProfileTypes.ComputerSciences, "Софтуерни и хардуерни науки (STEM)" },
+                { ProfileTypes.Entrepreneurship, "Предприемачески профил" },
+                { ProfileTypes.Arts, "Изкуства (Музика, Изобразително изкуство)" },
+                { ProfileTypes.Sports, "Спортен профил" }
+            };
+
+            // Извличаме уникални профили от базата данни
+            var schoolProfiles = await _unitOfWork.SchoolProfiles.GetAllAsync();
+            var uniqueProfileNames = new HashSet<string>();
+
+            foreach (var profile in schoolProfiles)
+            {
+                // Извличаме базовия профил от името (например "Математически" от "Математически - АЕ интензивно, ИЕ")
+                if (!string.IsNullOrEmpty(profile.Name))
+                {
+                    var parts = profile.Name.Split('-', StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length > 0)
+                    {
+                        var baseName = parts[0].Trim();
+                        if (!string.IsNullOrEmpty(baseName) && baseName.Length > 5)
+                        {
+                            uniqueProfileNames.Add(baseName);
+                        }
+                    }
+
+                    // Проверяваме за ключови думи в имената на профилите
+                    string name = profile.Name.ToLower();
+
+                    if (name.Contains("математич") || name.Contains("математик") || name.Contains(" мат "))
+                    {
+                        uniqueProfileNames.Add("Математически");
+                    }
+                    else if (name.Contains("природни") || name.Contains("биолог") || name.Contains("химия") ||
+                             name.Contains("физика") || name.Contains("бзо") || name.Contains("хоос"))
+                    {
+                        uniqueProfileNames.Add("Природни науки");
+                    }
+                    else if (name.Contains("хуманитарен") || name.Contains("история") ||
+                             name.Contains("география") || name.Contains("бел и "))
+                    {
+                        uniqueProfileNames.Add("Хуманитарни науки");
+                    }
+                    else if (name.Contains("език") || name.Contains(" ае ") || name.Contains("интензивно") ||
+                             name.Contains("чужд"))
+                    {
+                        uniqueProfileNames.Add("Чужди езици");
+                    }
+                    else if (name.Contains("софтуер") || name.Contains("хардуер") || name.Contains("компютър") ||
+                             name.Contains("програмира") || name.Contains("информатика") || name.Contains("stem") ||
+                             name.Contains("стем"))
+                    {
+                        uniqueProfileNames.Add("Софтуерни и хардуерни науки");
+                    }
+                    else if (name.Contains("предприема") || name.Contains("бизнес") || name.Contains("икономика"))
+                    {
+                        uniqueProfileNames.Add("Предприемачески");
+                    }
+                    else if (name.Contains("изкуств") || name.Contains("музика") || name.Contains("изобразително"))
+                    {
+                        uniqueProfileNames.Add("Изкуства");
+                    }
+                    else if (name.Contains("спорт") || name.Contains("физическо"))
+                    {
+                        uniqueProfileNames.Add("Спорт");
+                    }
+                }
+
+                // Вземаме и типа профил, ако е дефиниран
+                if (profile.Type.HasValue)
+                {
+                    uniqueProfileNames.Add(profile.Type.Value.ToString());
+                }
+
+                // Добавяме и специалността, ако е дефинирана и има смисъл като самостоятелен профил
+                if (!string.IsNullOrEmpty(profile.Specialty) && profile.Specialty.Length > 5)
+                {
+                    uniqueProfileNames.Add(profile.Specialty);
+                }
+            }
+
+            // Добавяме уникалните профили от базата данни към речника
+            foreach (var profileName in uniqueProfileNames)
+            {
+                if (!profileTypesDict.ContainsKey(profileName))
+                {
+                    profileTypesDict[profileName] = profileName;
+                }
+            }
+
+            return profileTypesDict;
         }
 
         private Dictionary<string, double> DeserializeCriteriaWeights(string criteriaWeightsJson)
@@ -168,7 +257,7 @@ namespace SchoolSelect.Services.Implementations
                     { "Rating", 3 },
                     { "ScoreMatch", 4 },
                     { "ProfileMatch", 5 },
-                    { "Facilities", 2 },
+                    //{ "Facilities", 2 },
                     { "SearchRadius", 5 }
                 };
             }

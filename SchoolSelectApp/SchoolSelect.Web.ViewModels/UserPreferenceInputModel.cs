@@ -49,9 +49,9 @@ namespace SchoolSelect.Web.ViewModels
         [Range(0, 5, ErrorMessage = ValidationMessages.ValueRange)]
         public int ProfileMatchWeight { get; set; } = 5;
 
-        [Display(Name = "Допълнителни възможности")]
-        [Range(0, 5, ErrorMessage = ValidationMessages.ValueRange)]
-        public int FacilitiesWeight { get; set; } = 2;
+        //[Display(Name = "Допълнителни възможности")]
+        //[Range(0, 5, ErrorMessage = ValidationMessages.ValueRange)]
+        //public int FacilitiesWeight { get; set; } = 2;
 
         [Display(Name = "Радиус за търсене (км)")]
         [Range(1, 20, ErrorMessage = ValidationMessages.ValueRange)]

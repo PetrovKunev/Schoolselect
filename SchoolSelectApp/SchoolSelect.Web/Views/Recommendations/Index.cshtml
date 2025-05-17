@@ -4,6 +4,50 @@
     ViewData["Title"] = "Препоръчани училища";
 }
 
+<!-- Добавете този CSS в началото на файла -->
+<style>
+    .profile-match {
+        background-color: rgba(40, 167, 69, 0.1);
+        border-left: 3px solid #28a745;
+        padding-left: 10px;
+    }
+
+    .match-score {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #28a745;
+        color: white;
+        text-align: center;
+        line-height: 40px;
+        font-weight: bold;
+        margin-right: 10px;
+    }
+
+    .match-indicator {
+        margin-left: 5px;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-size: 0.8em;
+    }
+
+    .match-high {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .match-medium {
+        background-color: #ffc107;
+        color: black;
+    }
+
+    .match-low {
+        background-color: #6c757d;
+        color: white;
+    }
+</style>
+
 <div class="container mt-4">
     <h2>@ViewData["Title"]</h2>
     <h5 class="text-muted">Базирани на предпочитание: @Model.PreferenceName</h5>
@@ -78,12 +122,35 @@
 
                         @if (recommendation.Profiles.Any())
                         {
-                            <p><strong>Профили:</strong></p>
-                            <div>
-                                @foreach (var profile in recommendation.Profiles)
-                                {
-                                    <span class="badge bg-info text-dark me-1 mb-1">@profile</span>
-                                }
+                            <div class="card-text">
+                                <strong>Профили:</strong>
+                                <ul class="profile-list list-unstyled mt-2">
+                                    @foreach (var profile in recommendation.Profiles)
+                                    {
+                                        bool isPreferred = false;
+                                        string matchClass = "";
+
+                                        // Проверка за съвпадение на профила с предпочитаните профили
+                                        foreach (var preferredProfile in Model.PreferredProfiles)
+                                        {
+                                            if (profile.ToLower().Contains(preferredProfile.ToLower()) ||
+                                            preferredProfile.ToLower().Contains(profile.ToLower()))
+                                            {
+                                                isPreferred = true;
+                                                matchClass = "profile-match";
+                                                break;
+                                            }
+                                        }
+
+                                        <li class="@matchClass mb-1 p-1">
+                                            @profile
+                                            @if (isPreferred)
+                                            {
+                                                <span class="match-indicator match-high">Съвпадение</span>
+                                            }
+                                        </li>
+                                    }
+                                </ul>
                             </div>
                         }
 

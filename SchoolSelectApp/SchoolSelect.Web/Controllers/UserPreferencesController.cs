@@ -124,7 +124,7 @@ namespace SchoolSelect.Web.Controllers
                 RatingWeight = GetWeightValue(criteriaWeights, "Rating"),
                 ScoreMatchWeight = GetWeightValue(criteriaWeights, "ScoreMatch"),
                 ProfileMatchWeight = GetWeightValue(criteriaWeights, "ProfileMatch"),
-                FacilitiesWeight = GetWeightValue(criteriaWeights, "Facilities"),
+                //FacilitiesWeight = GetWeightValue(criteriaWeights, "Facilities"),
                 SearchRadius = searchRadius // Добавяме радиуса
             };
 

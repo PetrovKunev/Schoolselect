@@ -101,27 +101,22 @@
 
                         <h4 class="mt-4 mb-3">Предпочитани профили</h4>
                         <div class="mb-3">
-                            <div class="form-text mb-2">Изберете профилите, които ви интересуват:</div>
-                            <div class="row">
-                                @if (profileTypes != null)
+                            <label class="form-label">Предпочитани профили</label>
+                            <div class="profile-checkboxes">
+                                @foreach (var profileType in ViewBag.ProfileTypes)
                                 {
-                                    @for (var i = 0; i < profileTypes.Count; i++)
-                                    {
-                                        var profile = profileTypes.ElementAt(i);
-                                        <div class="col-md-6 mb-2">
-                                            <div class="form-check">
-                                                <input type="checkbox"
-                                                       class="form-check-input"
-                                                       name="PreferredProfiles"
-                                                       value="@profile.Key"
-                                                       id="profile_@profile.Key" />
-                                                <label class="form-check-label" for="profile_@profile.Key">
-                                                    @profile.Value
-                                                </label>
-                                            </div>
-                                        </div>
-                                    }
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="PreferredProfiles"
+                                               value="@profileType.Key" id="profile-@profileType.Key.GetHashCode()"
+                                               @(Model.PreferredProfiles.Contains(profileType.Key) ? "checked" : "")>
+                                        <label class="form-check-label" for="profile-@profileType.Key.GetHashCode()">
+                                            @profileType.Value
+                                        </label>
+                                    </div>
                                 }
+                            </div>
+                            <div class="form-text">
+                                Изберете профилите, които ви интересуват. Системата ще препоръча училища със съответни или подобни профили.
                             </div>
                         </div>
 
@@ -165,14 +160,14 @@
                                 <div class="form-text">Колко важно е наличието на избраните от вас профили?</div>
                             </div>
 
-                            <div class="mb-3">
+                            @* <div class="mb-3">
                                 <label asp-for="FacilitiesWeight" class="form-label"></label>
                                 <div class="range-input-group">
                                     <input type="range" class="form-range" min="0" max="5" step="1" asp-for="FacilitiesWeight" id="facilitiesRange">
                                     <div class="range-value"><span id="facilitiesValue">@Model.FacilitiesWeight</span>/5</div>
                                 </div>
                                 <div class="form-text">Колко важни са допълнителните възможности (спортни съоръжения, лаборатории и т.н.)?</div>
-                            </div>
+                            </div> *@
                         </div>
 
                         <div class="mt-4 d-flex justify-content-between">
@@ -496,6 +491,19 @@
         #map {
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .profile-checkboxes {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .form-check {
+            margin-bottom: 5px;
         }
     </style>
 

@@ -79,20 +79,20 @@ namespace SchoolSelect.Services.Implementations
                 });
 
                 // Calculate facilities score
-                double facilitiesScore = await CalculateFacilitiesScoreAsync(school.Id);
+                /*double facilitiesScore = await CalculateFacilitiesScoreAsync(school.Id);
                 schoolScore += facilitiesScore * GetWeightValue(criteriaWeights, "Facilities");
                 criteriaScores.Add(new CriterionScoreViewModel
                 {
                     Name = "Допълнителни възможности",
                     Score = facilitiesScore,
                     Weight = GetWeightValue(criteriaWeights, "Facilities")
-                });
+                });*/
 
                 // Calculate total weighted score and normalize it to 0-100 scale
                 double maxPossibleScore = GetWeightValue(criteriaWeights, "Proximity") +
                                           GetWeightValue(criteriaWeights, "Rating") +
-                                          GetWeightValue(criteriaWeights, "ProfileMatch") +
-                                          GetWeightValue(criteriaWeights, "Facilities");
+                                          GetWeightValue(criteriaWeights, "ProfileMatch");
+                                         
 
                 double normalizedScore = (schoolScore / maxPossibleScore) * 100;
 
@@ -143,7 +143,7 @@ namespace SchoolSelect.Services.Implementations
                     { "Rating", 3 },
                     { "ScoreMatch", 4 },
                     { "ProfileMatch", 5 },
-                    { "Facilities", 2 },
+                    //{ "Facilities", 2 },
                     { "SearchRadius", 5 }
                 };
             }
@@ -173,7 +173,7 @@ namespace SchoolSelect.Services.Implementations
                 "Rating" => 3,
                 "ScoreMatch" => 4,
                 "ProfileMatch" => 5,
-                "Facilities" => 2,
+                //"Facilities" => 2,
                 _ => 3
             };
         }
@@ -214,35 +214,152 @@ namespace SchoolSelect.Services.Implementations
             return (school.AverageRating - 1) / 4.0;
         }
 
+        // Добавям само новия метод, който трябва да замени съществуващия в SchoolRecommendationService.cs
         private double CalculateProfileMatchScore(School school, List<string> preferredProfiles)
         {
-            // If no preferences, return neutral score
-            if (!preferredProfiles.Any())
+            // Ако няма предпочитания или училището няма профили, връщаме неутрален резултат
+            if (!preferredProfiles.Any() || !school.Profiles.Any())
                 return 0.5;
 
-            // Count matching profiles
-            int matchCount = school.Profiles.Count(p =>
-                (p.Type.HasValue && preferredProfiles.Contains(p.Type.Value.ToString())) || // Ensure Type is not null
-                (!string.IsNullOrEmpty(p.Specialty) && preferredProfiles.Contains(p.Specialty))); // Ensure Specialty is not null
+            double totalMatch = 0;
+            double maxPossibleMatch = preferredProfiles.Count;
 
-            // If school has profiles, calculate match percentage
-            if (school.Profiles.Any())
+            // Създаваме речник с ключови думи за всеки предпочитан профил
+            var profileKeywords = new Dictionary<string, List<string>>();
+
+            foreach (var profile in preferredProfiles)
             {
-                double matchPercentage = (double)matchCount / preferredProfiles.Count;
-                return matchPercentage;
+                // Добавяме ключови думи за всеки тип профил на базата на известните категории
+                string profileKey = profile.ToLower();
+
+                if (profileKey.Contains("математич") || profileKey.Contains("математик") || profileKey == "математически")
+                {
+                    profileKeywords[profile] = new List<string> { "математич", "математик", "мат", "математически" };
+                }
+                else if (profileKey.Contains("природн") || profileKey.Contains("биолог") || profileKey.Contains("химия") ||
+                         profileKey.Contains("физика") || profileKey.Contains("бзо") || profileKey.Contains("хоос"))
+                {
+                    profileKeywords[profile] = new List<string> { "природни", "биолог", "химия", "физика", "бзо", "хоос", "фа" };
+                }
+                else if (profileKey.Contains("хуманитар") || profileKey.Contains("истор") || profileKey.Contains("географ") ||
+                         profileKey.Contains("бел"))
+                {
+                    profileKeywords[profile] = new List<string> { "хуманитарен", "хуманитарни", "история", "география", "бел", "ези" };
+                }
+                else if (profileKey.Contains("език") || profileKey.Contains("ае") || profileKey.Contains("интензивно") ||
+                         profileKey.Contains("чужд"))
+                {
+                    profileKeywords[profile] = new List<string> { "език", "езици", "ае", "ие", "не", "ре", "фе", "интензивно" };
+                }
+                else if (profileKey.Contains("софтуер") || profileKey.Contains("хардуер") || profileKey.Contains("компютър") ||
+                         profileKey.Contains("програмир") || profileKey.Contains("информатик") || profileKey.Contains("stem") ||
+                         profileKey.Contains("стем"))
+                {
+                    profileKeywords[profile] = new List<string> { "софтуер", "хардуер", "компютър", "програмира", "информатика", "кодиране", "stem", "стем" };
+                }
+                else if (profileKey.Contains("предприема") || profileKey.Contains("бизнес") || profileKey.Contains("икономика"))
+                {
+                    profileKeywords[profile] = new List<string> { "предприема", "бизнес", "икономика", "мениджмънт" };
+                }
+                else if (profileKey.Contains("изкуств") || profileKey.Contains("музика") || profileKey.Contains("изобразит"))
+                {
+                    profileKeywords[profile] = new List<string> { "изкуств", "музика", "изобразително", "рисуване", "театрал" };
+                }
+                else if (profileKey.Contains("спорт") || profileKey.Contains("физическ"))
+                {
+                    profileKeywords[profile] = new List<string> { "спорт", "физическо" };
+                }
+                else
+                {
+                    // За неразпознати профили използваме самото име като ключова дума
+                    // и добавяме части от думата за по-гъвкаво съвпадение
+                    var words = profile.ToLower().Split(new[] { ' ', '-', ',', '(', ')', '.' }, StringSplitOptions.RemoveEmptyEntries);
+                    profileKeywords[profile] = new List<string>();
+
+                    foreach (var word in words)
+                    {
+                        if (word.Length > 3)
+                        {
+                            profileKeywords[profile].Add(word);
+                            // Добавяме и началото на думата за по-гъвкаво съвпадение
+                            if (word.Length > 5)
+                            {
+                                profileKeywords[profile].Add(word.Substring(0, Math.Min(5, word.Length)));
+                            }
+                        }
+                    }
+
+                    // Ако няма подходящи ключови думи, използваме целия низ
+                    if (!profileKeywords[profile].Any())
+                    {
+                        profileKeywords[profile].Add(profile.ToLower());
+                    }
+                }
             }
 
-            return 0;
+            // За всеки профил в училището
+            foreach (var schoolProfile in school.Profiles)
+            {
+                string profileName = schoolProfile.Name?.ToLower() ?? string.Empty;
+                string profileType = schoolProfile.Type?.ToString()?.ToLower() ?? string.Empty;
+                string specialty = schoolProfile.Specialty?.ToLower() ?? string.Empty;
+
+                // Създаваме комбиниран низ за търсене
+                string searchText = $"{profileName} {profileType} {specialty}";
+
+                // Изчисляване на частично съвпадение за всеки предпочитан профил
+                foreach (var preferredProfile in preferredProfiles)
+                {
+                    double bestMatch = 0;
+
+                    // Ако има точно съвпадение, даваме максимален резултат
+                    if (searchText.Contains(preferredProfile.ToLower()))
+                    {
+                        bestMatch = 1.0;
+                    }
+                    else
+                    {
+                        // Иначе търсим ключови думи
+                        int foundKeywords = 0;
+
+                        // Ако имаме ключови думи за този профил
+                        if (profileKeywords.ContainsKey(preferredProfile) && profileKeywords[preferredProfile].Any())
+                        {
+                            foreach (var keyword in profileKeywords[preferredProfile])
+                            {
+                                if (searchText.Contains(keyword))
+                                {
+                                    foundKeywords++;
+                                }
+                            }
+
+                            // Изчисляваме частичното съвпадение на базата на намерените ключови думи
+                            double keywordMatch = (double)foundKeywords / profileKeywords[preferredProfile].Count;
+
+                            // Не даваме повече от 0.9 за съвпадение по ключови думи
+                            bestMatch = Math.Min(keywordMatch, 0.9);
+                        }
+                    }
+
+                    // Добавяме най-доброто съвпадение за този предпочитан профил
+                    totalMatch += bestMatch;
+                }
+            }
+
+            // Нормализиране на общия резултат
+            // Но не повече от 1.0, дори ако има няколко профила, които съвпадат с предпочитанията
+            return Math.Min(totalMatch / maxPossibleMatch, 1.0);
         }
 
-        private async Task<double> CalculateFacilitiesScoreAsync(int schoolId)
-        {
-            // Get facilities count
-            var facilities = await _unitOfWork.SchoolFacilities.GetFacilitiesBySchoolIdAsync(schoolId);
-            int facilitiesCount = facilities.Count();
+        // Uncomment if you want to implement facilities score calculation
+        //private async Task<double> CalculateFacilitiesScoreAsync(int schoolId)
+        //{
+        //    // Get facilities count
+        //    var facilities = await _unitOfWork.SchoolFacilities.GetFacilitiesBySchoolIdAsync(schoolId);
+        //    int facilitiesCount = facilities.Count();
 
-            // Simple score based on number of facilities (0-10 scale normalized to 0-1)
-            return Math.Min(facilitiesCount, 10) / 10.0;
-        }
+        //    // Simple score based on number of facilities (0-10 scale normalized to 0-1)
+        //    return Math.Min(facilitiesCount, 10) / 10.0;
+        //}
     }
 }
