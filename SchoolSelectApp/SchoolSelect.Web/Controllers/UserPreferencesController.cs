@@ -68,8 +68,34 @@ namespace SchoolSelect.Web.Controllers
                 return View(model);
             }
 
-            // Ако имаме координати, но радиусът не е зададен, задаваме стойност по подразбиране
-            if (model.UserLatitude.HasValue && model.UserLongitude.HasValue && model.SearchRadius <= 0)
+            // ВАЖНО: Валидиране на координатите
+            if (model.UserLatitude.HasValue && model.UserLongitude.HasValue)
+            {
+                // Проверка за валидни граници на координатите
+                if (Math.Abs(model.UserLatitude.Value) > 90 || Math.Abs(model.UserLongitude.Value) > 180)
+                {
+                    ModelState.AddModelError("", "Невалидни географски координати. Моля, задайте правилно местоположение на картата.");
+
+                    ViewBag.Districts = await _userPreferenceService.GetAllDistrictsAsync();
+                    ViewBag.ProfileTypes = await _userPreferenceService.GetAllProfileTypesAsync();
+
+                    return View(model);
+                }
+
+                // Проверка дали координатите са в разумни граници за България
+                bool isInBulgaria = model.UserLatitude.Value >= 41.0 && model.UserLatitude.Value <= 44.5 &&
+                                   model.UserLongitude.Value >= 22.0 && model.UserLongitude.Value <= 29.0;
+
+                if (!isInBulgaria)
+                {
+                    _logger.LogWarning("Координатите ({Lat}, {Lon}) изглежда са извън България!",
+                        model.UserLatitude.Value, model.UserLongitude.Value);
+                }
+            }
+
+            // Ако имаме координати, но радиусът не е зададен или е невалиден, задаваме стойност по подразбиране
+            if (model.UserLatitude.HasValue && model.UserLongitude.HasValue &&
+               (model.SearchRadius <= 0 || model.SearchRadius > 50))
             {
                 model.SearchRadius = 5; // Стойност по подразбиране в километри
             }
@@ -91,7 +117,6 @@ namespace SchoolSelect.Web.Controllers
 
             ViewBag.Districts = await _userPreferenceService.GetAllDistrictsAsync();
             ViewBag.ProfileTypes = await _userPreferenceService.GetAllProfileTypesAsync();
-
             return View(model);
         }
 

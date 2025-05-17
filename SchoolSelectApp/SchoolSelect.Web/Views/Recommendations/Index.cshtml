@@ -103,7 +103,16 @@
                     </div>
                     <div class="card-body">
                         <p class="text-muted">@recommendation.School.District, @recommendation.School.City</p>
+                        <div class="d-flex justify-content-between">
+                            <p class="text-muted">@recommendation.School.District, @recommendation.School.City</p>
 
+                            @if (recommendation.Distance.HasValue)
+                            {
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-geo-alt"></i> @Math.Round(recommendation.Distance.Value, 1) км
+                                </span>
+                            }
+                        </div>
                         <p>
                             <strong>Рейтинг:</strong>
                             @for (int i = 1; i <= 5; i++)
@@ -160,11 +169,18 @@
                             {
                                 <div class="mb-2">
                                     <div class="d-flex justify-content-between">
-                                        <span>@criterion.Name</span>
+                                        <span>
+                                            @criterion.Name
+                                            @if (criterion.Name == "Близост" && recommendation.Distance.HasValue)
+                                            {
+                                                <small class="text-muted">(@Math.Round(recommendation.Distance.Value, 1) км)</small>
+                                            }
+                                        </span>
                                         <span>@Math.Round(criterion.Score * 100, 0)%</span>
                                     </div>
                                     <div class="progress" style="height: 10px;">
-                                        <div class="progress-bar" role="progressbar"
+                                        <div class="progress-bar @(criterion.Name == "Близост" ? "bg-info" : "")"
+                                             role="progressbar"
                                              style="width: @(criterion.Score * 100)%;"
                                              aria-valuenow="@(criterion.Score * 100)"
                                              aria-valuemin="0"

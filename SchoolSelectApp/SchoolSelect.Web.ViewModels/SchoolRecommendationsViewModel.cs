@@ -1,5 +1,4 @@
-﻿
-namespace SchoolSelect.Web.ViewModels
+﻿namespace SchoolSelect.Web.ViewModels
 {
     public class SchoolRecommendationsViewModel
     {

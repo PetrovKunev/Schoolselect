@@ -36,10 +36,15 @@ namespace SchoolSelect.Services.Implementations
             // Get desired profiles
             var preferredProfiles = string.IsNullOrEmpty(preference.PreferredProfiles)
                 ? new List<string>()
-                : preference.PreferredProfiles.Split(',').ToList();
+                : preference.PreferredProfiles.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(p => p.Trim())
+                    .ToList();
 
             // Get all schools
             var allSchools = await _unitOfWork.Schools.GetSchoolsWithProfilesAsync();
+
+            // Добавяме дебъг информация за разстоянията
+            var debugInfo = new List<string>();
 
             // Calculate scores for each school
             var scoredSchools = new List<SchoolRecommendationViewModel>();
@@ -47,6 +52,20 @@ namespace SchoolSelect.Services.Implementations
             {
                 double schoolScore = 0;
                 List<CriterionScoreViewModel> criteriaScores = new List<CriterionScoreViewModel>();
+
+                // Изчисляване на разстоянието, ако имаме координати
+                double? distance = null;
+
+                if (preference.UserLatitude.HasValue && preference.UserLongitude.HasValue &&
+                    school.GeoLatitude.HasValue && school.GeoLongitude.HasValue)
+                {
+                    distance = GeoHelper.CalculateDistance(
+                        preference.UserLatitude.Value, preference.UserLongitude.Value,
+                        school.GeoLatitude.Value, school.GeoLongitude.Value);
+
+                    // Дебъг информация за разстоянието
+                    debugInfo.Add($"Училище: {school.Name}, Разстояние: {Math.Round(distance.Value, 2)} км");
+                }
 
                 // Calculate proximity score
                 double proximityScore = CalculateProximityScore(school, preference, criteriaWeights);
@@ -78,7 +97,7 @@ namespace SchoolSelect.Services.Implementations
                     Weight = GetWeightValue(criteriaWeights, "ProfileMatch")
                 });
 
-                // Calculate facilities score
+                // Calculate facilities score is commented out
                 /*double facilitiesScore = await CalculateFacilitiesScoreAsync(school.Id);
                 schoolScore += facilitiesScore * GetWeightValue(criteriaWeights, "Facilities");
                 criteriaScores.Add(new CriterionScoreViewModel
@@ -92,7 +111,6 @@ namespace SchoolSelect.Services.Implementations
                 double maxPossibleScore = GetWeightValue(criteriaWeights, "Proximity") +
                                           GetWeightValue(criteriaWeights, "Rating") +
                                           GetWeightValue(criteriaWeights, "ProfileMatch");
-                                         
 
                 double normalizedScore = (schoolScore / maxPossibleScore) * 100;
 
@@ -110,8 +128,15 @@ namespace SchoolSelect.Services.Implementations
                     },
                     TotalScore = Math.Round(normalizedScore, 1),
                     CriteriaScores = criteriaScores,
-                    Profiles = school.Profiles.Select(p => p.Name).ToList()
+                    Profiles = school.Profiles.Select(p => p.Name).ToList(),
+                    Distance = distance // Добавяме разстоянието в модела
                 });
+            }
+
+            // Запис на дебъг информацията в лога
+            foreach (var info in debugInfo.OrderBy(i => i))
+            {
+                _logger.LogDebug(info);
             }
 
             // Sort by total score descending
@@ -180,28 +205,72 @@ namespace SchoolSelect.Services.Implementations
 
         private double CalculateProximityScore(School school, UserPreference preference, Dictionary<string, double> weights)
         {
-            // If no coordinates, use district match
-            if (!preference.UserLatitude.HasValue || !preference.UserLongitude.HasValue ||
-                !school.GeoLatitude.HasValue || !school.GeoLongitude.HasValue)
+            // 1. Проверка дали имаме валидни координати за потребителя
+            if (!preference.UserLatitude.HasValue || !preference.UserLongitude.HasValue)
             {
-                return string.Equals(school.District, preference.UserDistrict, StringComparison.OrdinalIgnoreCase) ? 1.0 : 0.2;
+                // Ако имаме само район, проверяваме съвпадение по район
+                if (!string.IsNullOrEmpty(preference.UserDistrict) && !string.IsNullOrEmpty(school.District))
+                {
+                    return string.Equals(school.District, preference.UserDistrict, StringComparison.OrdinalIgnoreCase)
+                        ? 1.0  // 100% съвпадение за същия район
+                        : 0.2; // 20% съвпадение за различен район
+                }
+
+                // Ако нямаме район, връщаме неутрален резултат
+                return 0.5;
             }
 
-            // Calculate distance in km
-            double distance = GeoHelper.CalculateDistance(
-                preference.UserLatitude.Value, preference.UserLongitude.Value,
-                school.GeoLatitude.Value, school.GeoLongitude.Value);
-
-            // Get search radius or use default
-            double searchRadius = weights.TryGetValue("SearchRadius", out double radius) ? radius : 5.0;
-
-            // Score decreases linearly with distance up to the search radius
-            if (distance <= searchRadius)
+            // 2. Проверка дали имаме валидни координати за училището
+            if (!school.GeoLatitude.HasValue || !school.GeoLongitude.HasValue)
             {
-                return 1.0 - (distance / searchRadius);
+                // Ако имаме само район, проверяваме съвпадение по район
+                if (!string.IsNullOrEmpty(preference.UserDistrict) && !string.IsNullOrEmpty(school.District))
+                {
+                    return string.Equals(school.District, preference.UserDistrict, StringComparison.OrdinalIgnoreCase)
+                        ? 1.0  // 100% съвпадение за същия район
+                        : 0.2; // 20% съвпадение за различен район
+                }
+
+                // Ако нямаме район, връщаме неутрален резултат
+                return 0.5;
             }
 
-            return 0.0;
+            // 3. На този етап знаем, че и двете координати са валидни
+            // Запазваме координатите в локални променливи, за да избегнем nullable предупрежденията
+            double userLat = preference.UserLatitude.Value; // Безопасно, защото вече проверихме HasValue
+            double userLon = preference.UserLongitude.Value;
+            double schoolLat = school.GeoLatitude.Value;
+            double schoolLon = school.GeoLongitude.Value;
+
+            // 4. Изчисляваме разстоянието
+            double distance = GeoHelper.CalculateDistance(userLat, userLon, schoolLat, schoolLon);
+
+            // 5. Вземаме радиуса на търсене
+            double searchRadius = 5.0; // км по подразбиране
+            if (weights.TryGetValue("SearchRadius", out double radius) && radius > 0)
+            {
+                searchRadius = radius;
+            }
+
+            // 6. Логаритмична функция за по-плавно намаляване
+            if (distance <= 0.5) // Много близко (в рамките на 500 метра)
+            {
+                return 1.0; // 100% съвпадение
+            }
+            else if (distance <= searchRadius)
+            {
+                // Логаритмично намаляване
+                double logarithmicScore = 1.0 - (Math.Log10(distance + 1) / Math.Log10(searchRadius + 1));
+                return Math.Max(0.1, logarithmicScore);
+            }
+            else if (distance <= searchRadius * 1.5)
+            {
+                // За училища малко извън радиуса
+                return 0.1;
+            }
+
+            // За училища далеч извън радиуса
+            return 0.05;
         }
 
         private double CalculateRatingScore(School school)
