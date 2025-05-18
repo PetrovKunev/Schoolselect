@@ -68,6 +68,9 @@ namespace SchoolSelect.Web
             builder.Services.AddScoped<IScoreCalculationService, ScoreCalculationService>();
             builder.Services.AddScoped<ISchoolRecommendationService, SchoolRecommendationService>();
 
+            // Регистриране на HttpClient и услугата за геокодиране
+            builder.Services.AddHttpClient<IGeocodingService, GoogleGeocodingService>();
+            builder.Services.AddScoped<IGeocodingService, GoogleGeocodingService>();
 
             // Конфигуриране на опции за ChanceCalculator
             builder.Services.Configure<ChanceCalculatorOptions>(
