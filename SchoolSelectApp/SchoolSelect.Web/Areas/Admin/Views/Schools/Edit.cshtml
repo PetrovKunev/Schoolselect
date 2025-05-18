@@ -1,0 +1,149 @@
+﻿<!-- SchoolSelect.Web/Areas/Admin/Views/Schools/Edit.cshtml -->
+@model SchoolSelect.Web.Areas.Admin.ViewModels.SchoolEditViewModel
+
+@{
+    ViewData["Title"] = "Редактиране на училище";
+}
+
+<div class="container-fluid mt-4">
+    <h2>@ViewData["Title"]</h2>
+    <h4>@Model.Name</h4>
+    <hr />
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-8">
+            <form asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <input type="hidden" asp-for="Id" />
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Основна информация</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label"></label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Address" class="form-label"></label>
+                            <input asp-for="Address" class="form-control" />
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="District" class="form-label"></label>
+                                <input asp-for="District" class="form-control" />
+                                <span asp-validation-for="District" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="City" class="form-label"></label>
+                                <input asp-for="City" class="form-control" />
+                                <span asp-validation-for="City" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Phone" class="form-label"></label>
+                                <input asp-for="Phone" class="form-control" />
+                                <span asp-validation-for="Phone" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Website" class="form-label"></label>
+                            <input asp-for="Website" class="form-control" />
+                            <span asp-validation-for="Website" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label"></label>
+                            <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Географски координати</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="GeoLatitude" class="form-label"></label>
+                                <input asp-for="GeoLatitude" class="form-control" />
+                                <span asp-validation-for="GeoLatitude" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="GeoLongitude" class="form-label"></label>
+                                <input asp-for="GeoLongitude" class="form-control" />
+                                <span asp-validation-for="GeoLongitude" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="MapsFormattedAddress" class="form-label"></label>
+                            <input asp-for="MapsFormattedAddress" class="form-control" />
+                            <span asp-validation-for="MapsFormattedAddress" class="text-danger"></span>
+                        </div>
+
+                        <!-- Бутон за автоматично геокодиране -->
+                        <div class="mt-3">
+                            <form asp-area="Admin" asp-controller="Geocoding" asp-action="UpdateSchool" method="post">
+                                <input type="hidden" name="schoolId" value="@Model.Id" />
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-geo-alt-fill"></i> Обнови координати чрез Google Maps
+                                </button>
+                            </form>
+                        </div>
+
+                        @if (Model.GeoLatitude.HasValue && Model.GeoLongitude.HasValue)
+                        {
+                            <div class="mt-3">
+                                <p>Текущи координати: <strong>@Model.GeoLatitude, @Model.GeoLongitude</strong></p>
+                                <a href="https://www.google.com/maps/search/?api=1&query=@Model.GeoLatitude,@Model.GeoLongitude" target="_blank" class="btn btn-outline-primary">
+                                    <i class="bi bi-map"></i> Отвори в Google Maps
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Запази промените
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Назад към училищата
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

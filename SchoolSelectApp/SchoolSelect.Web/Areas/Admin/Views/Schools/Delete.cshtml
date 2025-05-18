@@ -1,0 +1,54 @@
+﻿<!-- SchoolSelect.Web/Areas/Admin/Views/Schools/Delete.cshtml -->
+@model SchoolSelect.Data.Models.School
+
+@{
+    ViewData["Title"] = "Изтриване на училище";
+}
+
+<div class="container-fluid mt-4">
+    <h2>@ViewData["Title"]</h2>
+    <div class="alert alert-danger">
+        <h4>Сигурни ли сте, че искате да изтриете това училище?</h4>
+        <p>Това действие не може да бъде отменено.</p>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>@Model.Name</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Адрес:</dt>
+                <dd class="col-sm-9">@Model.Address</dd>
+
+                <dt class="col-sm-3">Район:</dt>
+                <dd class="col-sm-9">@Model.District</dd>
+
+                <dt class="col-sm-3">Град:</dt>
+                <dd class="col-sm-9">@Model.City</dd>
+
+                <dt class="col-sm-3">Контакти:</dt>
+                <dd class="col-sm-9">
+                    @if (!string.IsNullOrEmpty(Model.Phone))
+                    {
+                        <div>Тел: @Model.Phone</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Email))
+                    {
+                        <div>Имейл: @Model.Email</div>
+                    }
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    <form asp-action="Delete">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <button type="submit" class="btn btn-danger">
+            <i class="bi bi-trash"></i> Изтрий
+        </button>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Отказ
+        </a>
+    </form>
+</div>

@@ -1,0 +1,78 @@
+﻿<!-- SchoolSelect.Web/Areas/Admin/Views/Schools/Index.cshtml -->
+@model IEnumerable<SchoolSelect.Data.Models.School>
+
+@{
+    ViewData["Title"] = "Управление на училища";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>@ViewData["Title"]</h2>
+        <a asp-action="Create" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Добави ново училище
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Име</th>
+                            <th>Район</th>
+                            <th>Град</th>
+                            <th>Координати</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var school in Model)
+                        {
+                            <tr>
+                                <td>@school.Name</td>
+                                <td>@school.District</td>
+                                <td>@school.City</td>
+                                <td>
+                                    @if (school.GeoLatitude.HasValue && school.GeoLongitude.HasValue)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-geo-alt-fill"></i> Да
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-geo-alt"></i> Не
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a asp-action="Edit" asp-route-id="@school.Id" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-pencil"></i> Редакция
+                                        </a>
+                                        <a asp-action="Details" asp-route-id="@school.Id" class="btn btn-sm btn-info">
+                                            <i class="bi bi-info-circle"></i> Детайли
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@school.Id" class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i> Изтриване
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,66 @@
+﻿<!-- SchoolSelect.Web/Areas/Admin/Views/Geocoding/Index.cshtml -->
+@{
+    ViewData["Title"] = "Управление на координати";
+}
+
+<div class="container-fluid mt-4">
+    <h2>@ViewData["Title"]</h2>
+    <hr />
+
+@if (TempData["SuccessMessage"] != null)
+{
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+}
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Масово обновяване на координати</h5>
+        </div>
+        <div class="card-body">
+            <p>
+                Този инструмент ще обнови географските координати на всички училища, които все още нямат координати.
+                Процесът може да отнеме няколко минути, в зависимост от броя на училищата.
+            </p>
+            <p class="text-warning">
+                <i class="bi bi-exclamation-triangle"></i> Внимание: Този процес консумира заявки към Google Maps API и може да доведе до такси, ако надвишите безплатния лимит.
+            </p>
+            <form asp-action="UpdateAllSchools" method="post">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-geo-alt-fill"></i> Обнови всички училища
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Информация за Google Maps API</h5>
+        </div>
+        <div class="card-body">
+            <p>
+                Геокодирането използва Google Maps API за преобразуване на адреси в географски координати (ширина и дължина).
+                Това позволява на училищата да бъдат показвани на карта и да се изчислява разстоянието до тях.
+            </p>
+            <p>
+                За да използвате тази функционалност, трябва да имате валиден API ключ за Google Maps, конфигуриран в настройките на приложението.
+            </p>
+            <h6>Лимити на Google Maps API:</h6>
+            <ul>
+                <li>Безплатният план включва 40,000 заявки на месец</li>
+                <li>След надвишаване на безплатния лимит, се начисляват такси $5 на 1000 заявки</li>
+                <li>Препоръчва се използването на бавно обновяване на координатите, за да се избегне надвишаване на лимита</li>
+            </ul>
+        </div>
+    </div>
+</div>

@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿// SchoolSelect.Services/Implementations/GoogleGeocodingService.cs
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SchoolSelect.Services.Interfaces;
 using SchoolSelect.Services.Models;
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -33,7 +35,7 @@ namespace SchoolSelect.Services.Implementations
             }
         }
 
-        public async Task<(double? Latitude, double? Longitude, string FormattedAddress)> GeocodeAddressAsync(string address)
+        public async Task<(double? Latitude, double? Longitude, string FormattedAddress)> GeocodeAddressAsync(string address, string city = "")
         {
             try
             {
@@ -49,8 +51,15 @@ namespace SchoolSelect.Services.Implementations
                     return (null, null, string.Empty);
                 }
 
+                // Добавяме града към адреса, ако е предоставен
+                string fullAddress = address;
+                if (!string.IsNullOrWhiteSpace(city))
+                {
+                    fullAddress += $", {city}, България";
+                }
+
                 // Encode the address for URL
-                var encodedAddress = Uri.EscapeDataString(address);
+                var encodedAddress = Uri.EscapeDataString(fullAddress);
 
                 // Create the request URL
                 var requestUrl = $"https://maps.googleapis.com/maps/api/geocode/json?address={encodedAddress}&key={_apiKey}";
@@ -72,7 +81,7 @@ namespace SchoolSelect.Services.Implementations
                     geocodingResponse.Status != "OK" ||
                     !geocodingResponse.Results.Any())
                 {
-                    _logger.LogWarning("Не са намерени резултати за адрес: {Address}", address);
+                    _logger.LogWarning("Не са намерени резултати за адрес: {Address}", fullAddress);
                     return (null, null, string.Empty);
                 }
 

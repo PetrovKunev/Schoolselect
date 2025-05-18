@@ -5,7 +5,12 @@ namespace SchoolSelect.Services.Interfaces
 {
     public interface IGeocodingService
     {
-        // Метод, който връща Task<(double? Latitude, double? Longitude, string FormattedAddress)>
-        Task<(double? Latitude, double? Longitude, string FormattedAddress)> GeocodeAddressAsync(string address);
+        /// <summary>
+        /// Геокодира адрес до географски координати
+        /// </summary>
+        /// <param name="address">Адрес за геокодиране</param>
+        /// <param name="city">Град (по желание)</param>
+        /// <returns>Latitude, Longitude и форматиран адрес</returns>
+        Task<(double? Latitude, double? Longitude, string FormattedAddress)> GeocodeAddressAsync(string address, string city = "");
     }
 }

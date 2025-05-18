@@ -1,0 +1,90 @@
+﻿<!-- SchoolSelect.Web/Areas/Admin/Views/Schools/Details.cshtml -->
+@model SchoolSelect.Data.Models.School
+
+@{
+    ViewData["Title"] = "Детайли за училище";
+}
+
+<div class="container-fluid mt-4">
+    <h2>@ViewData["Title"]</h2>
+    <h4>@Model.Name</h4>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Основна информация</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Име:</dt>
+                        <dd class="col-sm-9">@Model.Name</dd>
+
+                        <dt class="col-sm-3">Адрес:</dt>
+                        <dd class="col-sm-9">@Model.Address</dd>
+
+                        <dt class="col-sm-3">Район:</dt>
+                        <dd class="col-sm-9">@Model.District</dd>
+
+                        <dt class="col-sm-3">Град:</dt>
+                        <dd class="col-sm-9">@Model.City</dd>
+
+                        <dt class="col-sm-3">Телефон:</dt>
+                        <dd class="col-sm-9">@Model.Phone</dd>
+
+                        <dt class="col-sm-3">Имейл:</dt>
+                        <dd class="col-sm-9">@Model.Email</dd>
+
+                        <dt class="col-sm-3">Уебсайт:</dt>
+                        <dd class="col-sm-9">
+                            @if (!string.IsNullOrEmpty(Model.Website))
+                            {
+                                <a href="@Model.Website" target="_blank">@Model.Website</a>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-3">Описание:</dt>
+                        <dd class="col-sm-9">@Model.Description</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Географски координати</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Координати:</dt>
+                        <dd class="col-sm-9">
+                            @if (Model.GeoLatitude.HasValue && Model.GeoLongitude.HasValue)
+                            {
+                                <span>@Model.GeoLatitude, @Model.GeoLongitude</span>
+                                <a href="https://www.google.com/maps/search/?api=1&query=@Model.GeoLatitude,@Model.GeoLongitude" target="_blank" class="btn btn-sm btn-outline-primary ms-3">
+                                    <i class="bi bi-map"></i> Отвори в Google Maps
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Не са зададени</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-3">Форматиран адрес:</dt>
+                        <dd class="col-sm-9">@Model.MapsFormattedAddress</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div>
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                    <i class="bi bi-pencil"></i> Редактирай
+                </a>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Назад към списъка
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
