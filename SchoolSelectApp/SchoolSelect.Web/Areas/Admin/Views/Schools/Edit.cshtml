@@ -1,5 +1,4 @@
-﻿<!-- SchoolSelect.Web/Areas/Admin/Views/Schools/Edit.cshtml -->
-@model SchoolSelect.Web.Areas.Admin.ViewModels.SchoolEditViewModel
+﻿@model SchoolSelect.Web.Areas.Admin.ViewModels.SchoolEditViewModel
 
 @{
     ViewData["Title"] = "Редактиране на училище";
@@ -28,7 +27,8 @@
 
     <div class="row">
         <div class="col-md-8">
-            <form asp-action="Edit">
+            <!-- Главна форма за редактиране -->
+            <form asp-action="Edit" id="editForm">
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
                 <input type="hidden" asp-for="Id" />
 
@@ -107,14 +107,11 @@
                             <span asp-validation-for="MapsFormattedAddress" class="text-danger"></span>
                         </div>
 
-                        <!-- Бутон за автоматично геокодиране -->
+                        <!-- Бутон за автоматично геокодиране (преработен) -->
                         <div class="mt-3">
-                            <form asp-area="Admin" asp-controller="Geocoding" asp-action="UpdateSchool" method="post">
-                                <input type="hidden" name="schoolId" value="@Model.Id" />
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-geo-alt-fill"></i> Обнови координати чрез Google Maps
-                                </button>
-                            </form>
+                            <a href="@Url.Action("UpdateSchool", "Geocoding", new { area = "Admin", schoolId = Model.Id, returnUrl = Url.Action("Edit", "Schools", new { area = "Admin", id = Model.Id }) })" class="btn btn-primary">
+                                <i class="bi bi-geo-alt-fill"></i> Обнови координати чрез Google Maps
+                            </a>
                         </div>
 
                         @if (Model.GeoLatitude.HasValue && Model.GeoLongitude.HasValue)

@@ -38,7 +38,7 @@ namespace SchoolSelect.Data.Models
         public string Website { get; set; } = string.Empty;
 
         [StringLength(ValidationConstants.Common.DescriptionMaxLength)]
-        public string Description { get; set; } = string.Empty;
+        public string? Description { get; set; } = string.Empty;
 
         // Географски координати за изчисляване на разстояние
         [Range(ValidationConstants.GeoCoordinates.MinLatitude,

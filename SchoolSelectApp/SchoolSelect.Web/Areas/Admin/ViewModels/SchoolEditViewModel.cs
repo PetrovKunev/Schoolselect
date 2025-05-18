@@ -44,7 +44,7 @@ namespace SchoolSelect.Web.Areas.Admin.ViewModels
 
         [StringLength(ValidationConstants.Common.DescriptionMaxLength)]
         [Display(Name = "Описание")]
-        public string Description { get; set; } = string.Empty;
+        public string? Description { get; set; } = string.Empty;
 
         [Display(Name = "Географска ширина")]
         public double? GeoLatitude { get; set; }

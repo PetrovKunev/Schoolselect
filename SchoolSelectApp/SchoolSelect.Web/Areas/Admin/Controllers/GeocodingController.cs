@@ -31,22 +31,35 @@ namespace SchoolSelect.Web.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateSchool(int schoolId)
+        [HttpGet]
+        public async Task<IActionResult> UpdateSchool(int schoolId, string returnUrl)
         {
-            bool isSuccess = await _schoolGeocodingService.UpdateSchoolCoordinatesAsync(schoolId);
-
-            if (isSuccess)
+            try
             {
-                TempData["SuccessMessage"] = "Координатите са обновени успешно.";
+                var success = await _schoolGeocodingService.UpdateSchoolCoordinatesAsync(schoolId);
+
+                if (success)
+                {
+                    TempData["SuccessMessage"] = "Координатите бяха успешно обновени.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Възникна грешка при обновяване на координатите. Моля, опитайте отново.";
+                }
             }
-            else
+            catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Не успяхме да обновим координатите на училището.";
+                TempData["ErrorMessage"] = $"Възникна грешка: {ex.Message}";
             }
 
-            return RedirectToAction("Edit", "Schools", new { id = schoolId, area = "Admin" });
+            // Ако имаме returnUrl, пренасочваме към него
+            if (!string.IsNullOrEmpty(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+
+            // В противен случай пренасочваме към списъка с училища
+            return RedirectToAction("Index", "Schools");
         }
     }
 }
