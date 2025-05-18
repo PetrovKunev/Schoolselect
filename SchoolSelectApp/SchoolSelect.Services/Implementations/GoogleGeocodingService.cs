@@ -1,13 +1,9 @@
 ﻿// SchoolSelect.Services/Implementations/GoogleGeocodingService.cs
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SchoolSelect.Services.Interfaces;
 using SchoolSelect.Services.Models;
-using System;
-using System.Linq;
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace SchoolSelect.Services.Implementations
 {
@@ -15,7 +11,7 @@ namespace SchoolSelect.Services.Implementations
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<GoogleGeocodingService> _logger;
-        private readonly string _apiKey; // Non-nullable field
+        private readonly string _apiKey;
 
         public GoogleGeocodingService(
             HttpClient httpClient,
