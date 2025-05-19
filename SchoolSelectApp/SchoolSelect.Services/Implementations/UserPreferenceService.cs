@@ -150,16 +150,16 @@ namespace SchoolSelect.Services.Implementations
         {
             // Основен речник с предварително дефинирани профили
             var profileTypesDict = new Dictionary<string, string>
-    {
-        { ProfileTypes.Mathematics, "Математически профил" },
-        { ProfileTypes.NaturalSciences, "Природни науки (Биология, Химия, Физика)" },
-        { ProfileTypes.Humanities, "Хуманитарни науки (История, География, Езици)" },
-        { ProfileTypes.ForeignLanguages, "Чужди езици (АЕ, НЕ, ФЕ и др.)" },
-        { ProfileTypes.ComputerSciences, "Софтуерни и хардуерни науки (STEM)" },
-        { ProfileTypes.Entrepreneurship, "Предприемачески профил" },
-        { ProfileTypes.Arts, "Изкуства (Музика, Изобразително изкуство)" },
-        { ProfileTypes.Sports, "Спортен профил" }
-    };
+            {
+                { ProfileTypes.Mathematics, "Математически профил" },
+                { ProfileTypes.NaturalSciences, "Природни науки (Биология, Химия, Физика)" },
+                { ProfileTypes.Humanities, "Хуманитарни науки (История, География, Езици)" },
+                { ProfileTypes.ForeignLanguages, "Чужди езици (АЕ, НЕ, ФЕ и др.)" },
+                { ProfileTypes.ComputerSciences, "Софтуерни и хардуерни науки (STEM)" },
+                { ProfileTypes.Entrepreneurship, "Предприемачески профил" },
+                { ProfileTypes.Arts, "Изкуства (Музика, Изобразително изкуство)" },
+                { ProfileTypes.Sports, "Спортен профил" }
+            };
 
             // Извличане на профили от базата данни
             var schoolProfiles = await _unitOfWork.SchoolProfiles.GetAllAsync();
