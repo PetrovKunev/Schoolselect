@@ -87,7 +87,7 @@ namespace SchoolSelect.Web.Controllers
                 Phone = school.Phone,
                 Email = school.Email,
                 Website = school.Website,
-                Description = school.Description,
+                Description = school.Description ?? string.Empty,
                 AverageRating = school.AverageRating,
                 ReviewsCount = school.RatingsCount,
                 Latitude = school.GeoLatitude,

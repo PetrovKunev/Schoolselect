@@ -12,13 +12,16 @@ namespace SchoolSelect.Services.Implementations
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<SchoolRecommendationService> _logger;
+        private readonly IScoreCalculationService _scoreCalculationService;
 
         public SchoolRecommendationService(
             IUnitOfWork unitOfWork,
-            ILogger<SchoolRecommendationService> logger)
+            ILogger<SchoolRecommendationService> logger,
+            IScoreCalculationService scoreCalculationService)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _scoreCalculationService = scoreCalculationService;
         }
 
         public async Task<SchoolRecommendationsViewModel> GetRecommendationsAsync(int preferenceId, Guid userId)
@@ -97,6 +100,16 @@ namespace SchoolSelect.Services.Implementations
                     Weight = GetWeightValue(criteriaWeights, "ProfileMatch")
                 });
 
+                // Calculate score match
+                double scoreMatchScore = await CalculateScoreMatchAsync(school, preference.UserId);
+                schoolScore += scoreMatchScore * GetWeightValue(criteriaWeights, "ScoreMatch");
+                criteriaScores.Add(new CriterionScoreViewModel
+                {
+                    Name = "Съответствие с бал",
+                    Score = scoreMatchScore,
+                    Weight = GetWeightValue(criteriaWeights, "ScoreMatch")
+                });
+
                 // Calculate facilities score is commented out
                 /*double facilitiesScore = await CalculateFacilitiesScoreAsync(school.Id);
                 schoolScore += facilitiesScore * GetWeightValue(criteriaWeights, "Facilities");
@@ -110,7 +123,8 @@ namespace SchoolSelect.Services.Implementations
                 // Calculate total weighted score and normalize it to 0-100 scale
                 double maxPossibleScore = GetWeightValue(criteriaWeights, "Proximity") +
                                           GetWeightValue(criteriaWeights, "Rating") +
-                                          GetWeightValue(criteriaWeights, "ProfileMatch");
+                                          GetWeightValue(criteriaWeights, "ProfileMatch") +
+                                          GetWeightValue(criteriaWeights, "ScoreMatch");
 
                 double normalizedScore = (schoolScore / maxPossibleScore) * 100;
 
@@ -283,7 +297,7 @@ namespace SchoolSelect.Services.Implementations
             return (school.AverageRating - 1) / 4.0;
         }
 
-        // Добавям само новия метод, който трябва да замени съществуващия в SchoolRecommendationService.cs
+        
         private double CalculateProfileMatchScore(School school, List<string> preferredProfiles)
         {
             // Ако няма предпочитания или училището няма профили, връщаме неутрален резултат
@@ -418,6 +432,91 @@ namespace SchoolSelect.Services.Implementations
             // Нормализиране на общия резултат
             // Но не повече от 1.0, дори ако има няколко профила, които съвпадат с предпочитанията
             return Math.Min(totalMatch / maxPossibleMatch, 1.0);
+        }
+
+        private async Task<double> CalculateScoreMatchAsync(School school, Guid userId)
+        {
+            try
+            {
+                // Проверка за валидни профили
+                var profiles = await _unitOfWork.SchoolProfiles.GetProfilesBySchoolIdAsync(school.Id);
+                if (!profiles.Any())
+                {
+                    return 0.5; // Неутрален резултат при липса на профили
+                }
+
+                // Взимане на последните оценки на потребителя
+                var userGrades = (await _unitOfWork.UserGrades.GetGradesByUserIdAsync(userId))
+                    .OrderByDescending(g => g.CreatedAt)
+                    .FirstOrDefault();
+
+                if (userGrades == null)
+                {
+                    return 0.5; // Неутрален резултат при липса на оценки
+                }
+
+                double bestScoreMatch = 0.0;
+
+                // За всеки профил проверяваме как съответстват потребителските оценки
+                foreach (var profile in profiles)
+                {
+                    // Вземаме текущата формула за профила
+                    var formula = await _unitOfWork.AdmissionFormulas.GetCurrentFormulaForProfileAsync(profile.Id);
+                    if (formula == null || !formula.HasComponents)
+                    {
+                        continue; // Няма формула за този профил
+                    }
+
+                    // Изчисляваме бала на потребителя за този профил
+                    double userScore = await _scoreCalculationService.CalculateScoreAsync(formula.Id, userGrades);
+
+                    // Взимаме минималния бал за този профил от последните класирания
+                    var latestRanking = (await _unitOfWork.HistoricalRankings.GetRankingsByProfileIdAsync(profile.Id))
+                        .OrderByDescending(r => r.Year)
+                        .ThenBy(r => r.Round)
+                        .FirstOrDefault();
+
+                    if (latestRanking == null)
+                    {
+                        continue; // Няма данни за класиране
+                    }
+
+                    // Изчисляваме процент съответствие между очаквания бал и минималния бал
+                    double difference = userScore - latestRanking.MinimumScore;
+                    double scoreMatch;
+
+                    if (difference >= 10) // Над 10 точки над минималния бал
+                    {
+                        scoreMatch = 1.0; // 100% съответствие
+                    }
+                    else if (difference >= 0) // От 0 до 10 точки над минималния бал
+                    {
+                        scoreMatch = 0.7 + (difference / 10.0) * 0.3; // От 70% до 100%
+                    }
+                    else if (difference >= -10) // До 10 точки под минималния бал
+                    {
+                        scoreMatch = 0.4 + (difference + 10) / 10.0 * 0.3; // От 40% до 70%
+                    }
+                    else if (difference >= -30) // От 10 до 30 точки под минималния бал
+                    {
+                        scoreMatch = 0.1 + (difference + 30) / 20.0 * 0.3; // От 10% до 40%
+                    }
+                    else // Повече от 30 точки под минималния бал
+                    {
+                        scoreMatch = 0.1; // Минимално съответствие
+                    }
+
+                    // Запазваме най-доброто съответствие между профилите
+                    bestScoreMatch = Math.Max(bestScoreMatch, scoreMatch);
+                }
+
+                return bestScoreMatch;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Грешка при изчисляване на съответствие с бал за училище {SchoolId}", school.Id);
+                return 0.5; // Неутрален резултат при грешка
+            }
         }
 
         // Uncomment if you want to implement facilities score calculation

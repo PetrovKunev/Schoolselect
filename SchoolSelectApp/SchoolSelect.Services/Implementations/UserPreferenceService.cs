@@ -150,92 +150,45 @@ namespace SchoolSelect.Services.Implementations
         {
             // Основен речник с предварително дефинирани профили
             var profileTypesDict = new Dictionary<string, string>
-            {
-                { ProfileTypes.Mathematics, "Математически профил" },
-                { ProfileTypes.NaturalSciences, "Природни науки (Биология, Химия, Физика)" },
-                { ProfileTypes.Humanities, "Хуманитарни науки (История, География, Езици)" },
-                { ProfileTypes.ForeignLanguages, "Чужди езици (АЕ, НЕ, ФЕ и др.)" },
-                { ProfileTypes.ComputerSciences, "Софтуерни и хардуерни науки (STEM)" },
-                { ProfileTypes.Entrepreneurship, "Предприемачески профил" },
-                { ProfileTypes.Arts, "Изкуства (Музика, Изобразително изкуство)" },
-                { ProfileTypes.Sports, "Спортен профил" }
-            };
+    {
+        { ProfileTypes.Mathematics, "Математически профил" },
+        { ProfileTypes.NaturalSciences, "Природни науки (Биология, Химия, Физика)" },
+        { ProfileTypes.Humanities, "Хуманитарни науки (История, География, Езици)" },
+        { ProfileTypes.ForeignLanguages, "Чужди езици (АЕ, НЕ, ФЕ и др.)" },
+        { ProfileTypes.ComputerSciences, "Софтуерни и хардуерни науки (STEM)" },
+        { ProfileTypes.Entrepreneurship, "Предприемачески профил" },
+        { ProfileTypes.Arts, "Изкуства (Музика, Изобразително изкуство)" },
+        { ProfileTypes.Sports, "Спортен профил" }
+    };
 
-            // Извличаме уникални профили от базата данни
+            // Извличане на профили от базата данни
             var schoolProfiles = await _unitOfWork.SchoolProfiles.GetAllAsync();
             var uniqueProfileNames = new HashSet<string>();
 
+            // Използване на хеш множество за бързо добавяне на уникални профили
             foreach (var profile in schoolProfiles)
             {
-                // Извличаме базовия профил от името (например "Математически" от "Математически - АЕ интензивно, ИЕ")
                 if (!string.IsNullOrEmpty(profile.Name))
                 {
                     var parts = profile.Name.Split('-', StringSplitOptions.RemoveEmptyEntries);
                     if (parts.Length > 0)
                     {
-                        var baseName = parts[0].Trim();
-                        if (!string.IsNullOrEmpty(baseName) && baseName.Length > 5)
-                        {
-                            uniqueProfileNames.Add(baseName);
-                        }
-                    }
-
-                    // Проверяваме за ключови думи в имената на профилите
-                    string name = profile.Name.ToLower();
-
-                    if (name.Contains("математич") || name.Contains("математик") || name.Contains(" мат "))
-                    {
-                        uniqueProfileNames.Add("Математически");
-                    }
-                    else if (name.Contains("природни") || name.Contains("биолог") || name.Contains("химия") ||
-                             name.Contains("физика") || name.Contains("бзо") || name.Contains("хоос"))
-                    {
-                        uniqueProfileNames.Add("Природни науки");
-                    }
-                    else if (name.Contains("хуманитарен") || name.Contains("история") ||
-                             name.Contains("география") || name.Contains("бел и "))
-                    {
-                        uniqueProfileNames.Add("Хуманитарни науки");
-                    }
-                    else if (name.Contains("език") || name.Contains(" ае ") || name.Contains("интензивно") ||
-                             name.Contains("чужд"))
-                    {
-                        uniqueProfileNames.Add("Чужди езици");
-                    }
-                    else if (name.Contains("софтуер") || name.Contains("хардуер") || name.Contains("компютър") ||
-                             name.Contains("програмира") || name.Contains("информатика") || name.Contains("stem") ||
-                             name.Contains("стем"))
-                    {
-                        uniqueProfileNames.Add("Софтуерни и хардуерни науки");
-                    }
-                    else if (name.Contains("предприема") || name.Contains("бизнес") || name.Contains("икономика"))
-                    {
-                        uniqueProfileNames.Add("Предприемачески");
-                    }
-                    else if (name.Contains("изкуств") || name.Contains("музика") || name.Contains("изобразително"))
-                    {
-                        uniqueProfileNames.Add("Изкуства");
-                    }
-                    else if (name.Contains("спорт") || name.Contains("физическо"))
-                    {
-                        uniqueProfileNames.Add("Спорт");
+                        uniqueProfileNames.Add(parts[0].Trim());
                     }
                 }
 
-                // Вземаме и типа профил, ако е дефиниран
                 if (profile.Type.HasValue)
                 {
                     uniqueProfileNames.Add(profile.Type.Value.ToString());
                 }
 
-                // Добавяме и специалността, ако е дефинирана и има смисъл като самостоятелен профил
                 if (!string.IsNullOrEmpty(profile.Specialty) && profile.Specialty.Length > 5)
                 {
                     uniqueProfileNames.Add(profile.Specialty);
                 }
             }
 
-            // Добавяме уникалните профили от базата данни към речника
+            // Добавяне на уникалните профили към речника
             foreach (var profileName in uniqueProfileNames)
             {
                 if (!profileTypesDict.ContainsKey(profileName))
