@@ -20,12 +20,12 @@ namespace SchoolSelect.Web.Controllers
 
         // GET: Recommendations
         [HttpGet]
-        public async Task<IActionResult> Index(int preferenceId)
+        public async Task<IActionResult> Index(int preferenceId, int? gradesId = null)
         {
             try
             {
                 var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty);
-                var recommendations = await _recommendationService.GetRecommendationsAsync(preferenceId, userId);
+                var recommendations = await _recommendationService.GetRecommendationsAsync(preferenceId, userId, gradesId);
                 return View(recommendations);
             }
             catch (Exception ex)

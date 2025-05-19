@@ -24,7 +24,7 @@ namespace SchoolSelect.Services.Implementations
             _scoreCalculationService = scoreCalculationService;
         }
 
-        public async Task<SchoolRecommendationsViewModel> GetRecommendationsAsync(int preferenceId, Guid userId)
+        public async Task<SchoolRecommendationsViewModel> GetRecommendationsAsync(int preferenceId, Guid userId, int? gradesId = null)
         {
             // Get the user preference
             var preference = await _unitOfWork.UserPreferences.GetByIdAsync(preferenceId);
@@ -45,6 +45,27 @@ namespace SchoolSelect.Services.Implementations
 
             // Get all schools
             var allSchools = await _unitOfWork.Schools.GetSchoolsWithProfilesAsync();
+
+            // Вземане на всички набори от оценки на потребителя
+            var allUserGrades = await _unitOfWork.UserGrades.GetGradesByUserIdAsync(userId);
+            var userGradesViewModels = allUserGrades
+                .OrderByDescending(g => g.CreatedAt)
+                .Select(g => new UserGradesViewModel
+                {
+                    Id = g.Id,
+                    ConfigurationName = g.ConfigurationName,
+                    BulgarianGrade = g.BulgarianGrade ?? 0,
+                    MathGrade = g.MathGrade ?? 0,
+                    BulgarianExamPoints = g.BulgarianExamPoints,
+                    MathExamPoints = g.MathExamPoints,
+                    CreatedAt = g.CreatedAt
+                }).ToList();
+
+            // Ако не е избран конкретен набор или избраният не съществува, използваме най-новия
+            if (gradesId == null || !userGradesViewModels.Any(g => g.Id == gradesId))
+            {
+                gradesId = userGradesViewModels.FirstOrDefault()?.Id;
+            }
 
             // Добавяме дебъг информация за разстоянията
             var debugInfo = new List<string>();
@@ -100,8 +121,10 @@ namespace SchoolSelect.Services.Implementations
                     Weight = GetWeightValue(criteriaWeights, "ProfileMatch")
                 });
 
-                // Calculate score match
-                double scoreMatchScore = await CalculateScoreMatchAsync(school, preference.UserId);
+                // Calculate score match with detailed information
+                var (scoreMatchScore, userScore, minScore, scoreDifference, usedGradesId) =
+                    await CalculateScoreMatchAsync(school, userId, gradesId);
+
                 schoolScore += scoreMatchScore * GetWeightValue(criteriaWeights, "ScoreMatch");
                 criteriaScores.Add(new CriterionScoreViewModel
                 {
@@ -128,7 +151,7 @@ namespace SchoolSelect.Services.Implementations
 
                 double normalizedScore = (schoolScore / maxPossibleScore) * 100;
 
-                // Add to results
+                // Add to results with detailed score information
                 scoredSchools.Add(new SchoolRecommendationViewModel
                 {
                     School = new SchoolViewModel
@@ -143,7 +166,11 @@ namespace SchoolSelect.Services.Implementations
                     TotalScore = Math.Round(normalizedScore, 1),
                     CriteriaScores = criteriaScores,
                     Profiles = school.Profiles.Select(p => p.Name).ToList(),
-                    Distance = distance // Добавяме разстоянието в модела
+                    Distance = distance,
+                    CalculatedUserScore = userScore,
+                    MinimumSchoolScore = minScore,
+                    ScoreDifference = scoreDifference,
+                    UsedGradesId = usedGradesId
                 });
             }
 
@@ -156,7 +183,7 @@ namespace SchoolSelect.Services.Implementations
             // Sort by total score descending
             scoredSchools = scoredSchools.OrderByDescending(s => s.TotalScore).ToList();
 
-            // Create the view model
+            // Create the view model with available grades sets
             var viewModel = new SchoolRecommendationsViewModel
             {
                 PreferenceId = preferenceId,
@@ -166,7 +193,9 @@ namespace SchoolSelect.Services.Implementations
                     ? $"{preference.UserLatitude.Value}, {preference.UserLongitude.Value}"
                     : string.Empty,
                 PreferredProfiles = preferredProfiles,
-                RecommendedSchools = scoredSchools
+                RecommendedSchools = scoredSchools,
+                AvailableGradesSets = userGradesViewModels,
+                SelectedGradesId = gradesId
             };
 
             return viewModel;
@@ -434,7 +463,7 @@ namespace SchoolSelect.Services.Implementations
             return Math.Min(totalMatch / maxPossibleMatch, 1.0);
         }
 
-        private async Task<double> CalculateScoreMatchAsync(School school, Guid userId)
+        private async Task<(double ScoreMatch, double? UserScore, double? MinScore, double? Difference, int? GradesId)> CalculateScoreMatchAsync(School school, Guid userId, int? specificGradesId = null)
         {
             try
             {
@@ -442,20 +471,35 @@ namespace SchoolSelect.Services.Implementations
                 var profiles = await _unitOfWork.SchoolProfiles.GetProfilesBySchoolIdAsync(school.Id);
                 if (!profiles.Any())
                 {
-                    return 0.5; // Неутрален резултат при липса на профили
+                    return (0.5, null, null, null, null); // Неутрален резултат при липса на профили
                 }
 
-                // Взимане на последните оценки на потребителя
-                var userGrades = (await _unitOfWork.UserGrades.GetGradesByUserIdAsync(userId))
-                    .OrderByDescending(g => g.CreatedAt)
-                    .FirstOrDefault();
+                // Взимане на оценките на потребителя
+                var allUserGrades = await _unitOfWork.UserGrades.GetGradesByUserIdAsync(userId);
 
-                if (userGrades == null)
+                // Ако няма оценки, връщаме неутрален резултат
+                if (!allUserGrades.Any())
                 {
-                    return 0.5; // Неутрален резултат при липса на оценки
+                    return (0.5, null, null, null, null);
+                }
+
+                // Ако е подаден конкретен ID, използваме него
+                UserGrades userGrades;
+                if (specificGradesId.HasValue)
+                {
+                    userGrades = allUserGrades.FirstOrDefault(g => g.Id == specificGradesId.Value)
+                        ?? allUserGrades.OrderByDescending(g => g.CreatedAt).First();
+                }
+                else
+                {
+                    // Използваме най-новия набор от оценки
+                    userGrades = allUserGrades.OrderByDescending(g => g.CreatedAt).First();
                 }
 
                 double bestScoreMatch = 0.0;
+                double? bestUserScore = null;
+                double? bestMinScore = null;
+                double? bestDifference = null;
 
                 // За всеки профил проверяваме как съответстват потребителските оценки
                 foreach (var profile in profiles)
@@ -507,15 +551,21 @@ namespace SchoolSelect.Services.Implementations
                     }
 
                     // Запазваме най-доброто съответствие между профилите
-                    bestScoreMatch = Math.Max(bestScoreMatch, scoreMatch);
+                    if (scoreMatch > bestScoreMatch)
+                    {
+                        bestScoreMatch = scoreMatch;
+                        bestUserScore = userScore;
+                        bestMinScore = latestRanking.MinimumScore;
+                        bestDifference = difference;
+                    }
                 }
 
-                return bestScoreMatch;
+                return (bestScoreMatch, bestUserScore, bestMinScore, bestDifference, userGrades.Id);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Грешка при изчисляване на съответствие с бал за училище {SchoolId}", school.Id);
-                return 0.5; // Неутрален резултат при грешка
+                return (0.5, null, null, null, null); // Неутрален резултат при грешка
             }
         }
 

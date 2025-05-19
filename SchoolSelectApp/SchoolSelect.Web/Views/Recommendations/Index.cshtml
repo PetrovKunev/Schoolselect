@@ -46,6 +46,37 @@
         background-color: #6c757d;
         color: white;
     }
+
+    /* Добавени нови стилове за детайли на бал */
+    .score-details {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        font-size: 0.85rem;
+        margin-top: 5px;
+    }
+
+    .score-item {
+        margin-right: 10px;
+        padding: 2px 5px;
+        border-radius: 3px;
+    }
+
+    .score-positive {
+        color: #28a745;
+    }
+
+    .score-negative {
+        color: #dc3545;
+    }
+
+    /* Стил за селектор на оценки */
+    .grades-selector {
+        background-color: rgba(0, 123, 255, 0.1);
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
 </style>
 
 <div class="container mt-4">
@@ -81,6 +112,39 @@
                     }
                 </div>
             </div>
+
+            <!-- Добавен селектор за избор на набор от оценки -->
+            @if (Model.AvailableGradesSets != null && Model.AvailableGradesSets.Any())
+            {
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="grades-selector">
+                            <form asp-action="Index" method="get" class="d-flex align-items-center flex-wrap">
+                                <input type="hidden" name="preferenceId" value="@Model.PreferenceId" />
+                                <label for="gradesId" class="me-2 mb-0">Изберете набор от оценки:</label>
+                                <select name="gradesId" id="gradesId" class="form-select me-2" style="max-width: 300px;">
+                                    @foreach (var grades in Model.AvailableGradesSets)
+                                    {
+                                        <option value="@grades.Id" selected="@(grades.Id == Model.SelectedGradesId)">
+                                            @grades.ConfigurationName (@grades.CreatedAt.ToString("dd.MM.yyyy"))
+                                        </option>
+                                    }
+                                </select>
+                                <button type="submit" class="btn btn-outline-primary">
+                                    <i class="bi bi-check-circle"></i> Приложи
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning mt-3">
+                    <i class="bi bi-exclamation-triangle"></i> 
+                    Нямате въведени оценки. <a asp-controller="UserGrades" asp-action="Create">Добавете оценки</a>, за да получите по-точни препоръки.
+                </div>
+            }
         </div>
     </div>
 
@@ -175,17 +239,50 @@
                                             {
                                                 <small class="text-muted">(@Math.Round(recommendation.Distance.Value, 1) км)</small>
                                             }
+                                            @if (criterion.Name == "Съответствие с бал" && recommendation.UsedGradesId.HasValue && Model.AvailableGradesSets != null)
+                                            {
+                                                var gradesName = Model.AvailableGradesSets.FirstOrDefault(g => g.Id == recommendation.UsedGradesId.Value)?.ConfigurationName;
+                                                if (!string.IsNullOrEmpty(gradesName))
+                                                {
+                                                    <small class="text-muted">(@gradesName)</small>
+                                                }
+                                            }
                                         </span>
                                         <span>@Math.Round(criterion.Score * 100, 0)%</span>
                                     </div>
                                     <div class="progress" style="height: 10px;">
-                                        <div class="progress-bar @(criterion.Name == "Близост" ? "bg-info" : "")"
+                                        <div class="progress-bar @GetProgressBarClass(criterion.Name)"
                                              role="progressbar"
                                              style="width: @(criterion.Score * 100)%;"
                                              aria-valuenow="@(criterion.Score * 100)"
                                              aria-valuemin="0"
                                              aria-valuemax="100"></div>
                                     </div>
+                                    
+                                    <!-- Добавени детайли за съответствие с бал -->
+                                    @if (criterion.Name == "Съответствие с бал" && recommendation.CalculatedUserScore.HasValue && recommendation.MinimumSchoolScore.HasValue)
+                                    {
+                                        <div class="score-details">
+                                            <span class="score-item">
+                                                <strong>Твоят бал:</strong> @Math.Round(recommendation.CalculatedUserScore.Value, 1)
+                                            </span>
+                                            <span class="score-item">
+                                                <strong>Минимален бал:</strong> @Math.Round(recommendation.MinimumSchoolScore.Value, 1)
+                                            </span>
+                                            
+                                            @if (recommendation.ScoreDifference.HasValue)
+                                            {
+                                                var differenceClass = recommendation.ScoreDifference.Value >= 0 ? "score-positive" : "score-negative";
+                                                var differenceIcon = recommendation.ScoreDifference.Value >= 0 ? "bi-arrow-up" : "bi-arrow-down";
+                                                var differenceSign = recommendation.ScoreDifference.Value >= 0 ? "+" : "";
+                                                
+                                                <span class="score-item @differenceClass">
+                                                    <i class="bi @differenceIcon"></i>
+                                                    <strong>Разлика:</strong> @(differenceSign)@Math.Round(recommendation.ScoreDifference.Value, 1)
+                                                </span>
+                                            }
+                                        </div>
+                                    }
                                 </div>
                             }
                         </div>
@@ -250,4 +347,18 @@
             });
         });
     </script>
+}
+
+@functions {
+    string GetProgressBarClass(string criterionName)
+    {
+        return criterionName switch
+        {
+            "Близост" => "bg-info",
+            "Съответствие с бал" => "bg-success",
+            "Профил" => "bg-warning",
+            "Рейтинг" => "bg-primary",
+            _ => ""
+        };
+    }
 }
