@@ -398,3 +398,14 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Production settings files
+**/appsettings.Production.json
+
+# Local secrets
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.json
+!appsettings.json
+SchoolSelectApp/SchoolSelect.Web/appsettings.Production.json
+SchoolSelectApp/SchoolSelect.Web/appsettings.Production.json
