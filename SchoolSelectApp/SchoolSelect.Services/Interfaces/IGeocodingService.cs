@@ -1,5 +1,4 @@
-﻿// SchoolSelect.Services/Interfaces/IGeocodingService.cs
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace SchoolSelect.Services.Interfaces
 {

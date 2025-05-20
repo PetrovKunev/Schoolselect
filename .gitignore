@@ -409,3 +409,5 @@ appsettings.*.json
 !appsettings.json
 SchoolSelectApp/SchoolSelect.Web/appsettings.Production.json
 SchoolSelectApp/SchoolSelect.Web/appsettings.Production.json
+SchoolSelectApp/SchoolSelect.Web/appsettings.Development.json
+SchoolSelectApp/SchoolSelect.Web/appsettings.Development.json

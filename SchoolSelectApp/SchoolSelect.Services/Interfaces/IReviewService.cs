@@ -1,5 +1,4 @@
-﻿// IReviewService.cs
-using SchoolSelect.Data.Models;
+﻿using SchoolSelect.Data.Models;
 
 namespace SchoolSelect.Services.Interfaces
 {

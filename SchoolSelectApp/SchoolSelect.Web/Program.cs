@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using SchoolSelect.Data.Models;
 using SchoolSelect.Repositories;
@@ -8,6 +9,7 @@ using SchoolSelect.Services.Implementations;
 using SchoolSelect.Services.Interfaces;
 using SchoolSelect.Web.Data;
 using SchoolSelect.Web.Infrastructure;
+
 
 
 namespace SchoolSelect.Web
@@ -32,7 +34,8 @@ namespace SchoolSelect.Web
             // Registering Identity with our ApplicationUser
             builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
             {
-                options.SignIn.RequireConfirmedAccount = true;
+                options.SignIn.RequireConfirmedAccount = false;
+                options.SignIn.RequireConfirmedEmail = false;
                 options.Password.RequireDigit = true;
                 options.Password.RequireUppercase = true;
                 options.Password.RequireNonAlphanumeric = true;
@@ -67,6 +70,15 @@ namespace SchoolSelect.Web
             builder.Services.AddScoped<IChanceCalculator, DefaultChanceCalculator>();
             builder.Services.AddScoped<IScoreCalculationService, ScoreCalculationService>();
             builder.Services.AddScoped<ISchoolRecommendationService, SchoolRecommendationService>();
+
+            // Email services - временно деактивирани
+            // builder.Services.AddScoped<IEmailService, EmailService>();
+            // builder.Services.AddScoped<IEmailSender, EmailService>();
+
+            // Заместваме с NoOp service за development
+            builder.Services.AddTransient<IEmailService, NoOpEmailService>();
+            builder.Services.AddTransient<IEmailSender, NoOpEmailService>();
+
 
             // Регистриране на HttpClient за GoogleGeocodingService
             builder.Services.AddHttpClient<IGeocodingService, GoogleGeocodingService>();
