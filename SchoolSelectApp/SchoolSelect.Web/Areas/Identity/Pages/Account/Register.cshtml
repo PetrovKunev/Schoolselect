@@ -1,80 +1,208 @@
 ﻿@page
 @model RegisterModel
 @{
-    ViewData["Title"] = "Регистрация";
+    ViewData["Title"] = "Регистрация в SchoolSelect";
 }
 
-<h1>@ViewData["Title"]</h1>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0 rounded-lg mt-5">
+                <div class="card-header bg-success text-white text-center py-4">
+                    <h3>
+                        <i class="fas fa-user-plus me-2"></i>
+                        @ViewData["Title"]
+                    </h3>
+                    <p class="mb-0">Създайте профил за достъп до SchoolSelect</p>
+                </div>
+                <div class="card-body p-4">
 
-<div class="row">
-    <div class="col-md-4">
-        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h2>Създайте нов потребителски профил</h2>
-            <hr />
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <label asp-for="Input.Email">Имейл</label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.Password">Парола</label>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.ConfirmPassword">Потвърди паролата</label>
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-            </div>
-            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Регистрирайте се</button>
-        </form>
-    </div>
-    <div class="col-md-6 col-md-offset-2">
-        <section>
-            <h3>Използвайте друга услуга за вход.</h3>
-            <hr />
-            @{
-                if ((Model.ExternalLogins?.Count ?? 0) == 0)
-                {
-                    <div>
-                        <p>
-                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
-                            about setting up this ASP.NET application to support logging in via external services</a>.
+                    <!-- OAuth Registration Section - Предпочитания начин -->
+                    <section>
+                        <div class="text-center mb-4">
+                            <h4 class="text-success">Създайте профил с един клик</h4>
+                            <p class="text-muted">Най-бързият и сигурен начин за регистрация</p>
+                        </div>
+
+                        @{
+                            if ((Model.ExternalLogins?.Count ?? 0) == 0)
+                            {
+                                <div class="alert alert-warning">
+                                    <p>
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Външните услуги за регистрация не са конфигурирани.
+                                        Свържете се с администратора.
+                                    </p>
+                                </div>
+                            }
+                            else
+                            {
+                                <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                                    <div class="d-grid gap-3">
+                                        @foreach (var provider in Model.ExternalLogins!)
+                                        {
+                                            @if (provider.Name.Equals("Google"))
+                                            {
+                                                <button type="submit" class="btn btn-outline-danger btn-lg d-flex align-items-center justify-content-center gap-3"
+                                                        name="provider" value="@provider.Name"
+                                                        title="Регистрация с вашия Google акаунт">
+                                                    <img src="~/images/google-logo.svg" alt="Google logo" width="20" height="20" />
+                                                    <span>Регистрация с Google</span>
+                                                </button>
+                                            }
+                                            else if (provider.Name.Equals("Microsoft"))
+                                            {
+                                                <button type="submit" class="btn btn-outline-primary btn-lg d-flex align-items-center justify-content-center gap-3"
+                                                        name="provider" value="@provider.Name"
+                                                        title="Регистрация с вашия Microsoft акаунт">
+                                                    <i class="fab fa-microsoft fs-5"></i>
+                                                    <span>Регистрация с Microsoft</span>
+                                                </button>
+                                            }
+                                            else if (provider.Name.Equals("Facebook"))
+                                            {
+                                                <button type="submit" class="btn btn-lg d-flex align-items-center justify-content-center gap-3"
+                                                        style="background-color: #4267B2; border-color: #4267B2; color: white;"
+                                                        name="provider" value="@provider.Name"
+                                                        title="Регистрация с вашия Facebook акаунт">
+                                                    <i class="fab fa-facebook-f fs-5"></i>
+                                                    <span>Регистрация с Facebook</span>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="submit" class="btn btn-outline-secondary btn-lg d-flex align-items-center justify-content-center gap-3"
+                                                        name="provider" value="@provider.Name"
+                                                        title="Регистрация с @provider.DisplayName">
+                                                    <i class="fas fa-user-plus"></i>
+                                                    <span>Регистрация с @provider.DisplayName</span>
+                                                </button>
+                                            }
+                                        }
+                                    </div>
+                                </form>
+                            }
+                        }
+                    </section>
+
+                    <!-- Info Message -->
+                    <div class="alert alert-info mt-4" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle me-3 fs-5"></i>
+                            <div>
+                                <strong>Защо да използвате OAuth?</strong><br>
+                                <small>Без нужда от запомняне на нови пароли. Вашите данни са защитени от вашия провайдер.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Разделител -->
+                    <div class="text-center my-4">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Вашите лични данни се използват само за предоставяне на услугата
+                        </small>
+                    </div>
+
+                    <!-- СКРИТО ВРЕМЕННО - докато не оправим email службата -->
+                    @* 
+                    <!-- Колапс секция за Email/Password регистрация -->
+                    <div class="text-center">
+                        <button class="btn btn-link text-muted" type="button" data-bs-toggle="collapse" data-bs-target="#emailRegisterCollapse" aria-expanded="false">
+                            <small>
+                                <i class="fas fa-envelope me-1"></i>
+                                Или се регистрирайте с имейл и парола
+                            </small>
+                        </button>
+                    </div>
+
+                    <div class="collapse mt-3" id="emailRegisterCollapse">
+                        <div class="card card-body bg-light">
+                            <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                                <h5 class="text-center mb-3">Създаване на локален акаунт</h5>
+                                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                                
+                                <div class="form-floating mb-3">
+                                    <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                                    <label asp-for="Input.Email">Имейл</label>
+                                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                                </div>
+                                
+                                <div class="form-floating mb-3">
+                                    <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                                    <label asp-for="Input.Password">Парола</label>
+                                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                                </div>
+                                
+                                <div class="form-floating mb-3">
+                                    <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                                    <label asp-for="Input.ConfirmPassword">Потвърди паролата</label>
+                                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button id="registerSubmit" type="submit" class="btn btn-success">Регистрация</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    *@
+
+                    <!-- Линк към влизане -->
+                    <div class="text-center mt-4">
+                        <p class="mb-0">
+                            <small>
+                                Вече имате профил?
+                                <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl" class="text-decoration-none">
+                                    <strong>Влезте тук</strong>
+                                </a>
+                            </small>
                         </p>
                     </div>
-                }
-                else
-                {
-                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                        <div>
-                            <p>
-                                @foreach (var provider in Model.ExternalLogins!)
-                                {
-                                    @if (provider.Name.Equals("Google"))
-                                    {
-                                        <button type="submit" class="btn btn-light border d-flex align-items-center justify-content-center gap-2 w-100"
-                                                name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
-                                            <img src="~/images/google-logo.svg" alt="Google logo" width="18" height="18" />
-                                            <span>Регистриране с Google</span>
-                                        </button>
-                                    }
-                                    else
-                                    {
-                                        <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name"
-                                                title="Log in using your @provider.DisplayName account">
-                                            @provider.DisplayName
-                                        </button>
-                                    }
-                                }
-                            </p>
-                        </div>
-                    </form>
-                }
-            }
-        </section>
+                </div>
+
+                <!-- Admin Login Link - Винаги видим -->
+                <div class="card-footer text-center py-3 bg-light">
+                    <small>
+                        <a href="/Admin/Login" class="text-muted text-decoration-none">
+                            <i class="fas fa-user-shield me-1"></i>
+                            Вход за администратори
+                        </a>
+                    </small>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+    .btn {
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+    .card {
+        transition: all 0.3s ease;
+    }
+
+    .fab, .fas {
+        font-size: 1.1rem;
+    }
+
+    .btn-lg {
+        padding: 12px 24px;
+    }
+
+    .alert {
+        border: none;
+        border-radius: 10px;
+    }
+</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

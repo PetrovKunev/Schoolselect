@@ -2,95 +2,200 @@
 @model LoginModel
 
 @{
-    ViewData["Title"] = "Вход в системата";
+    ViewData["Title"] = "Влизане в SchoolSelect";
 }
 
-<h1>@ViewData["Title"]</h1>
-<div class="row">
-    <div class="col-md-4">
-        <section>
-            <form id="account" method="post">
-                <h2>Използвайте локален акаунт за вход.</h2>
-                <hr />
-                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-                <div class="form-floating mb-3">
-                    <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                    <label asp-for="Input.Email" class="form-label">Имейл</label>
-                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0 rounded-lg mt-5">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h3>
+                        <i class="fas fa-graduation-cap me-2"></i>
+                        @ViewData["Title"]
+                    </h3>
+                    <p class="mb-0">Изберете начин за влизане</p>
                 </div>
-                <div class="form-floating mb-3">
-                    <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
-                    <label asp-for="Input.Password" class="form-label">Парола</label>
-                    <span asp-validation-for="Input.Password" class="text-danger"></span>
-                </div>
-                <div class="checkbox mb-3">
-                    <label asp-for="Input.RememberMe" class="form-label">
-                        <input class="form-check-input" asp-for="Input.RememberMe" />
-                        @Html.DisplayNameFor(m => m.Input.RememberMe)
-                    </label>
-                </div>
-                <div>
-                    <button id="login-submit" type="submit" class="w-100 btn btn-lg btn-primary">Вход</button>
-                </div>
-                <div>
-                    <p>
-                        <a id="forgot-password" asp-page="./ForgotPassword">Забравена парола?</a>
-                    </p>
-                    <p>
-                        <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Регистрирайте се</a>
-                    </p>
-                    <p>
-                        <a id="resend-confirmation" asp-page="./ResendEmailConfirmation">Изпращане на имейл за потвърждение</a>
-                    </p>
-                </div>
-            </form>
-        </section>
-    </div>
-    <div class="col-md-6 col-md-offset-2">
-        <section>
-            <h3>Използвайте друга услуга за вход.</h3>
-            <hr />
-            @{
-                if ((Model.ExternalLogins?.Count ?? 0) == 0)
-                {
-                    <div>
-                        <p>
-                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
-                            about setting up this ASP.NET application to support logging in via external services</a>.
-                        </p>
-                    </div>
-                }
-                else
-                {
-                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                        <div>
-                            <p>
-                                @foreach (var provider in Model.ExternalLogins!)
-                                {
-                                    @if (provider.Name.Equals("Google"))
-                                    {
-                                        <button type="submit" class="btn btn-light border d-flex align-items-center justify-content-center gap-2 w-100"
-                                                name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
-                                            <img src="~/images/google-logo.svg" alt="Google logo" width="18" height="18" />
-                                            <span>Влизане с Google</span>
-                                        </button>
-                                    }
-                                    else
-                                    {
-                                        <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name"
-                                                title="Log in using your @provider.DisplayName account">
-                                            @provider.DisplayName
-                                        </button>
-                                    }
-                                }
-                            </p>
+                <div class="card-body p-4">
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            @TempData["ErrorMessage"]
                         </div>
-                    </form>
-                }
-            }
-        </section>
+                    }
+
+                    <!-- OAuth Login Section - Главният начин за влизане -->
+                    <section>
+                        <div class="text-center mb-4">
+                            <h4 class="text-primary">Влизане с вашия акаунт</h4>
+                            <p class="text-muted">Бързо и сигурно с вашия съществуващ профил</p>
+                        </div>
+
+                        @{
+                            if ((Model.ExternalLogins?.Count ?? 0) == 0)
+                            {
+                                <div class="alert alert-warning">
+                                    <p>
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Външните услуги за вход не са конфигурирани.
+                                        Свържете се с администратора.
+                                    </p>
+                                </div>
+                            }
+                            else
+                            {
+                                <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                                    <div class="d-grid gap-3">
+                                        @foreach (var provider in Model.ExternalLogins!)
+                                        {
+                                            @if (provider.Name.Equals("Google"))
+                                            {
+                                                <button type="submit" class="btn btn-outline-danger btn-lg d-flex align-items-center justify-content-center gap-3"
+                                                        name="provider" value="@provider.Name"
+                                                        title="Влизане с вашия Google акаунт">
+                                                    <img src="~/images/google-logo.svg" alt="Google logo" width="20" height="20" />
+                                                    <span>Влизане с Google</span>
+                                                </button>
+                                            }
+                                            else if (provider.Name.Equals("Microsoft"))
+                                            {
+                                                <button type="submit" class="btn btn-outline-primary btn-lg d-flex align-items-center justify-content-center gap-3"
+                                                        name="provider" value="@provider.Name"
+                                                        title="Влизане с вашия Microsoft акаунт">
+                                                    <i class="fab fa-microsoft fs-5"></i>
+                                                    <span>Влизане с Microsoft</span>
+                                                </button>
+                                            }
+                                            else if (provider.Name.Equals("Facebook"))
+                                            {
+                                                <button type="submit" class="btn btn-lg d-flex align-items-center justify-content-center gap-3"
+                                                        style="background-color: #4267B2; border-color: #4267B2; color: white;"
+                                                        name="provider" value="@provider.Name"
+                                                        title="Влизане с вашия Facebook акаунт">
+                                                    <i class="fab fa-facebook-f fs-5"></i>
+                                                    <span>Влизане с Facebook</span>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="submit" class="btn btn-outline-secondary btn-lg d-flex align-items-center justify-content-center gap-3"
+                                                        name="provider" value="@provider.Name"
+                                                        title="Влизане с @provider.DisplayName">
+                                                    <i class="fas fa-sign-in-alt"></i>
+                                                    <span>Влизане с @provider.DisplayName</span>
+                                                </button>
+                                            }
+                                        }
+                                    </div>
+                                </form>
+                            }
+                        }
+                    </section>
+
+                    <!-- Информация за сигурност -->
+                    <div class="text-center my-4">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Вашите данни са защитени и се използват само за подобряване на услугата
+                        </small>
+                    </div>
+
+                    <!-- Вход за администратори -->
+                    <div class="text-center mt-4">
+                        <button class="btn btn-link text-muted small" type="button" data-bs-toggle="collapse" data-bs-target="#adminLoginCollapse" aria-expanded="false">
+                            <small>
+                                <i class="fas fa-user-shield me-1"></i>
+                                Вход за администратори
+                            </small>
+                        </button>
+                    </div>
+
+                    <div class="collapse mt-3" id="adminLoginCollapse">
+                        <div class="card card-body bg-dark text-white">
+                            <section>
+                                <form id="account" method="post">
+                                    <h5 class="text-center mb-3 text-white">
+                                        <i class="fas fa-user-shield me-2"></i>
+                                        Администраторски вход
+                                    </h5>
+                                    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+                                    <div class="form-floating mb-3">
+                                        <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="admin@schoolselect.bg" />
+                                        <label asp-for="Input.Email" class="form-label text-muted">Администраторски имейл</label>
+                                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="form-floating mb-3">
+                                        <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
+                                        <label asp-for="Input.Password" class="form-label text-muted">Парола</label>
+                                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" asp-for="Input.RememberMe" />
+                                        <label class="form-check-label text-white" asp-for="Input.RememberMe">
+                                            @Html.DisplayNameFor(m => m.Input.RememberMe)
+                                        </label>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        <button id="login-submit" type="submit" class="btn btn-light">
+                                            <i class="fas fa-sign-in-alt me-2"></i>
+                                            Вход в системата
+                                        </button>
+                                    </div>
+
+                                    <div class="text-center mt-3">
+                                        <small>
+                                            <a id="forgot-password" asp-page="./ForgotPassword" class="text-light text-decoration-none">
+                                                <i class="fas fa-question-circle me-1"></i>
+                                                Забравена парола?
+                                            </a>
+                                        </small>
+                                    </div>
+
+                                    <div class="alert alert-info mt-3 mb-0" style="background-color: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #e3f2fd;">
+                                        <small>
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Само за потребители с администраторски права
+                                        </small>
+                                    </div>
+                                </form>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+    .btn {
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+    .card {
+        transition: all 0.3s ease;
+    }
+
+    .fab, .fas {
+        font-size: 1.1rem;
+    }
+
+    .btn-lg {
+        padding: 12px 24px;
+    }
+</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
