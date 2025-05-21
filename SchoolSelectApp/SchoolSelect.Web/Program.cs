@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,6 @@ using SchoolSelect.Services.Implementations;
 using SchoolSelect.Services.Interfaces;
 using SchoolSelect.Web.Data;
 using SchoolSelect.Web.Infrastructure;
-
 
 
 namespace SchoolSelect.Web
@@ -107,6 +107,40 @@ namespace SchoolSelect.Web
 
                 googleOptions.ClientId = googleClientId;
                 googleOptions.ClientSecret = googleClientSecret;
+            })
+            .AddFacebook(facebookOptions => // This will now work
+            {
+                var facebookAppId = builder.Configuration["Authentication:Facebook:AppId"];
+                var facebookAppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
+
+                if (!string.IsNullOrEmpty(facebookAppId) && !string.IsNullOrEmpty(facebookAppSecret))
+                {
+                    facebookOptions.AppId = facebookAppId;
+                    facebookOptions.AppSecret = facebookAppSecret;
+
+                    // Add additional permissions
+                    facebookOptions.Scope.Add("email");
+                    facebookOptions.Scope.Add("public_profile");
+
+                    // Map claims
+                    facebookOptions.ClaimActions.MapJsonKey("urn:facebook:name", "name");
+                    facebookOptions.ClaimActions.MapJsonKey("urn:facebook:email", "email");
+                }
+            })
+            .AddMicrosoftAccount(microsoftOptions =>
+            {
+                var microsoftClientId = builder.Configuration["Authentication:Microsoft:ClientId"];
+                var microsoftClientSecret = builder.Configuration["Authentication:Microsoft:ClientSecret"];
+
+                if (!string.IsNullOrEmpty(microsoftClientId) && !string.IsNullOrEmpty(microsoftClientSecret))
+                {
+                    microsoftOptions.ClientId = microsoftClientId;
+                    microsoftOptions.ClientSecret = microsoftClientSecret;
+
+                    // Add scopes
+                    microsoftOptions.Scope.Add("https://graph.microsoft.com/user.read");
+                    microsoftOptions.Scope.Add("https://graph.microsoft.com/email");
+                }
             });
 
             // Конфигуриране на JSON форматиране (camelCase за свойствата)
