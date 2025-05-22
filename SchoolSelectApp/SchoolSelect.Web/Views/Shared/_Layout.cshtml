@@ -1,15 +1,44 @@
 ﻿<!DOCTYPE html>
 <html lang="bg">
-<head>  
-   <meta charset="utf-8" />  
-   <meta name="viewport" content="width=device-width, initial-scale=1.0" />  
-   <title>@ViewData["Title"] - SchoolSelect</title>  
-   <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />  
-   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">  
-   <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />  
-   <link rel="stylesheet" href="~/SchoolSelect.Web.styles.css" asp-append-version="true" />  
-   <link rel="icon" type="image/x-icon" href="~/favicon.ico" asp-append-version="true" />
-   @RenderSection("Styles", required: false)  
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SchoolSelect</title>
+
+    <!-- Рендиране на Meta секцията от отделните страници -->
+    @await RenderSectionAsync("Meta", required: false)
+
+    <!-- Общи мета данни по подразбиране (ако няма специфични) -->
+    @if (!IsSectionDefined("Meta"))
+    {
+        <meta name="description" content="SchoolSelect - платформа за информиран избор на училище в България. Сравнявайте училища, изчислявайте шансове за прием и получавайте персонализирани препоръки." />
+        <meta name="keywords" content="училище, избор на училище, сравнение на училища, класиране, прием, образование, България" />
+        <meta property="og:title" content="SchoolSelect - Информиран избор на училище" />
+        <meta property="og:description" content="Платформа за информиран избор на училище, базиран на данни, оценки и реални критерии." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://schoolselect.bg" />
+        <meta property="og:image" content="https://schoolselect.bg/images/og-image.jpg" />
+        <meta property="og:locale" content="bg_BG" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="SchoolSelect - Информиран избор на училище" />
+        <meta name="twitter:description" content="Платформа за информиран избор на училище, базиран на данни, оценки и реални критерии." />
+    }
+
+    <!-- Favicon и app icons -->
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" asp-append-version="true" />
+    <link rel="apple-touch-icon" sizes="180x180" href="~/apple-touch-icon.png" asp-append-version="true" />
+    <link rel="icon" type="image/png" sizes="32x32" href="~/favicon-32x32.png" asp-append-version="true" />
+    <link rel="icon" type="image/png" sizes="16x16" href="~/favicon-16x16.png" asp-append-version="true" />
+    <link rel="manifest" href="~/site.webmanifest" asp-append-version="true" />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/SchoolSelect.Web.styles.css" asp-append-version="true" />
+
+    <!-- Допълнителни стилове от отделните страници -->
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <header>
@@ -28,7 +57,12 @@
                         <li class="nav-item">
                             <a class="nav-link text-white" asp-area="" asp-controller="Schools" asp-action="Index">Училища</a>
                         </li>
-
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">За нас</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Contact">Контакти</a>
+                        </li>
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
@@ -62,7 +96,11 @@
 
     <footer class="footer">
         <div class="container text-center">
-            &copy; @DateTime.Now.Year - SchoolSelect - Всички права запазени
+            &copy; @DateTime.Now.Year - SchoolSelect - Всички права запазени |
+            <a asp-controller="Home" asp-action="About">За нас</a> |
+            <a asp-controller="Home" asp-action="Contact">Контакти</a> |
+            <a asp-controller="Home" asp-action="Privacy">Поверителност</a> |
+            <a asp-controller="Home" asp-action="Terms">Общи условия</a>
         </div>
     </footer>
 
