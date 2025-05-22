@@ -52,29 +52,29 @@
                                         {
                                             @if (provider.Name.Equals("Google"))
                                             {
-                                                <button type="submit" class="btn btn-outline-danger btn-lg d-flex align-items-center justify-content-center gap-3"
+                                                <button type="submit" class="btn btn-outline-secondary btn-lg d-flex align-items-center justify-content-center gap-3"
                                                         name="provider" value="@provider.Name"
                                                         title="Влизане с вашия Google акаунт">
                                                     <img src="~/images/google-logo.svg" alt="Google logo" width="20" height="20" />
                                                     <span>Влизане с Google</span>
                                                 </button>
                                             }
-                                            else if (provider.Name.Equals("Microsoft"))
-                                            {
-                                                <button type="submit" class="btn btn-outline-primary btn-lg d-flex align-items-center justify-content-center gap-3"
-                                                        name="provider" value="@provider.Name"
-                                                        title="Влизане с вашия Microsoft акаунт">
-                                                    <i class="fab fa-microsoft fs-5"></i>
-                                                    <span>Влизане с Microsoft</span>
-                                                </button>
-                                            }
+                                            // else if (provider.Name.Equals("Microsoft"))
+                                            // {
+                                            //     <button type="submit" class="btn btn-light btn-lg d-flex align-items-center justify-content-center gap-3 border"
+                                            //             name="provider" value="@provider.Name"
+                                            //             title="Влизане с вашия Microsoft акаунт">
+                                            //         <img src="~/images/microsoft-logo.svg" alt="Microsoft logo" width="20" height="20" />
+                                            //         <span>Влизане с Microsoft</span>
+                                            //     </button>
+                                            // }
                                             else if (provider.Name.Equals("Facebook"))
                                             {
                                                 <button type="submit" class="btn btn-lg d-flex align-items-center justify-content-center gap-3"
-                                                        style="background-color: #4267B2; border-color: #4267B2; color: white;"
+                                                        style="background-color: #1877F2; border-color: #1877F2; color: white;"
                                                         name="provider" value="@provider.Name"
                                                         title="Влизане с вашия Facebook акаунт">
-                                                    <i class="fab fa-facebook-f fs-5"></i>
+                                                    <img src="~/images/facebook-logo.svg" alt="Facebook logo" width="20" height="20" />
                                                     <span>Влизане с Facebook</span>
                                                 </button>
                                             }
@@ -88,6 +88,34 @@
                                                 </button>
                                             }
                                         }
+
+                                        <!-- Ако няма някой от трите провайдъра, показваме го като неактивен бутон -->
+                                        @if (!Model.ExternalLogins!.Any(p => p.Name.Equals("Google")))
+                                        {
+                                            <button type="button" class="btn btn-outline-secondary btn-lg d-flex align-items-center justify-content-center gap-3" disabled>
+                                                <img src="~/images/google-logo.svg" alt="Google logo" width="20" height="20" />
+                                                <span>Влизане с Google</span>
+                                            </button>
+                                        }
+
+                                        @if (!Model.ExternalLogins!.Any(p => p.Name.Equals("Facebook")))
+                                        {
+                                            <button type="button" class="btn btn-lg d-flex align-items-center justify-content-center gap-3"
+                                                    style="background-color: #1877F2; border-color: #1877F2; color: white; opacity: 0.7;" disabled>
+                                                <img src="~/images/facebook-logo.svg" alt="Facebook logo" width="20" height="20" />
+                                                <span>Влизане с Facebook</span>
+                                            </button>
+                                        }
+                                        <!-- Microsoft Login - временно скрит до получаване на одобрение от МОН
+                                        @if (!Model.ExternalLogins!.Any(p => p.Name.Equals("Microsoft")))
+                                        {
+                                                <button type="button" class="btn btn-light btn-lg d-flex align-items-center justify-content-center gap-3 border"
+                                                        style="opacity: 0.7;" disabled>
+                                                    <img src="~/images/microsoft-logo.svg" alt="Microsoft logo" width="20" height="20" />
+                                                    <span>Влизане с Microsoft</span>
+                                                </button>
+                                        }
+                                        -->
                                     </div>
                                 </form>
                             }

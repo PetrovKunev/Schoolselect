@@ -126,8 +126,9 @@ namespace SchoolSelect.Web
                     facebookOptions.ClaimActions.MapJsonKey("urn:facebook:name", "name");
                     facebookOptions.ClaimActions.MapJsonKey("urn:facebook:email", "email");
                 }
-            })
-            .AddMicrosoftAccount(microsoftOptions =>
+            });
+            // Microsoft authentication - временно закоментирано до получаване на одобрение от МОН
+            /*.AddMicrosoftAccount(microsoftOptions =>
             {
                 var microsoftClientId = builder.Configuration["Authentication:Microsoft:ClientId"];
                 var microsoftClientSecret = builder.Configuration["Authentication:Microsoft:ClientSecret"];
@@ -141,6 +142,17 @@ namespace SchoolSelect.Web
                     microsoftOptions.Scope.Add("https://graph.microsoft.com/user.read");
                     microsoftOptions.Scope.Add("https://graph.microsoft.com/email");
                 }
+            });*/
+
+            
+            builder.Services.AddAuthorization(options =>
+            {
+                // По подразбиране всички страници са публични
+                options.FallbackPolicy = null;
+
+                // Само специфични области изискват логин
+                options.AddPolicy("RequireAuth", policy =>
+                    policy.RequireAuthenticatedUser());
             });
 
             // Конфигуриране на JSON форматиране (camelCase за свойствата)
