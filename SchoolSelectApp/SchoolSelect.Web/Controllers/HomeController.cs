@@ -38,20 +38,14 @@ namespace SchoolSelect.Web.Controllers
         // GET: /Home/About
         public IActionResult About()
         {
-            var model = new AboutViewModel
-            {
-                MissionStatement = "Да помогнем на ученици и родители да направят информиран избор на училище, базиран на данни, оценки и реални критерии.",
-                VisionStatement = "Да създадем платформа, която прави избора на училище по-лесен, прозрачен и подходящ за всеки ученик и родител.",
-                ContactEmail = "admin@schoolselect.net"
-            };
-
-            return View(model);
+            return View();
         }
 
         // GET: /Home/Contact
+        [HttpGet]
         public IActionResult Contact()
         {
-            return View(new ContactFormViewModel());
+            return View();
         }
 
         // POST: /Home/Contact
@@ -60,17 +54,12 @@ namespace SchoolSelect.Web.Controllers
         public IActionResult Contact(ContactFormViewModel model)
         {
             if (!ModelState.IsValid)
-            {
                 return View(model);
-            }
 
-            // Here you would implement email sending logic
-            // For example, using a service like SendGrid, SMTP client, etc.
+            // TODO: изпратете имейл или запишете съобщението в база данни
 
-            // For this example, we'll just show a success message
-            TempData["SuccessMessage"] = "Вашето съобщение беше изпратено успешно. Ще се свържем с вас възможно най-скоро.";
-
-            return RedirectToAction(nameof(Contact));
+            TempData["SuccessMessage"] = "Вашето съобщение беше изпратено успешно. Ще се свържем с вас скоро.";
+            return RedirectToAction("Contact");
         }
 
         // GET: /Home/Terms

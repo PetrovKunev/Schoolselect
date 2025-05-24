@@ -3,107 +3,47 @@
     ViewData["Title"] = "Контакти";
 }
 
-<div class="container py-5">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <h1 class="text-center mb-5">Свържете се с нас</h1>
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <h1 class="text-center mb-4">Свържете се с нас</h1>
 
             @if (TempData["SuccessMessage"] != null)
             {
-                <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
                     @TempData["SuccessMessage"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             }
 
-            <div class="row">
-                <div class="col-md-5 mb-4 mb-md-0">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body p-4">
-                            <h2 class="h4 mb-4">Информация за контакт</h2>
-                            <div class="d-flex mb-3">
-                                <div class="icon-box bg-primary text-white rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">
-                                    <i class="bi bi-geo-alt"></i>
-                                </div>
-                                <div>
-                                    <h3 class="h6 mb-1">Адрес</h3>
-                                    <p class="text-muted mb-0">гр. София, ул. Акад. Г. Бончев бл. 8</p>
-                                </div>
-                            </div>
-                            <div class="d-flex mb-3">
-                                <div class="icon-box bg-primary text-white rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">
-                                    <i class="bi bi-telephone"></i>
-                                </div>
-                                <div>
-                                    <h3 class="h6 mb-1">Телефон</h3>
-                                    <p class="text-muted mb-0">+359 888 123 456</p>
-                                </div>
-                            </div>
-                            <div class="d-flex mb-3">
-                                <div class="icon-box bg-primary text-white rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">
-                                    <i class="bi bi-envelope"></i>
-                                </div>
-                                <div>
-                                    <h3 class="h6 mb-1">Имейл</h3>
-                                    <p class="text-muted mb-0">contact@schoolselect.bg</p>
-                                </div>
-                            </div>
-                            <div class="d-flex mb-3">
-                                <div class="icon-box bg-primary text-white rounded-circle d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">
-                                    <i class="bi bi-clock"></i>
-                                </div>
-                                <div>
-                                    <h3 class="h6 mb-1">Работно време</h3>
-                                    <p class="text-muted mb-0">Понеделник - Петък: 9:00 - 18:00</p>
-                                </div>
-                            </div>
-
-                            <h2 class="h4 mt-5 mb-3">Последвайте ни</h2>
-                            <div class="d-flex gap-3 fs-3">
-                                <a href="#" class="text-decoration-none"><i class="bi bi-facebook"></i></a>
-                                <a href="#" class="text-decoration-none"><i class="bi bi-instagram"></i></a>
-                                <a href="#" class="text-decoration-none"><i class="bi bi-twitter-x"></i></a>
-                                <a href="#" class="text-decoration-none"><i class="bi bi-linkedin"></i></a>
-                            </div>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form asp-action="Contact" method="post">
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label"></label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-7">
-                    <div class="card shadow-sm">
-                        <div class="card-body p-4">
-                            <h2 class="h4 mb-4">Изпратете ни съобщение</h2>
-                            <form asp-action="Contact" method="post">
-                                <div class="mb-3">
-                                    <label asp-for="Name" class="form-label"></label>
-                                    <input asp-for="Name" class="form-control" />
-                                    <span asp-validation-for="Name" class="text-danger"></span>
-                                </div>
-                                <div class="mb-3">
-                                    <label asp-for="Email" class="form-label"></label>
-                                    <input asp-for="Email" class="form-control" type="email" />
-                                    <span asp-validation-for="Email" class="text-danger"></span>
-                                </div>
-                                <div class="mb-3">
-                                    <label asp-for="Subject" class="form-label"></label>
-                                    <input asp-for="Subject" class="form-control" />
-                                    <span asp-validation-for="Subject" class="text-danger"></span>
-                                </div>
-                                <div class="mb-3">
-                                    <label asp-for="Message" class="form-label"></label>
-                                    <textarea asp-for="Message" class="form-control" rows="5"></textarea>
-                                    <span asp-validation-for="Message" class="text-danger"></span>
-                                </div>
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary">Изпрати съобщение</button>
-                                </div>
-                            </form>
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" type="email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
-                    </div>
+                        <div class="mb-3">
+                            <label asp-for="Message" class="form-label"></label>
+                            <textarea asp-for="Message" rows="5" class="form-control"></textarea>
+                            <span asp-validation-for="Message" class="text-danger"></span>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Изпрати</button>
+                        </div>
+                    </form>
                 </div>
             </div>
+
         </div>
     </div>
-</div>
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

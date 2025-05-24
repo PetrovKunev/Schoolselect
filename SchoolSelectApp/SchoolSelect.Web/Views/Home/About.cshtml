@@ -1,64 +1,51 @@
-﻿@model SchoolSelect.Web.ViewModels.AboutViewModel
-@{
+﻿@{
     ViewData["Title"] = "За нас";
 }
 
-<div class="container py-5">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <h1 class="text-center mb-5">За SchoolSelect</h1>
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <h1 class="mb-4">За SchoolSelect</h1>
+            <p class="lead">
+                SchoolSelect е платформа, която прави избора на училище лесен, прозрачен и адаптиран за всеки ученик и родител.
+            </p>
+        </div>
 
-            <div class="card shadow-sm mb-5">
-                <div class="card-body p-4">
-                    <h2 class="card-title h4 mb-3">Нашата мисия</h2>
-                    <p class="card-text">@Model.MissionStatement</p>
-                </div>
-            </div>
+        <div class="col-lg-10 mt-5">
+            <div class="row g-4">
 
-            <div class="card shadow-sm mb-5">
-                <div class="card-body p-4">
-                    <h2 class="card-title h4 mb-3">Нашата визия</h2>
-                    <p class="card-text">@Model.VisionStatement</p>
-                </div>
-            </div>
-
-            <div class="card shadow-sm mb-5">
-                <div class="card-body p-4">
-                    <h2 class="card-title h4 mb-3">Какво предлагаме</h2>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-success me-2"></i> Подробна информация за училища и профили</li>
-                        <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-success me-2"></i> Възможност за сравнение между училища</li>
-                        <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-success me-2"></i> Изчисляване на шансове за прием според оценки</li>
-                        <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-success me-2"></i> Препоръки за училища според предпочитания</li>
-                        <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-success me-2"></i> Известия за важни промени и класирания</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="card shadow-sm mb-5">
-                <div class="card-header bg-primary text-white">
-                    <h2 class="h4 mb-0">Свържете се с нас</h2>
-                </div>
-                <div class="card-body p-4">
-                    <div class="row">
-                        <div class="col-md-6 mb-4 mb-md-0">
-                            <h3 class="h5">Контактна информация</h3>
-                            <ul class="list-unstyled">
-                                <li class="mb-3"><i class="bi bi-envelope-fill me-2"></i> <a href="mailto:@Model.ContactEmail">@Model.ContactEmail</a></li>
-                            </ul>
-                        </div>
-                        <div class="col-md-6">
-                            <h3 class="h5">Последвайте ни</h3>
-                            <div class="d-flex gap-3 fs-3">
-                                <a href="#" class="text-decoration-none"><i class="bi bi-facebook"></i></a>
-                                <a href="#" class="text-decoration-none"><i class="bi bi-instagram"></i></a>
-                                <a href="#" class="text-decoration-none"><i class="bi bi-twitter-x"></i></a>
-                                <a href="#" class="text-decoration-none"><i class="bi bi-linkedin"></i></a>
-                            </div>
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h2 class="h5">Мисия</h2>
+                            <p>Да предоставим точна и актуална информация за училища и паралелки.</p>
                         </div>
                     </div>
                 </div>
+
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h2 class="h5">Визия</h2>
+                            <p>Да улесним бъдещето на всеки ученик чрез знания и сравнения.</p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
+
+        <div class="col-lg-8 mt-5">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0">Контакти</h2>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1">Пишете ни на: <a href="mailto:info@schoolselect.bg">admin@schoolselect.net</a></p>
+                    <p>Следвайте ни в социалните мрежи за новини и актуализации.</p>
+                </div>
+            </div>
+        </div>
+
     </div>
-</div>
+</section>
